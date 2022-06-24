@@ -10,6 +10,7 @@
   "author": "Dave Gray",
   "license": "ISC",
   "dependencies": {
+    "@faker-js/faker": "^7.2.0",
     "bcrypt": "^5.0.1",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
@@ -23,7 +24,6 @@
     "uuid": "^8.3.2"
   },
   "devDependencies": {
-    "@faker-js/faker": "^7.2.0",
     "nodemon": "^2.0.16"
   }
 }
