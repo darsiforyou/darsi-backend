@@ -1,0 +1,3 @@
+20220619	17:31:00	2e081571-3190-4bad-8627-0e9921ef8a5f	SyntaxError: Unexpected token e in JSON at position 39
+20220619	21:00:47	166a4c76-a0f0-4d55-9e61-11de99dee8f2	TypeError: req.roles.map is not a function
+20220619	21:02:15	9f183394-ac5c-4c34-b8e7-2649f3b83c1f	ReferenceError: role is not defined
