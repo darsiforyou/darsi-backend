@@ -7,11 +7,7 @@ const productController = require("../../controllers/productController");
 
 router
   .route("/")
-  .get(
-    verifyJWT,
-    verifyRoles(ROLES_LIST.Admin),
-    productController.getAllProducts
-  )
+  .get(productController.getAllProducts)
   .post(verifyJWT, verifyRoles(ROLES_LIST.Admin), productController.addProduct);
 
 router
