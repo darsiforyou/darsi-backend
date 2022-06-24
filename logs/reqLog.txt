@@ -91,3 +91,5 @@
 20220625	01:10:08	942e3c42-4dcf-4a01-9dde-dacbaa0367f8	POST	undefined	/register
 20220625	01:10:14	1c729cf4-8e42-47b3-ae80-157f768e49dd	POST	undefined	/register
 20220625	01:10:24	755987ac-cb3a-40c9-960f-24198f6eb2e5	POST	undefined	/auth
+20220625	01:16:05	59fe658c-45f9-470a-ad62-4d971d25860c	POST	undefined	/register
+20220625	01:17:53	a3c66717-f21b-4692-adea-74e71d4ec13e	POST	undefined	/register
