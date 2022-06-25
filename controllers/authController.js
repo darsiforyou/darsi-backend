@@ -4,16 +4,16 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 const handleLogin = async (req, res) => {
-  const { user, pwd } = req.body;
-  if (!user || !pwd)
+  const { email, password } = req.body;
+  if (!email || !password)
     return res
-      .status(400)
+      .status(401)
       .json({ message: "Username and password are required." });
-  const foundUser = await User.findOne({ username: user });
-  if (!foundUser) return res.sendStatus(401); //Unauthorized
+  const foundUser = await User.findOne({ email: email });
+  if (!foundUser) return res.status(401).json("message", "email is Inalid"); //Unauthorized
   // evaluate password
   const pass = foundUser.password;
-  const match = await bcrypt.compare(pwd, pass);
+  const match = await bcrypt.compare(password, pass);
   if (match) {
     const role = foundUser.role;
     // create JWTs

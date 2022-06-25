@@ -38,7 +38,14 @@ const deleteProduct = async (req, res) => {
     res.status(500).json({ error: err });
   }
 };
-const updateProduct = async (req, res) => {};
+const updateProduct = async (req, res) => {
+  try {
+    await Product.findByIdAndUpdate(req.params.id, req.body);
+    res.status(200).json("Product has been updated");
+  } catch (err) {
+    res.status(500).json({ error: err });
+  }
+};
 
 module.exports = {
   addProduct,

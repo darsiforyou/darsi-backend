@@ -11,6 +11,7 @@ const credentials = require("./middleware/credentials");
 const connectDB = require("./config/db");
 const PORT = process.env.PORT || 4000;
 const dotenv = require("dotenv").config();
+const swaggerUi = require("swagger-ui-express");
 
 // custom middleware logger
 app.use(logger);
@@ -34,6 +35,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 //serve static files
+app.use("/api-docs", swaggerUi.serve);
 app.use("/", express.static(path.join(__dirname, "/public")));
 
 // routes
@@ -45,7 +47,6 @@ app.use("/logout", require("./routes/logout"));
 app.use("/users", require("./routes/api/user"));
 app.use("/products", require("./routes/api/products"));
 app.use("/categories", require("./routes/api/categories"));
-
 app.all("*", (req, res) => {
   res.status(404);
   if (req.accepts("html")) {

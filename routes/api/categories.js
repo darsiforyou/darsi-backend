@@ -7,11 +7,7 @@ const categoryController = require("../../controllers/categoryController");
 
 router
   .route("/")
-  .get(
-    verifyJWT,
-    verifyRoles(ROLES_LIST.Admin),
-    categoryController.getAllCategories
-  )
+  .get(categoryController.getAllCategories)
   .post(
     verifyJWT,
     verifyRoles(ROLES_LIST.Admin),
