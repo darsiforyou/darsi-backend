@@ -130,3 +130,5 @@
 20220626	01:10:19	e59075b7-c778-4917-babc-1edea944d823	POST	http://localhost:3000	/auth
 20220626	01:12:41	864677e2-4bc1-4e01-af35-5deb875398f1	OPTIONS	http://localhost:3000	/auth
 20220626	01:12:41	7d69c799-9d6e-4826-be0b-fc87488af9e0	POST	http://localhost:3000	/auth
+20220626	01:32:06	11ba99c5-2d3d-484d-bf9d-08c75a294a91	OPTIONS	http://localhost:3000	/auth
+20220626	01:32:06	e7f14be5-45b1-4a2c-868f-db46e1a01349	POST	http://localhost:3000	/auth
