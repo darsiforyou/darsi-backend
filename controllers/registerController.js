@@ -2,15 +2,14 @@ const User = require("../models/user");
 const bcrypt = require("bcrypt");
 const { faker } = require("@faker-js/faker");
 const handleNewUser = async (req, res) => {
-  const { username, password, email, role } = req.body;
-  if (!username || !password)
+  const { firstname, lastname, password, email, role } = req.body;
+  if (!email || !password)
     return res
       .status(400)
-      .json({ message: "Username and password are required." });
-  // check for duplicate usernames in the db
-  const user = await User.findOne({ $or: [{ username }, { email }] });
-  if (user?.username === username)
-    return res.json({ message: "username already exists" });
+      .json({ message: "email and password are required." });
+  // check for duplicate emails in the db
+  const user = await User.findOne({ email });
+
   if (user?.email === email)
     return res.json({ message: "email already exists" }); //Conflict
 
@@ -19,7 +18,8 @@ const handleNewUser = async (req, res) => {
     const hashedPwd = await bcrypt.hash(password, 10);
     //store the new user
     const newUser = {
-      username: username,
+      firstname,
+      lastname,
       role: role ? role : "Customer",
       email,
 
@@ -37,7 +37,7 @@ const handleNewUser = async (req, res) => {
     }
     await User.create(newUser);
 
-    res.status(201).json({ success: `New user ${username} created!`, newUser });
+    res.status(201).json({ success: `New user created!`, newUser });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
