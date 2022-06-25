@@ -29,10 +29,9 @@ const deleteUser = async (req, res) => {
 };
 const updateUser = async (req, res) => {
   try {
-    const { username, email } = req.body;
+    const { email } = req.body;
     const user = await User.findById(req.params.id);
-    if (user.username === username)
-      return res.json({ message: "username already exists" });
+
     if (user.email === email)
       return res.json({ message: "email already exists" });
     await User.findByIdAndUpdate(req.params.id, req.body);
