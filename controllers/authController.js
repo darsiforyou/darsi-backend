@@ -6,11 +6,9 @@ const jwt = require("jsonwebtoken");
 const handleLogin = async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password)
-    return res
-      .status(401)
-      .json({ message: "Username and password are required." });
+    return res.status(401).json({ error: "email and password are required." });
   const foundUser = await User.findOne({ email: email });
-  if (!foundUser) return res.status(401).json("message", "email is Inalid"); //Unauthorized
+  if (!foundUser) return res.status(401).json(error, "email is Inalid"); //Unauthorized
   // evaluate password
   const pass = foundUser.password;
   const match = await bcrypt.compare(password, pass);
@@ -43,9 +41,9 @@ const handleLogin = async (req, res) => {
       maxAge: 24 * 60 * 60 * 1000,
     });
 
-    const { username, ...others } = foundUser;
+    const { password, refreshToken: rftoken, ...others } = foundUser._doc;
 
-    res.json({ username, role, accessToken });
+    res.json({ ...others, accessToken });
   } else {
     res.sendStatus(401);
   }

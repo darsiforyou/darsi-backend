@@ -16,7 +16,7 @@ router
 
 router
   .route("/:id")
-  .get(verifyJWT, verifyRoles(ROLES_LIST.Admin), categoryController.getCategory)
+  .get(categoryController.getCategory)
   .delete(
     verifyJWT,
     verifyRoles(ROLES_LIST.Admin),

@@ -12,7 +12,7 @@ router
 
 router
   .route("/:id")
-  .get(verifyJWT, verifyRoles(ROLES_LIST.Admin), productController.getProduct)
+  .get(productController.getProduct)
   .delete(
     verifyJWT,
     verifyRoles(ROLES_LIST.Admin),
