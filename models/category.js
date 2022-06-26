@@ -10,11 +10,6 @@ const categorySchema = Schema(
       type: String,
       required: true,
     },
-    slug: {
-      type: String,
-      unique: true,
-      slug: "title",
-    },
     isActive: {
       type: Boolean,
       default: false,
