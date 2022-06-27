@@ -156,3 +156,10 @@
 20220626	02:06:08	c34f4ffe-241e-414f-b254-82bbd92454d2	POST	http://localhost:3000	/auth
 20220626	02:07:53	06389bcd-aace-4aaa-9a38-f50cf23ce00f	OPTIONS	http://localhost:3000	/auth
 20220626	02:07:53	c976fce5-69f5-4554-a50d-9bf320e32526	POST	http://localhost:3000	/auth
+20220628	00:06:36	23a0eafe-a176-4407-80f6-d44f41f4fb76	POST	undefined	/auth
+20220628	00:07:17	634bf4ca-36db-404f-b745-ce702143ff7f	POST	undefined	/auth
+20220628	00:10:45	b9c250e1-99d3-4ebd-8da2-dc2bbef57c0a	POST	undefined	/products
+20220628	00:11:17	be7a239c-0d3c-4ab6-a0ae-64e60396c510	POST	undefined	/products
+20220628	00:11:40	926cb88a-2aa1-45cf-acd7-c4c08e9e58c8	POST	undefined	/products
+20220628	00:12:42	17fd4e73-b7ff-4fdd-a6de-007cc0f68a21	POST	undefined	/products
+20220628	00:13:03	3520e2ca-2563-43fe-8183-e8e0684a69cf	POST	undefined	/products
