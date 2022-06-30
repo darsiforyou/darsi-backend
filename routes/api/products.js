@@ -18,6 +18,7 @@ router.route("/").get(productController.getAllProducts).post(
 router
   .route("/:id")
   .get(productController.getProduct)
+  .put(productController.updateProduct)
   .delete(
     verifyJWT,
     verifyRoles(ROLES_LIST.Admin),

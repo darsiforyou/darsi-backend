@@ -26,9 +26,7 @@ const addProduct = async (req, res) => {
       description,
     } = req.body;
     const file = req.file;
-    console.log(file);
     const newProduct = await Product.create({
-      title,
       title,
       category,
       vendorPrice,
@@ -78,8 +76,43 @@ const deleteProduct = async (req, res) => {
 };
 const updateProduct = async (req, res) => {
   try {
-    await Product.findByIdAndUpdate(req.params.id, req.body);
-    res.status(200).json("Product has been updated");
+    const {
+      title,
+      category,
+      vendorPrice,
+      price,
+      available,
+      isActive,
+      stockCountPending,
+      description,
+    } = req.body;
+    const file = req.file;
+    let data = await Product.findByIdAndUpdate(req.params.id, {
+      title,
+      category,
+      vendorPrice,
+      price,
+      available,
+      isActive,
+      stockCountPending,
+      description,
+    });
+    if (file.path) {
+      const { imageId } = data;
+      if (imageId) await imagekit.deleteFile(imageId);
+      let img = await imagekit.upload({
+        file: fs.createReadStream(imagePath.path), //required
+        fileName: imagePath.name, //required
+      });
+      data = await Product.findByIdAndUpdate(data.id, {
+        imageURL: img.url,
+        imageId: img.fileId,
+      });
+    }
+    res.status(200).json({
+      message: "Product has been updated",
+      data: data,
+    });
   } catch (err) {
     res.status(500).json({ error: err });
   }
