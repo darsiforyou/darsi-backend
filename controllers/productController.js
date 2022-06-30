@@ -1,21 +1,59 @@
 const Product = require("../models/product");
-
+const { faker } = require("@faker-js/faker");
+const imagekit = require("../config/imagekit");
 const getAllProducts = async (req, res) => {
   try {
-    const Products = await Product.find();
+    const Products = await Product.find().sort({ createdAt: -1 });
     if (!Products.length)
-      return res.status(404).send({ error: "Products not found" });
+      return res
+        .status(200)
+        .send({ message: "There are no products", data: Products });
     return res.json(Products);
   } catch (err) {
     res.status(500).json({ error: err });
   }
 };
 const addProduct = async (req, res) => {
-  const newProduct = new Product(req.body);
-
   try {
-    const savedProduct = await newProduct.save();
-    res.status(200).json(savedProduct);
+    const {
+      title,
+      category,
+      vendorPrice,
+      price,
+      available,
+      isActive,
+      stockCountPending,
+      description,
+    } = req.body;
+    const file = req.file;
+    console.log(file);
+    const newProduct = await Product.create({
+      title,
+      title,
+      category,
+      vendorPrice,
+      price,
+      available,
+      isActive,
+      stockCountPending,
+      description,
+      productCode: faker.phone.phoneNumber("###-###"),
+    });
+    if (newProduct._id) {
+      let img = await imagekit.upload({
+        file: file.buffer, //required
+        fileName: file.originalname, //required
+        folder: "/Products",
+      });
+      const updateProduct = await Product.findById(newProduct.id, {
+        imageURL: img.url,
+        imageId: img.fileId,
+      });
+      res.status(200).json({
+        message: "Your product has been Added Successfully.",
+        data: updateProduct,
+      });
+    }
   } catch (err) {
     res.status(500).json(err);
   }

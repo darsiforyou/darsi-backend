@@ -26,10 +26,10 @@ app.use(credentials);
 app.use(cors());
 
 // built-in middleware to handle urlencoded form data
-app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // built-in middleware for json
-app.use(express.json());
 
 //middleware for cookies
 app.use(cookieParser());

@@ -12,13 +12,10 @@ const productSchema = Schema(
       required: true,
     },
     imageURL: {
-      required: false,
       type: String,
     },
     imageId: {
-      unique: false,
       type: String,
-      required: false,
     },
     profitMargin: {
       type: Number,
