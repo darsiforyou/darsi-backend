@@ -43,7 +43,7 @@ const addProduct = async (req, res) => {
         fileName: file.originalname, //required
         folder: "/Products",
       });
-      const updateProduct = await Product.findById(newProduct.id, {
+      const updateProduct = await Product.findByIdAndUpdate(newProduct.id, {
         imageURL: img.url,
         imageId: img.fileId,
       });
@@ -97,12 +97,12 @@ const updateProduct = async (req, res) => {
       stockCountPending,
       description,
     });
-    if (file.path) {
+    if (file !== undefined) {
       const { imageId } = data;
       if (imageId) await imagekit.deleteFile(imageId);
       let img = await imagekit.upload({
-        file: fs.createReadStream(imagePath.path), //required
-        fileName: imagePath.name, //required
+        file: file.buffer, //required
+        fileName: file.originalname, //required
       });
       data = await Product.findByIdAndUpdate(data.id, {
         imageURL: img.url,
