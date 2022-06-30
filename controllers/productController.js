@@ -36,6 +36,7 @@ const addProduct = async (req, res) => {
       stockCountPending,
       description,
       productCode: faker.phone.phoneNumber("###-###"),
+      createdBy: req.userId,
     });
     if (newProduct._id) {
       let img = await imagekit.upload({
@@ -69,7 +70,7 @@ const getProduct = async (req, res) => {
 const deleteProduct = async (req, res) => {
   try {
     await Product.findByIdAndDelete(req.params.id);
-    res.status(200).json("Product has been deleted...");
+    res.status(200).json({ message: "Product has been deleted..." });
   } catch (err) {
     res.status(500).json({ error: err });
   }
