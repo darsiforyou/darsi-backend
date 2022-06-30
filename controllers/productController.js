@@ -38,6 +38,7 @@ const addProduct = async (req, res) => {
       stockCountPending,
       description,
       productCode: faker.phone.phoneNumber("###-###"),
+      createdBy: req.userId,
     });
     if (newProduct._id) {
       let img = await imagekit.upload({
