@@ -39,7 +39,7 @@ const getAllProducts = async (req, res) => {
 
     return res.status(200).send({
       message: "Successfully fetch products",
-      products: data,
+      data: data,
       count: count,
     });
   } catch (err) {

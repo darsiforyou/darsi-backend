@@ -38,7 +38,7 @@ const getAllUsers = async (req, res) => {
 
     return res.status(200).send({
       message: "Successfully fetch Users",
-      products: data,
+      data: data,
       count: count,
     });
   } catch (err) {
