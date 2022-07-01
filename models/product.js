@@ -42,8 +42,9 @@ const productSchema = Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Category",
     },
-    manufacturer: {
-      type: String,
+    vendor: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
     },
     available: {
       type: Boolean,
