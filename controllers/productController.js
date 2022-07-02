@@ -1,10 +1,11 @@
 const Product = require("../models/product");
 const { faker } = require("@faker-js/faker");
 const imagekit = require("../config/imagekit");
-const { searchInColumns } = require("../utils");
+const { searchInColumns, getQuery } = require("../utils");
 const getAllProducts = async (req, res) => {
   try {
     let { page, limit, search, ...quries } = req.query;
+    quries = getQuery(quries);
     search = searchInColumns(search, ["title", "description"]);
     const myAggrigate = Product.aggregate([
       { $match: { $and: [{ $or: search }, quries] } },
