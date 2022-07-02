@@ -1,45 +1,24 @@
 const User = require("../models/user");
+const { searchInColumns } = require("../utils");
 
 const getAllUsers = async (req, res) => {
   try {
-    let query = req.query;
-    Object.keys(query).forEach((key) => {
-      if (query[key] === null) {
-        delete query[key];
-      }
-    });
-    let search = [];
-    let limit = 10;
-    let skip = 0;
-    if (query.search) {
-      let search = new RegExp(query.search.toLowerCase(), "i");
-      search = [{ title: search }, { description: search }];
-      delete query.search;
-    } else {
-      search = [{ title: "" }, { description: "" }];
-    }
-    if (query.limit) {
-      limit = query.limit;
-      delete query.limit;
-    }
-    if (query.skip) {
-      skip = query.skip;
-      delete query.skip;
-    }
-    const count = await User.countDocuments({});
-    const data = await User.find({
-      $and: [{ $or: search }, query],
-    })
-      .sort({
-        createdAt: -1,
-      })
-      .skip(skip)
-      .limit(limit);
+    let { page, limit, search, ...quries } = req.query;
+    search = searchInColumns(search, ["firstname", "lastname"]);
+    const myAggrigate = await User.aggregate([
+      { $match: { $and: [{ $or: search }, quries] } },
+    ]);
+
+    const options = {
+      page: page || 1,
+      limit: limit || 10,
+    };
+
+    const data = await User.aggregatePaginate(myAggrigate, options);
 
     return res.status(200).send({
       message: "Successfully fetch Users",
       data: data,
-      count: count,
     });
   } catch (err) {
     res.status(500).json({ error: err });

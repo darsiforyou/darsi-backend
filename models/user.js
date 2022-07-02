@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const Schema = mongoose.Schema;
+const aggregatePaginate = require("mongoose-aggregate-paginate-v2");
 
 const userSchema = Schema(
   {
@@ -60,5 +61,7 @@ userSchema.methods.validPassword = function (candidatePassword) {
     return false;
   }
 };
+
+userSchema.plugin(aggregatePaginate);
 
 module.exports = mongoose.model("User", userSchema);

@@ -12,6 +12,7 @@ const connectDB = require("./config/db");
 const PORT = process.env.PORT || 4000;
 const dotenv = require("dotenv").config();
 const swaggerUi = require("swagger-ui-express");
+const boolParser = require("express-query-boolean");
 
 // custom middleware logger
 app.use(logger);
@@ -28,7 +29,7 @@ app.use(cors());
 // built-in middleware to handle urlencoded form data
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
+app.use(boolParser());
 // built-in middleware for json
 
 //middleware for cookies
