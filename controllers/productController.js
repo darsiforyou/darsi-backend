@@ -4,7 +4,7 @@ const imagekit = require("../config/imagekit");
 const { searchInColumns, getQuery } = require("../utils");
 const getAllProducts = async (req, res) => {
   try {
-    let { page, limit, search, ...quries } = req.query;
+    let { page, limit, search, mode, ...quries } = req.query;
     quries = getQuery(quries);
     search = searchInColumns(search, ["title", "description"]);
     const myAggrigate = Product.aggregate([
@@ -20,7 +20,7 @@ const getAllProducts = async (req, res) => {
     ]);
 
     const options = {
-      page: page || 1,
+      page: page || 0,
       limit: limit || 10,
     };
 
@@ -39,6 +39,7 @@ const addProduct = async (req, res) => {
     const {
       title,
       category,
+      vendor,
       vendorPrice,
       price,
       available,
@@ -51,6 +52,7 @@ const addProduct = async (req, res) => {
       title,
       category,
       vendorPrice,
+      vendor,
       price,
       available,
       isActive,
@@ -106,6 +108,7 @@ const updateProduct = async (req, res) => {
       available,
       isActive,
       stockCountPending,
+      vendor,
       description,
     } = req.body;
     const file = req.file;
@@ -115,6 +118,7 @@ const updateProduct = async (req, res) => {
       vendorPrice,
       price,
       available,
+      vendor,
       isActive,
       stockCountPending,
       description,

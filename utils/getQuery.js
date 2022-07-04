@@ -1,10 +1,3 @@
-// function getQuery(query) {
-//   return Object.keys(query).forEach((key) => {
-//     if (!query[key]) {
-//       delete query[key];
-//     }
-//   });
-// }
 function getQuery(query) {
   let obj = {};
   Object.keys(query).forEach((key) => {

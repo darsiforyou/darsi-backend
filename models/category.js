@@ -1,9 +1,7 @@
 const mongoose = require("mongoose");
+const aggregatePaginate = require("mongoose-aggregate-paginate-v2");
+
 const Schema = mongoose.Schema;
-const slug = require("mongoose-slug-updater");
-
-mongoose.plugin(slug);
-
 const categorySchema = Schema(
   {
     title: {
@@ -18,8 +16,15 @@ const categorySchema = Schema(
       type: Boolean,
       default: false,
     },
+    imageURL: {
+      type: String,
+    },
+    imageId: {
+      type: String,
+    },
   },
   { timestamps: true }
 );
+categorySchema.plugin(aggregatePaginate);
 
 module.exports = mongoose.model("Category", categorySchema);

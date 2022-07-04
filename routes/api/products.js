@@ -7,13 +7,15 @@ const productController = require("../../controllers/productController");
 const multer = require("multer");
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
-router.route("/").get(productController.getAllProducts).post(
-  verifyJWT,
-  verifyRoles(ROLES_LIST.Admin),
-  upload.single("file"),
-
-  productController.addProduct
-);
+router
+  .route("/")
+  .get(productController.getAllProducts)
+  .post(
+    verifyJWT,
+    verifyRoles(ROLES_LIST.Admin),
+    upload.single("file"),
+    productController.addProduct
+  );
 
 router
   .route("/:id")

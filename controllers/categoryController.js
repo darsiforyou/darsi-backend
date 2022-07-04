@@ -1,20 +1,65 @@
 const Category = require("../models/category");
+const { searchInColumns, getQuery } = require("../utils");
+const imagekit = require("../config/imagekit");
 
 const getAllCategories = async (req, res) => {
   try {
-    const Categories = await Category.find();
+    let { page, limit, search, ...quries } = req.query;
+    quries = getQuery(quries);
+    search = searchInColumns(search, ["title"]);
+    const myAggrigate = Category.aggregate([
+      { $match: { $and: [{ $or: search }, quries] } },
+    ]);
 
-    return res.json(Categories);
+    const options = {
+      page: page || 1,
+      limit: limit || 10,
+    };
+
+    const data = await Category.aggregatePaginate(myAggrigate, options);
+
+    return res.status(200).send({
+      message: "Successfully fetch Categories",
+      data: data,
+    });
   } catch (err) {
     res.status(500).json({ error: err });
   }
 };
-
-const addCategory = async (req, res) => {
-  const newCategory = new Category(req.body);
+const getAllCategoriesWithoutFilter = async (req, res) => {
   try {
-    const savedCategory = await newCategory.save();
-    res.status(200).json(savedCategory);
+    const categories = await Category.find();
+    if (!categories.length)
+      return res.status(404).send({ error: "Categories not found" });
+    return res.json(categories);
+  } catch (err) {
+    res.status(500).json({ error: err });
+  }
+};
+const addCategory = async (req, res) => {
+  try {
+    const { title, isActive, isFeatured } = req.body;
+    const file = req.file;
+    const newCategory = await Category.create({
+      title,
+      isActive,
+      isFeatured,
+    });
+    if (newCategory._id) {
+      let img = await imagekit.upload({
+        file: file.buffer, //required
+        fileName: file.originalname, //required
+        folder: "/Category",
+      });
+      const updateCategory = await Category.findByIdAndUpdate(newCategory.id, {
+        imageURL: img.url,
+        imageId: img.fileId,
+      });
+      res.status(200).json({
+        message: "Your category has been Added Successfully.",
+        data: updateCategory,
+      });
+    }
   } catch (err) {
     res.status(500).json(err);
   }
@@ -37,10 +82,39 @@ const deleteCategory = async (req, res) => {
     res.status(500).json({ error: err });
   }
 };
-const updateCategory = async (req, res) => {};
+const updateCategory = async (req, res) => {
+  try {
+    const { title, isActive, isFeatured } = req.body;
+    const file = req.file;
+    let data = await Category.findByIdAndUpdate(req.params.id, {
+      title,
+      isActive,
+      isFeatured,
+    });
+    if (file !== undefined) {
+      const { imageId } = data;
+      if (imageId) await imagekit.deleteFile(imageId);
+      let img = await imagekit.upload({
+        file: file.buffer, //required
+        fileName: file.originalname, //required
+      });
+      data = await Category.findByIdAndUpdate(data.id, {
+        imageURL: img.url,
+        imageId: img.fileId,
+      });
+    }
+    res.status(200).json({
+      message: "Category has been updated",
+      data: data,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err });
+  }
+};
 
 module.exports = {
   getAllCategories,
+  getAllCategoriesWithoutFilter,
   getCategory,
   addCategory,
   deleteCategory,

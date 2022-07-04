@@ -2,18 +2,17 @@ const User = require("../models/user");
 const bcrypt = require("bcrypt");
 const { faker } = require("@faker-js/faker");
 const handleNewUser = async (req, res) => {
-  const { firstname, lastname, password, email, role } = req.body;
-  if (!email || !password)
-    return res
-      .status(400)
-      .json({ message: "email and password are required." });
-  // check for duplicate emails in the db
-  const user = await User.findOne({ email });
-
-  if (user?.email === email)
-    return res.json({ message: "email already exists" }); //Conflict
-
   try {
+    const { firstname, lastname, password, email, role } = req.body;
+    if (!email || !password)
+      return res
+        .status(400)
+        .json({ message: "email and password are required." });
+    // check for duplicate emails in the db
+    const user = await User.findOne({ email });
+
+    if (user?.email === email)
+      return res.json({ message: "email already exists" }); //Conflict
     //encrypt the password
     const hashedPwd = await bcrypt.hash(password, 10);
     //store the new user
@@ -22,13 +21,9 @@ const handleNewUser = async (req, res) => {
       lastname,
       role: role ? role : "Customer",
       email,
-
       password: hashedPwd,
     };
     let user_code = email;
-    if (req.body.name !== undefined) {
-      user_code = req.body.name.split(" ")[0];
-    }
     newUser.user_code =
       user_code + "-" + faker.helpers.replaceSymbolWithNumber("####-####");
     if (req.body.role === "Referrer") {

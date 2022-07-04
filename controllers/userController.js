@@ -1,10 +1,12 @@
 const User = require("../models/user");
-const { searchInColumns } = require("../utils");
+const { searchInColumns, getQuery } = require("../utils");
+const bcrypt = require("bcrypt");
 
 const getAllUsers = async (req, res) => {
   try {
-    let { page, limit, search, ...quries } = req.query;
+    let { page, limit, search, mode, ...quries } = req.query;
     search = searchInColumns(search, ["firstname", "lastname"]);
+    quries = getQuery(quries);
     const myAggrigate = await User.aggregate([
       { $match: { $and: [{ $or: search }, quries] } },
     ]);
@@ -14,7 +16,10 @@ const getAllUsers = async (req, res) => {
       limit: limit || 10,
     };
 
-    const data = await User.aggregatePaginate(myAggrigate, options);
+    const data = await User.aggregatePaginate(
+      myAggrigate,
+      mode === null ? options : {}
+    );
 
     return res.status(200).send({
       message: "Successfully fetch Users",
@@ -34,7 +39,15 @@ const getUser = async (req, res) => {
     res.status(500).json({ error: err });
   }
 };
-
+const getAllUsersWithoutFilter = async (req, res) => {
+  try {
+    let query = getQuery(req.query);
+    const users = await User.find(query).select("_id username email role");
+    return res.json(users);
+  } catch (err) {
+    res.status(500).json({ error: err });
+  }
+};
 const deleteUser = async (req, res) => {
   try {
     await User.findByIdAndDelete(req.params.id);
@@ -45,13 +58,28 @@ const deleteUser = async (req, res) => {
 };
 const updateUser = async (req, res) => {
   try {
-    const { email } = req.body;
+    const { firstname, lastname, password, email, role } = req.body;
     const user = await User.findById(req.params.id);
 
-    if (user.email === email)
-      return res.json({ message: "email already exists" });
-    await User.findByIdAndUpdate(req.params.id, req.body);
-    res.status(200).json("User has been updated.");
+    if (user.email === email && user._id != req.params.id)
+      return res.json({ message: "Email already exists" });
+    //store the new user
+    const updateUser = {
+      firstname,
+      lastname,
+      role: role ? role : "Customer",
+      email,
+    };
+    if (password) {
+      const hashedPwd = await bcrypt.hash(password, 10);
+      updateUser.password = hashedPwd;
+    }
+    let data = await User.findByIdAndUpdate(req.params.id, updateUser);
+
+    res.status(200).json({
+      message: "User has been updated",
+      data: data,
+    });
   } catch (err) {
     res.status(500).json({ error: err });
   }
@@ -60,6 +88,7 @@ const updateUser = async (req, res) => {
 module.exports = {
   getAllUsers,
   getUser,
+  getAllUsersWithoutFilter,
   deleteUser,
   updateUser,
 };
