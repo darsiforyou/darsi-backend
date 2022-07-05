@@ -16,10 +16,7 @@ const getAllUsers = async (req, res) => {
       limit: limit || 10,
     };
 
-    const data = await User.aggregatePaginate(
-      myAggrigate,
-      mode === null ? options : {}
-    );
+    const data = await User.aggregatePaginate(myAggrigate, options);
 
     return res.status(200).send({
       message: "Successfully fetch Users",

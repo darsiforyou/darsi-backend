@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
+const aggregatePaginate = require("mongoose-aggregate-paginate-v2");
 
 const referral_packages_schema = Schema(
   {
@@ -7,7 +8,7 @@ const referral_packages_schema = Schema(
       type: String,
       required: true,
     },
-    logo_image: {
+    imageURL: {
       type: String,
       default:
         "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRr3jUH9jcTlLug_s6b0x6ue-Rr0-atd7pjAQ&usqp=CAU",
@@ -38,5 +39,6 @@ const referral_packages_schema = Schema(
   },
   { timestamps: true }
 );
+referral_packages_schema.plugin(aggregatePaginate);
 
 module.exports = mongoose.model("Referral_Package", referral_packages_schema);

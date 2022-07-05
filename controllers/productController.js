@@ -4,10 +4,10 @@ const imagekit = require("../config/imagekit");
 const { searchInColumns, getQuery } = require("../utils");
 const getAllProducts = async (req, res) => {
   try {
-    let { page, limit, search, mode, ...quries } = req.query;
-    quries = getQuery(quries);
+    let { page, limit, search, ...quries } = req.query;
     search = searchInColumns(search, ["title", "description"]);
-    const myAggrigate = Product.aggregate([
+    quries = getQuery(quries);
+    const myAggrigate = await Product.aggregate([
       { $match: { $and: [{ $or: search }, quries] } },
       {
         $lookup: {
@@ -20,7 +20,7 @@ const getAllProducts = async (req, res) => {
     ]);
 
     const options = {
-      page: page || 0,
+      page: page || 1,
       limit: limit || 10,
     };
 
@@ -28,7 +28,7 @@ const getAllProducts = async (req, res) => {
 
     return res.status(200).send({
       message: "Successfully fetch products",
-      products: data,
+      data: data,
     });
   } catch (err) {
     res.status(500).json({ error: err });
@@ -48,7 +48,7 @@ const addProduct = async (req, res) => {
       description,
     } = req.body;
     const file = req.file;
-    const newProduct = await Product.create({
+    let data = await Product.create({
       title,
       category,
       vendorPrice,
@@ -61,21 +61,21 @@ const addProduct = async (req, res) => {
       productCode: faker.phone.phoneNumber("###-###"),
       createdBy: req.userId,
     });
-    if (newProduct._id) {
+    if (file && data._id) {
       let img = await imagekit.upload({
         file: file.buffer, //required
         fileName: file.originalname, //required
         folder: "/Products",
       });
-      const updateProduct = await Product.findByIdAndUpdate(newProduct.id, {
+      data = await Product.findByIdAndUpdate(data.id, {
         imageURL: img.url,
         imageId: img.fileId,
       });
-      res.status(200).json({
-        message: "Your product has been Added Successfully.",
-        data: updateProduct,
-      });
     }
+    res.status(200).json({
+      message: "Your product has been Added Successfully.",
+      data: data,
+    });
   } catch (err) {
     res.status(500).json(err);
   }

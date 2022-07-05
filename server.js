@@ -48,6 +48,7 @@ app.use("/logout", require("./routes/logout"));
 app.use("/users", require("./routes/api/user"));
 app.use("/products", require("./routes/api/products"));
 app.use("/categories", require("./routes/api/categories"));
+app.use("/packages", require("./routes/api/referralPackages"));
 app.all("*", (req, res) => {
   res.status(404);
   if (req.accepts("html")) {

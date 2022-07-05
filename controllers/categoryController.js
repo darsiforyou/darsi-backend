@@ -5,9 +5,9 @@ const imagekit = require("../config/imagekit");
 const getAllCategories = async (req, res) => {
   try {
     let { page, limit, search, ...quries } = req.query;
-    quries = getQuery(quries);
     search = searchInColumns(search, ["title"]);
-    const myAggrigate = Category.aggregate([
+    quries = getQuery(quries);
+    const myAggrigate = await Category.aggregate([
       { $match: { $and: [{ $or: search }, quries] } },
     ]);
 
@@ -29,8 +29,6 @@ const getAllCategories = async (req, res) => {
 const getAllCategoriesWithoutFilter = async (req, res) => {
   try {
     const categories = await Category.find();
-    if (!categories.length)
-      return res.status(404).send({ error: "Categories not found" });
     return res.json(categories);
   } catch (err) {
     res.status(500).json({ error: err });
@@ -40,35 +38,35 @@ const addCategory = async (req, res) => {
   try {
     const { title, isActive, isFeatured } = req.body;
     const file = req.file;
-    const newCategory = await Category.create({
+    let data = await Category.create({
       title,
       isActive,
       isFeatured,
     });
-    if (newCategory._id) {
+    if (file && data._id) {
       let img = await imagekit.upload({
         file: file.buffer, //required
         fileName: file.originalname, //required
         folder: "/Category",
       });
-      const updateCategory = await Category.findByIdAndUpdate(newCategory.id, {
+      data = await Category.findByIdAndUpdate(data.id, {
         imageURL: img.url,
         imageId: img.fileId,
       });
-      res.status(200).json({
-        message: "Your category has been Added Successfully.",
-        data: updateCategory,
-      });
     }
+    res.status(200).json({
+      message: "Your category has been Added Successfully.",
+      data: data,
+    });
   } catch (err) {
     res.status(500).json(err);
   }
 };
 const getCategory = async (req, res) => {
   try {
-    const Category = await Category.findById(req.params.id);
-    if (!Category) return res.status(404).send({ error: "Category not found" });
-    return res.json(Category);
+    const category = await Category.findById(req.params.id);
+    if (!category) return res.status(404).send({ error: "Category not found" });
+    return res.json(category);
   } catch (err) {
     res.status(500).json({ error: err });
   }
