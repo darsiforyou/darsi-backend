@@ -27,8 +27,8 @@ const handleNewUser = async (req, res) => {
     newUser.user_code =
       user_code + "-" + faker.helpers.replaceSymbolWithNumber("####-####");
     if (req.body.role === "Referrer") {
-      newUser.referral_package = req.body.referral_package;
-      newUser.referred_by = req.body.referred_by;
+      newUser.referral_package = req?.body?.referral_package;
+      newUser.referred_by = req?.body?.referred_by;
     }
     await User.create(newUser);
 
