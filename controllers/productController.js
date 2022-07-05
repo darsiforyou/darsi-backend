@@ -17,6 +17,14 @@ const getAllProducts = async (req, res) => {
           as: "category",
         },
       },
+      {
+        $lookup: {
+          from: "users",
+          localField: "vendor",
+          foreignField: "_id",
+          as: "vendor",
+        },
+      },
     ]);
 
     const options = {
