@@ -42,6 +42,15 @@ const getAllProducts = async (req, res) => {
     res.status(500).json({ error: err });
   }
 };
+const getAllProductWithoutFilter = async (req, res) => {
+  try {
+    let query = getQuery(req.query);
+    const data = await Product.find(query);
+    return res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err });
+  }
+};
 const addProduct = async (req, res) => {
   try {
     const {
@@ -155,6 +164,7 @@ const updateProduct = async (req, res) => {
 module.exports = {
   addProduct,
   getAllProducts,
+  getAllProductWithoutFilter,
   getProduct,
   deleteProduct,
   updateProduct,

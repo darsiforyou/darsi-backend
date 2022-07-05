@@ -18,6 +18,9 @@ router
   );
 
 router
+  .route("/without_filter")
+  .get(productController.getAllProductWithoutFilter);
+router
   .route("/:id")
   .get(productController.getProduct)
   .put(
