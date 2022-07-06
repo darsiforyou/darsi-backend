@@ -77,6 +77,7 @@ const addProduct = async (req, res) => {
       description,
       productCode: faker.phone.phoneNumber("###-###"),
       createdBy: req.userId,
+      profitMargin: price - vendorPrice,
     });
     if (file && data._id) {
       let img = await imagekit.upload({
@@ -139,6 +140,7 @@ const updateProduct = async (req, res) => {
       isActive,
       stockCountPending,
       description,
+      profitMargin: price - vendorPrice,
     });
     if (file !== undefined) {
       const { imageId } = data;

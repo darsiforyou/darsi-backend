@@ -76,10 +76,10 @@ const addReferralPackage = async (req, res) => {
 };
 const getReferralPackage = async (req, res) => {
   try {
-    const Referral_Package = await Referral_Package.findById(req.params.id);
-    if (!Referral_Package)
+    const data = await Referral_Package.findById(req.params.id);
+    if (!data)
       return res.status(404).send({ error: "Referral Package not found" });
-    return res.json(Referral_Package);
+    return res.json(data);
   } catch (err) {
     res.status(500).json({ error: err });
   }

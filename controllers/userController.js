@@ -9,6 +9,14 @@ const getAllUsers = async (req, res) => {
     quries = getQuery(quries);
     const myAggrigate = await User.aggregate([
       { $match: { $and: [{ $or: search }, quries] } },
+      {
+        $lookup: {
+          from: "referral_package",
+          localField: "referral_package",
+          foreignField: "_id",
+          as: "referral_package",
+        },
+      },
     ]);
 
     const options = {
@@ -36,10 +44,23 @@ const getUser = async (req, res) => {
     res.status(500).json({ error: err });
   }
 };
+const getUserWithRefCode = async (req, res) => {
+  try {
+    const user = await User.findOne({ user_code: req.params.code }).select(
+      "_id firstname lastname email role user_code referral_package"
+    );
+    if (!user) return res.status(404).send({ error: "User not found" });
+    return res.json(user);
+  } catch (err) {
+    res.status(500).json({ error: err });
+  }
+};
 const getAllUsersWithoutFilter = async (req, res) => {
   try {
     let query = getQuery(req.query);
-    const users = await User.find(query).select("_id username email role");
+    const users = await User.find(query).select(
+      "_id firstname lastname email role user_code"
+    );
     return res.json(users);
   } catch (err) {
     res.status(500).json({ error: err });
@@ -86,6 +107,7 @@ module.exports = {
   getAllUsers,
   getUser,
   getAllUsersWithoutFilter,
+  getUserWithRefCode,
   deleteUser,
   updateUser,
 };

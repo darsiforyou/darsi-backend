@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
+const aggregatePaginate = require("mongoose-aggregate-paginate-v2");
 
 const orderSchema = Schema(
   {
@@ -14,6 +15,16 @@ const orderSchema = Schema(
         required: true,
       },
       totalCost: {
+        type: Number,
+        default: 0,
+        required: true,
+      },
+      discount: {
+        type: Number,
+        default: 0,
+        required: true,
+      },
+      netCost: {
         type: Number,
         default: 0,
         required: true,
@@ -54,9 +65,17 @@ const orderSchema = Schema(
       type: String,
       required: true,
     },
-    paymentId: {
+    name: {
       type: String,
       required: true,
+    },
+    email: {
+      type: String,
+      required: true,
+    },
+    paymentId: {
+      type: String,
+      required: false,
     },
     createdAt: {
       type: Date,
@@ -81,5 +100,6 @@ const orderSchema = Schema(
   },
   { timestamps: true }
 );
+orderSchema.plugin(aggregatePaginate);
 
 module.exports = mongoose.model("Order", orderSchema);

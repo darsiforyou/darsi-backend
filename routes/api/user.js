@@ -21,4 +21,6 @@ router
   .get(userController.getUser)
   .delete(verifyJWT, verifyRoles(ROLES_LIST.Admin), userController.deleteUser)
   .put(verifyJWT, verifyRoles(ROLES_LIST.Admin), userController.updateUser);
+
+router.route("/code/:code").get(userController.getUserWithRefCode);
 module.exports = router;

@@ -47,6 +47,7 @@ app.use("/refresh", require("./routes/refresh"));
 app.use("/logout", require("./routes/logout"));
 app.use("/users", require("./routes/api/user"));
 app.use("/products", require("./routes/api/products"));
+app.use("/orders", require("./routes/api/order"));
 app.use("/categories", require("./routes/api/categories"));
 app.use("/packages", require("./routes/api/referralPackages"));
 app.use("/dashboard-setting", require("./routes/api/dashboard"));
