@@ -99,9 +99,9 @@ const addProduct = async (req, res) => {
 };
 const getProduct = async (req, res) => {
   try {
-    const Product = await Product.findById(req.params.id);
-    if (!Product) return res.status(404).send({ error: "Product not found" });
-    return res.json(Product);
+    const product = await Product.findById(req.params.id);
+    if (!product) return res.status(404).send({ error: "Product not found" });
+    return res.json(product);
   } catch (err) {
     res.status(500).json({ error: err });
   }

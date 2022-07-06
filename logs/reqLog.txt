@@ -2946,3 +2946,5 @@
 20220706	17:27:27	c986bd8e-6ab1-4965-bbc9-302a18533627	GET	http://localhost:3000	/categories/without_filter
 20220706	17:27:27	3576aab9-68c6-4374-93a1-056a77b4db45	GET	http://localhost:3000	/users/without_filter?role=Vendor
 20220706	17:27:27	0af708ad-a026-4bfe-9746-443f2e76ed76	GET	http://localhost:3000	/categories/without_filter
+20220706	19:10:36	2ed24acd-be10-4385-a82e-3573e5e8acaf	GET	undefined	/products/62c48ebd17b16bfbc685705d
+20220706	19:10:47	ab11fed8-ea9d-4383-b642-1b4a6160d34e	GET	undefined	/products/62c48ebd17b16bfbc685705d
