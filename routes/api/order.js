@@ -18,5 +18,11 @@ router
     verifyRoles(ROLES_LIST.Admin),
     orderController.deleteOrder
   );
-
+router
+  .route("/status-change/:id")
+  .put(
+    verifyJWT,
+    verifyRoles(ROLES_LIST.Admin),
+    orderController.updateOrderStatus
+  );
 module.exports = router;

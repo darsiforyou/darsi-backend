@@ -101,6 +101,21 @@ const createOrder = async (req, res) => {
     });
   }
 };
+const updateOrderStatus = async (req, res) => {
+  try {
+    const { orderStatus } = req.body;
+    let data = await Order.findByIdAndUpdate(req.params.id, {
+      orderStatus,
+    });
+
+    res.status(200).json({
+      message: "Order status has been updated",
+      data: data,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err });
+  }
+};
 const getOrder = async (req, res) => {
   try {
     const data = await Order.findById(req.params.id);
@@ -123,6 +138,7 @@ const deleteOrder = async (req, res) => {
 module.exports = {
   getAllOrders,
   getOrder,
+  updateOrderStatus,
   deleteOrder,
   createOrder,
 };
