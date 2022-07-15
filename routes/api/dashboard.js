@@ -8,6 +8,7 @@ const multer = require("multer");
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-router.route("/").get(dashboard.getPendingAndCompletedOrders);
+router.route("/counts").get(dashboard.getCounts);
+router.route("/chart-data").get(dashboard.getChartData);
 
 module.exports = router;
