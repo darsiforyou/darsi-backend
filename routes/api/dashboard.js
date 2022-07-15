@@ -8,25 +8,6 @@ const multer = require("multer");
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-router
-  .route("/")
-  .get(dashboard.getAllDS)
-  .post(
-    verifyJWT,
-    verifyRoles(ROLES_LIST.Admin),
-    upload.single("file"),
-    dashboard.addDS
-  );
-router.route("/without_filter").get(dashboard.getAllDSWithoutFilter);
-router
-  .route("/:id")
-  .get(dashboard.getDS)
-  .delete(verifyJWT, verifyRoles(ROLES_LIST.Admin), dashboard.deleteDS)
-  .put(
-    verifyJWT,
-    verifyRoles(ROLES_LIST.Admin),
-    upload.single("file"),
-    dashboard.updateDS
-  );
+router.route("/").get(dashboard.getPendingAndCompletedOrders);
 
 module.exports = router;

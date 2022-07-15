@@ -50,7 +50,8 @@ app.use("/products", require("./routes/api/products"));
 app.use("/orders", require("./routes/api/order"));
 app.use("/categories", require("./routes/api/categories"));
 app.use("/packages", require("./routes/api/referralPackages"));
-app.use("/dashboard-setting", require("./routes/api/dashboard"));
+app.use("/dashboard-setting", require("./routes/api/dashboardSettings"));
+app.use("/dashboard", require("./routes/api/dashboard"));
 app.all("*", (req, res) => {
   res.status(404);
   if (req.accepts("html")) {
