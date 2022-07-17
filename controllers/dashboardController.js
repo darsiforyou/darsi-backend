@@ -83,8 +83,63 @@ const getCounts = async (req, res) => {
 };
 const getChartData = async (req, res) => {
   try {
+    const chartData = await Order.aggregate([
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+          totalOrderValue: {
+            $sum: { $multiply: ["$cart.netCost", "$cart.totalQty"] },
+          },
+          averageOrderQuantity: { $avg: "$cart.totalQty" },
+        },
+      },
+      {
+        $sort: { _id: "ASC" },
+      },
+      // {
+      //   $unwind: "$orig",
+      // },
+      // {
+      //   $project: {
+      //     createdAt: "$orig.createdAt",
+      //     netCost: "$orig.netCost",
+      //     total: "$total",
+      //   },
+      // },
+      // {
+      //   $group: {
+      //     _id: "$createdAt",
+      //     netCost: {
+      //       $sum: "$netCost",
+      //     },
+      //     orig: {
+      //       $push: "$$ROOT.total",
+      //     },
+      //   },
+      // },
+      // {
+      //   $unwind: "$orig",
+      // },
+      // {
+      //   $group: {
+      //     _id: {
+      //       _id: "$_id",
+      //       netCost: "$netCost",
+      //       total: "$orig",
+      //     },
+      //   },
+      // },
+      // {
+      //   $project: {
+      //     createdAt: "$_id._id",
+      //     netCost: "$_id.netCost",
+      //     total: "$_id.total",
+      //     _id: 0,
+      //   },
+      // },
+    ]);
     res.json({
-      data: {},
+      data: { chartData },
     });
   } catch (err) {
     res.status(500).json({ error: err });
