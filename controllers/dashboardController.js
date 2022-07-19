@@ -149,9 +149,11 @@ const getChartData = async (req, res) => {
 
 const geTopProducts = async (req, res) => {
   try {
+    let { limit } = req.query;
+
     const topProducts = await Product.find()
       .sort({ stockCountConsumed: -1 })
-      .limit(5);
+      .limit(limit || 10);
     res.json({ data: { topProducts } });
   } catch (error) {
     res.status(500).json({ error: err });
