@@ -3579,3 +3579,6 @@
 20220717	01:30:24	a0915695-3c45-4f90-aec5-f5c0316d2079	GET	undefined	/dashboard/chart-data
 20220717	01:31:41	276d42b3-4d19-4329-a8fd-5bff85b29b2e	GET	undefined	/dashboard/chart-data
 20220717	01:33:41	48b1e90c-b7ba-4a21-a793-63de5b328cfe	GET	undefined	/dashboard/chart-data
+20220719	15:29:33	6faf5247-4ce9-4804-95fc-b625f159ebdc	GET	undefined	/dashboard/top-customers
+20220719	23:41:05	4bc59d2d-f4c2-4fdb-b4ff-1bf9170ab667	GET	undefined	/dashboard/top-products
+20220719	23:41:51	9e4932bb-b3dd-4b23-bd55-7f72c5d9b190	GET	undefined	/dashboard/top-products

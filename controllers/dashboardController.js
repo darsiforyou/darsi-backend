@@ -1,5 +1,6 @@
 const Order = require("../models/order");
 const User = require("../models/user");
+const Product = require("../models/product");
 
 const getCounts = async (req, res) => {
   try {
@@ -145,4 +146,34 @@ const getChartData = async (req, res) => {
     res.status(500).json({ error: err });
   }
 };
-module.exports = { getCounts, getChartData };
+
+const geTopProducts = async (req, res) => {
+  try {
+    const topProducts = await Product.find()
+      .sort({ stockCountConsumed: -1 })
+      .limit(5);
+    res.json({ data: { topProducts } });
+  } catch (error) {
+    res.status(500).json({ error: err });
+  }
+};
+const geTopCustomers = async (req, res) => {
+  try {
+    const topCustomers = await Order.aggregate([
+      {
+        $lookup: {
+          from: "users", // collection name in db
+          localField: "user",
+          foreignField: "_id",
+          as: "users",
+        },
+      },
+      { $sort: { user: -1 } },
+      { $limit: 10 },
+    ]);
+    res.json({ data: { topCustomers } });
+  } catch (error) {
+    res.status(500).json({ error: err });
+  }
+};
+module.exports = { getCounts, getChartData, geTopProducts, geTopCustomers };
