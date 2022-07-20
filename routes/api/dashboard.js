@@ -10,5 +10,7 @@ const upload = multer({ storage });
 
 router.route("/counts").get(dashboard.getCounts);
 router.route("/chart-data").get(dashboard.getChartData);
+router.route("/top-products").get(dashboard.geTopProducts);
+router.route("/top-customers").get(dashboard.geTopCustomers);
 
 module.exports = router;
