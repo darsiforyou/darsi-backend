@@ -1,0 +1,12 @@
+20220720	06:02:12	7dfcc2cf-3bbe-4df2-97a9-fb823869b481	GET	undefined	/top-products
+20220720	06:02:16	09933923-252d-4c61-bb91-85e557861fc9	GET	undefined	/top-products
+20220720	06:02:18	342e5b22-40c3-4ae5-a0e8-87afbf70cbe7	GET	undefined	/top-products
+20220720	06:02:35	3a4bd685-aab3-4856-8a90-6693c21e10a1	GET	undefined	/top-products?limit=5
+20220720	06:02:36	bf5d39c6-b98a-431a-8862-d5cbfff96149	GET	undefined	/top-products?limit=5
+20220720	06:02:46	7425da19-db24-4247-965f-21cba624e2fc	GET	undefined	/dashboard/top-products?limit=5
+20220720	06:03:42	a654a740-1404-41c2-8cbf-cf86d06fd3be	GET	undefined	/dashboard/top-products?limit=5
+20220720	06:03:58	29e5b9d8-cab1-4ae5-bb40-a0a15509cb42	GET	undefined	/dashboard/top-products?limit=5
+20220720	06:04:26	0fdbd05e-4e41-441c-941d-e66a7101dee2	GET	undefined	/dashboard/top-products
+20220720	07:53:07	a155e13e-0222-4a18-ae49-bade0f747ab8	GET	undefined	/dashboard/top-products
+20220721	02:04:53	e41005f3-a9f4-42a5-99d1-9217d8cc7326	GET	undefined	/dashboard/chart-data
+20220721	02:05:06	3fc66816-fc19-43d3-94e3-a64513f2e1e6	GET	undefined	/dashboard/chart-data

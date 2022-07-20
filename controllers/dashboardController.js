@@ -94,9 +94,9 @@ const getChartData = async (req, res) => {
           averageOrderQuantity: { $avg: "$cart.totalQty" },
         },
       },
-      {
-        $sort: { _id: "ASC" },
-      },
+      // {
+      //   $sort: { _id: "ASC" },
+      // },
       // {
       //   $unwind: "$orig",
       // },
