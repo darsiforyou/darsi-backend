@@ -44,8 +44,7 @@ const getAllProducts = async (req, res) => {
 };
 const getAllProductWithoutFilter = async (req, res) => {
   try {
-    let query = getQuery(req.query);
-    const data = await Product.find(query);
+    const data = await Product.find(req.query);
     return res.json(data);
   } catch (err) {
     res.status(500).json({ error: err });
@@ -61,6 +60,7 @@ const addProduct = async (req, res) => {
       price,
       available,
       isActive,
+      isFeatured,
       stockCountPending,
       description,
     } = req.body;
@@ -73,6 +73,7 @@ const addProduct = async (req, res) => {
       price,
       available,
       isActive,
+      isFeatured,
       stockCountPending,
       description,
       productCode: faker.phone.phoneNumber("###-###"),
@@ -124,6 +125,7 @@ const updateProduct = async (req, res) => {
       vendorPrice,
       price,
       available,
+      isFeatured,
       isActive,
       stockCountPending,
       vendor,
@@ -135,6 +137,7 @@ const updateProduct = async (req, res) => {
       category,
       vendorPrice,
       price,
+      isFeatured,
       available,
       vendor,
       isActive,

@@ -28,7 +28,7 @@ const getAllCategories = async (req, res) => {
 };
 const getAllCategoriesWithoutFilter = async (req, res) => {
   try {
-    const categories = await Category.find();
+    const categories = await Category.find(req.query);
     return res.json(categories);
   } catch (err) {
     res.status(500).json({ error: err });

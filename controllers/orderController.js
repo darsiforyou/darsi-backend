@@ -42,8 +42,8 @@ const createOrder = async (req, res) => {
     let totalProfitMargin = 0;
 
     for (const x of products) {
-      totalCost = totalCost + x.price;
-      netCost = netCost + x.price;
+      totalCost = (totalCost + x.price) * x.qty;
+      netCost = (netCost + x.price) * x.qty;
       totalQty = totalQty + x.qty;
       totalProfitMargin = totalProfitMargin + x.profitMargin;
       let stockCountPending = x.stockCountPending - x.qty;
@@ -63,12 +63,18 @@ const createOrder = async (req, res) => {
     if (applied_Referral_Code) {
       userData = await User.findOne({
         user_code: applied_Referral_Code,
-      }).select("_id firstname lastname email role user_code referral_package");
+      });
     }
     if (userData) {
       _package = await Referral_Package.findById(userData.referral_package);
       discount = (totalCost * Number(_package.discount_percentage)) / 100;
       netCost = totalCost - discount;
+      // calculate commission for user
+      let commission = (totalCost * Number(_package.commission)) / 100;
+      commission = commission + userData.commission;
+      await User.findByIdAndUpdate(userData._id, {
+        commission,
+      });
     }
     let order = {
       cart: {

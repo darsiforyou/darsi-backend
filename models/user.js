@@ -38,9 +38,9 @@ const userSchema = Schema(
       type: String,
       default: "",
     },
-    referral_benefit: {
-      type: String,
-      default: "",
+    commission: {
+      type: Number,
+      default: 0,
     },
     refreshToken: {
       type: String,

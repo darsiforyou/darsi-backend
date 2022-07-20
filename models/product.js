@@ -56,6 +56,10 @@ const productSchema = Schema(
       type: Boolean,
       default: true,
     },
+    isFeatured: {
+      type: Boolean,
+      default: false,
+    },
     stockCountPending: {
       type: Number,
       required: true,
