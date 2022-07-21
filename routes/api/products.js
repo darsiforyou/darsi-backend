@@ -12,7 +12,7 @@ router
   .get(productController.getAllProducts)
   .post(
     verifyJWT,
-    verifyRoles(ROLES_LIST.Admin),
+    verifyRoles(ROLES_LIST.Admin, ROLES_LIST.Vendor),
     upload.single("file"),
     productController.addProduct
   );
@@ -25,13 +25,13 @@ router
   .get(productController.getProduct)
   .put(
     verifyJWT,
-    verifyRoles(ROLES_LIST.Admin),
+    verifyRoles(ROLES_LIST.Admin, ROLES_LIST.Vendor),
     upload.single("file"),
     productController.updateProduct
   )
   .delete(
     verifyJWT,
-    verifyRoles(ROLES_LIST.Admin),
+    verifyRoles(ROLES_LIST.Admin, ROLES_LIST.Vendor),
     productController.deleteProduct
   );
 
