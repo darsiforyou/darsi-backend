@@ -82,6 +82,41 @@ const getCounts = async (req, res) => {
     res.status(500).json({ error: err });
   }
 };
+const getCountsRef = async (req, res) => {
+  try {
+    const user = await User.countDocuments({
+      referred_by: req.params.code,
+    });
+    const totalCommission = await User.aggregate([
+      { $match: { user_code: req.params.code } },
+      {
+        $group: {
+          _id: null,
+          total: {
+            $sum: "$commission",
+          },
+        },
+      },
+    ]);
+    res.json({
+      data: { user, totalCommission },
+    });
+  } catch (err) {
+    res.status(500).json({ error: err });
+  }
+};
+const getCountsVen = async (req, res) => {
+  try {
+    const products = await Product.countDocuments({
+      vendor: req.params.id,
+    });
+    res.json({
+      data: { products },
+    });
+  } catch (err) {
+    res.status(500).json({ error: err });
+  }
+};
 const getChartData = async (req, res) => {
   try {
     const chartData = await Order.aggregate([
@@ -94,50 +129,6 @@ const getChartData = async (req, res) => {
           averageOrderQuantity: { $avg: "$cart.totalQty" },
         },
       },
-      // {
-      //   $sort: { _id: "ASC" },
-      // },
-      // {
-      //   $unwind: "$orig",
-      // },
-      // {
-      //   $project: {
-      //     createdAt: "$orig.createdAt",
-      //     netCost: "$orig.netCost",
-      //     total: "$total",
-      //   },
-      // },
-      // {
-      //   $group: {
-      //     _id: "$createdAt",
-      //     netCost: {
-      //       $sum: "$netCost",
-      //     },
-      //     orig: {
-      //       $push: "$$ROOT.total",
-      //     },
-      //   },
-      // },
-      // {
-      //   $unwind: "$orig",
-      // },
-      // {
-      //   $group: {
-      //     _id: {
-      //       _id: "$_id",
-      //       netCost: "$netCost",
-      //       total: "$orig",
-      //     },
-      //   },
-      // },
-      // {
-      //   $project: {
-      //     createdAt: "$_id._id",
-      //     netCost: "$_id.netCost",
-      //     total: "$_id.total",
-      //     _id: 0,
-      //   },
-      // },
     ]);
     res.json({
       data: { chartData },
@@ -178,4 +169,11 @@ const geTopCustomers = async (req, res) => {
     res.status(500).json({ error: err });
   }
 };
-module.exports = { getCounts, getChartData, geTopProducts, geTopCustomers };
+module.exports = {
+  getCounts,
+  getChartData,
+  geTopProducts,
+  geTopCustomers,
+  getCountsRef,
+  getCountsVen,
+};
