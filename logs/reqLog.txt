@@ -1,0 +1,13 @@
+20220730	01:19:38	5a9750d9-93bc-4824-8842-203f130fa261	GET	undefined	/users?role=Customer
+20220730	01:21:01	ba3d75b3-b014-4973-a2cf-f2613c0b123f	GET	undefined	/users?role=Customer
+20220730	01:21:37	a3450a6f-3e62-455c-980b-d7eb9632607a	GET	undefined	/users?role=Customer&search=Vendor
+20220730	01:22:57	73cf8311-36f4-452c-9429-da06872e1994	GET	undefined	/users?role=Customer&search=Vendor
+20220730	01:24:23	5ff561cf-c2b0-4ff3-9467-b826ebba223b	GET	undefined	/users?role=Customer&search=Hassan
+20220730	01:29:09	dd0e5c3a-2316-4eaf-8d7e-09fed549be34	GET	undefined	/users?role=Customer&search=Hassan
+20220730	01:29:31	262a7bd3-d79a-45a2-a452-d4e0b102fbd0	GET	undefined	/users?role=Customer&search=Hassan
+20220730	01:35:46	b6a4a3e3-974f-43a8-8227-b6b0902310dd	GET	undefined	/users?role=Customer&search=Hassan
+20220730	02:03:53	19de8d8f-cfdf-4549-ae0e-49f15262878b	GET	undefined	/users?role=Customer
+20220730	02:04:07	f72e7d21-407b-41d5-a6c9-3031c51b015d	GET	undefined	/users?role=Customer
+20220730	02:04:43	455f8aa9-9077-41c7-a5ed-03fe009c04f6	GET	undefined	/users?role=Customer
+20220730	02:05:22	080345b6-0b5f-468e-b84e-a08a39970a0f	GET	undefined	/users?role=Customer&search=Vendor
+20220730	02:05:36	804a6e59-0e4c-4798-93f1-6698bcff9b4f	GET	undefined	/users?role=Vendor&search=Vendor

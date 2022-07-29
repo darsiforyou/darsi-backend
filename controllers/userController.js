@@ -4,27 +4,25 @@ const bcrypt = require("bcrypt");
 
 const getAllUsers = async (req, res) => {
   try {
-    let { page, limit, search, mode, ...quries } = req.query;
+    let { page, limit, search, mode, ...queries } = req.query;
     search = searchInColumns(search, ["firstname", "lastname"]);
-    quries = getQuery(quries);
-    const myAggrigate = await User.aggregate([
-      { $match: { $and: [{ $or: search }, quries] } },
-      {
-        $lookup: {
-          from: "referral_package",
-          localField: "referral_package",
-          foreignField: "_id",
-          as: "referral_package",
-        },
-      },
-    ]);
+    queries = getQuery(queries);
+    let myAggregate;
+    if (!search) {
+      myAggregate = User.aggregate([{ $match: { $and: [queries] } }]);
+    } else {
+      myAggregate = User.aggregate([
+        { $match: { $and: [{ $or: search }, queries] } },
+      ]);
+    }
 
     const options = {
       page: page || 1,
       limit: limit || 10,
+      sort: { createdAt: -1 },
     };
 
-    const data = await User.aggregatePaginate(myAggrigate, options);
+    const data = await User.aggregatePaginate(myAggregate, options);
 
     return res.status(200).send({
       message: "Successfully fetch Users",
