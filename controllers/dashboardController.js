@@ -138,7 +138,7 @@ const getChartData = async (req, res) => {
   }
 };
 
-const geTopProducts = async (req, res) => {
+const getTopProducts = async (req, res) => {
   try {
     let { limit } = req.query;
 
@@ -150,21 +150,38 @@ const geTopProducts = async (req, res) => {
     res.status(500).json({ error: err });
   }
 };
-const geTopCustomers = async (req, res) => {
+const getTopCustomers = async (req, res) => {
   try {
-    const topCustomers = await Order.aggregate([
-      {
-        $lookup: {
-          from: "users", // collection name in db
-          localField: "user",
-          foreignField: "_id",
-          as: "users",
-        },
-      },
-      { $sort: { user: -1 } },
-      { $limit: 10 },
-    ]);
-    res.json({ data: { topCustomers } });
+    let { limit } = req.query;
+
+    const topUsers = await User.find({role: "Customer"})
+      .sort({ orderCount: -1 })
+      .limit(limit || 10);
+    res.json({ data: { topUsers } });
+  } catch (error) {
+    res.status(500).json({ error: err });
+  }
+};
+const getTopVendors = async (req, res) => {
+  try {
+    let { limit } = req.query;
+
+    const topUsers = await User.find({role: "Vendor"})
+      .sort({ totalVendorProductSold: -1 })
+      .limit(limit || 10);
+    res.json({ data: { topUsers } });
+  } catch (error) {
+    res.status(500).json({ error: err });
+  }
+};
+const getTopReferrers = async (req, res) => {
+  try {
+    let { limit } = req.query;
+
+    const topUsers = await User.find({role: "Referrer"})
+      .sort({ commission: -1 })
+      .limit(limit || 10);
+    res.json({ data: { topUsers } });
   } catch (error) {
     res.status(500).json({ error: err });
   }
@@ -172,8 +189,10 @@ const geTopCustomers = async (req, res) => {
 module.exports = {
   getCounts,
   getChartData,
-  geTopProducts,
-  geTopCustomers,
+  getTopProducts,
+  getTopCustomers,
   getCountsRef,
   getCountsVen,
+  getTopReferrers,
+  getTopVendors
 };
