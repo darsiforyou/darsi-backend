@@ -140,14 +140,13 @@ const getChartData = async (req, res) => {
 
 const getTopProducts = async (req, res) => {
   try {
-    let { limit } = req.query;
-
+    let { limit, vendor } = req.query;
     const topProducts = await Product.find()
       .sort({ stockCountConsumed: -1 })
       .limit(limit || 10).select("_id title");
     res.json({ data: topProducts });
   } catch (error) {
-    res.status(500).json({ error: err });
+    res.status(500).json({ error: error });
   }
 };
 const getTopCustomers = async (req, res) => {
@@ -156,10 +155,10 @@ const getTopCustomers = async (req, res) => {
 
     const topUsers = await User.find({role: "Customer"})
       .sort({ orderCount: -1 })
-      .limit(limit || 10).select("_id firstname lastname");
+      .limit(limit || 10).select("_id firstname lastname role");
     res.json({ data:topUsers });
   } catch (error) {
-    res.status(500).json({ error: err });
+    res.status(500).json({ error: error });
   }
 };
 const getTopVendors = async (req, res) => {
@@ -168,10 +167,10 @@ const getTopVendors = async (req, res) => {
 
     const topUsers = await User.find({role: "Vendor"})
       .sort({ totalVendorProductSold: -1 })
-      .limit(limit || 10).select("_id firstname lastname");
+      .limit(limit || 10).select("_id firstname lastname role");
     res.json({ data: topUsers  });
   } catch (error) {
-    res.status(500).json({ error: err });
+    res.status(500).json({ error: error });
   }
 };
 const getTopReferrers = async (req, res) => {
@@ -180,10 +179,10 @@ const getTopReferrers = async (req, res) => {
 
     const topUsers = await User.find({role: "Referrer"})
       .sort({ commission: -1 })
-      .limit(limit || 10).select("_id firstname lastname");
+      .limit(limit || 10).select("_id firstname lastname role");
     res.json({ data: topUsers  });
   } catch (error) {
-    res.status(500).json({ error: err });
+    res.status(500).json({ error: error });
   }
 };
 module.exports = {

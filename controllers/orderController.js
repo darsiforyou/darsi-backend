@@ -32,7 +32,7 @@ const getAllOrders = async (req, res) => {
 
 const createOrder = async (req, res) => {
   try {
-    const { products, user, applied_Referral_Code, address, name, email } =
+    const { products, user, applied_Referral_Code, address, name, email, phone, city, postalCode } =
       req.body;
     let refData;
     let _package;
@@ -94,6 +94,7 @@ const createOrder = async (req, res) => {
       address,
       name,
       email,
+      phone, city, postalCode
     };
     if (applied_Referral_Code) {
       order.applied_Referral_Code = applied_Referral_Code;

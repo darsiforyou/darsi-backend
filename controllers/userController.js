@@ -7,6 +7,7 @@ const getAllUsers = async (req, res) => {
     let { page, limit, search, mode, ...quries } = req.query;
     search = searchInColumns(search, ["firstname", "lastname"]);
     quries = getQuery(quries);
+    console.log(quries);
     const myAggrigate = await User.aggregate([
       { $match: { $and: [{ $or: search }, quries] } }
     ]);
