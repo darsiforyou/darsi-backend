@@ -8,15 +8,7 @@ const getAllUsers = async (req, res) => {
     search = searchInColumns(search, ["firstname", "lastname"]);
     quries = getQuery(quries);
     const myAggrigate = await User.aggregate([
-      { $match: { $and: [{ $or: search }, quries] } },
-      {
-        $lookup: {
-          from: "referral_package",
-          localField: "referral_package",
-          foreignField: "_id",
-          as: "referral_package",
-        },
-      },
+      { $match: { $and: [{ $or: search }, quries] } }
     ]);
 
     const options = {

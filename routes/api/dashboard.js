@@ -12,7 +12,7 @@ router.route("/counts").get(dashboard.getCounts);
 router.route("/chart-data").get(dashboard.getChartData);
 router.route("/top-products").get(dashboard.getTopProducts);
 router.route("/top-customers").get(dashboard.getTopCustomers);
-router.route("/top-customers").get(dashboard.getTopCustomers);
+router.route("/top-vendors").get(dashboard.getTopVendors);
 router.route("/top-referrers").get(dashboard.getTopReferrers);
 router.route("/ref_count/:code").get(dashboard.getCountsRef);
 router.route("/ven_count/:id").get(dashboard.getCountsVen);
