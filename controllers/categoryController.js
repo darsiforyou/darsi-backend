@@ -9,9 +9,9 @@ const getAllCategories = async (req, res) => {
     queries = getQuery(queries);
     let myAggregate;
     if (!search) {
-      myAggregate = User.aggregate([{ $match: { $and: [queries] } }]);
+      myAggregate = Category.aggregate([{ $match: { $and: [queries] } }]);
     } else {
-      myAggregate = User.aggregate([
+      myAggregate = Category.aggregate([
         { $match: { $and: [{ $or: search }, queries] } },
       ]);
     }

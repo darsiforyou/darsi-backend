@@ -11,9 +11,9 @@ const getAllOrders = async (req, res) => {
     queries = getQuery(queries);
     let myAggregate;
     if (!search) {
-      myAggregate = User.aggregate([{ $match: { $and: [queries] } }]);
+      myAggregate = Order.aggregate([{ $match: { $and: [queries] } }]);
     } else {
-      myAggregate = User.aggregate([
+      myAggregate = Order.aggregate([
         { $match: { $and: [{ $or: search }, queries] } },
       ]);
     }

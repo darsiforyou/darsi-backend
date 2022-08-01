@@ -24,3 +24,15 @@
 20220730	21:49:11	aeba0a58-49cd-4ff9-b89e-dcfc77ef032a	GET	undefined	/products?search=bag3
 20220730	21:49:30	f23873ac-d396-4e86-a85d-ed1383817361	GET	undefined	/products?search=bag
 20220730	21:49:42	d9df6db7-d16b-4065-86c3-aeab7252721b	GET	undefined	/products
+20220801	15:22:33	621054b6-1f60-4a6f-ab35-9d984471645b	POST	undefined	/auth
+20220801	15:23:34	4a5430eb-5522-410c-93d9-785146af3b5e	POST	undefined	/categories?search=shoes
+20220801	15:24:15	2b2fa780-5333-41d7-a462-ee29e23779bc	POST	undefined	/categories?search=shoes
+20220801	15:24:27	6a1e4977-906e-4f16-93e8-f9dba425b2fd	POST	undefined	/categories?search=shoes
+20220801	15:24:44	ce4ced8f-6a66-46f3-b454-2eafee38fa2d	GET	undefined	/categories?search=shoes
+20220801	15:25:04	267ea434-7484-4adb-a0eb-e044febec568	GET	undefined	/categories?search=shoes
+20220801	15:25:28	518c578f-6e6a-4af6-913b-f714b38a4242	GET	undefined	/categories?search=shoes
+20220801	15:26:59	dc9f1423-1d4c-480e-9bb5-60a2bfe51317	GET	undefined	/categories?search=shoes
+20220801	15:28:05	aa0b00e9-2be0-4c51-a328-a4cd6600e06c	GET	undefined	/referre?isActive=true
+20220801	15:28:15	6829d88d-a16a-4c58-84cf-a2156027f234	GET	undefined	/categories?isActive=true
+20220801	15:28:41	32f0949d-2944-4e20-9ca2-64a746fa315e	GET	undefined	/order?isActive=true
+20220801	15:29:03	9d717f0b-106c-4de0-939a-90494f4af589	GET	undefined	/orders?isActive=true

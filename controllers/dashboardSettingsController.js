@@ -9,9 +9,9 @@ const getAllDS = async (req, res) => {
     queries = getQuery(queries);
     let myAggregate;
     if (!search) {
-      myAggregate = User.aggregate([{ $match: { $and: [queries] } }]);
+      myAggregate = DS.aggregate([{ $match: { $and: [queries] } }]);
     } else {
-      myAggregate = User.aggregate([
+      myAggregate = DS.aggregate([
         { $match: { $and: [{ $or: search }, queries] } },
       ]);
     }

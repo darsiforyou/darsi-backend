@@ -9,9 +9,11 @@ const getAllPackages = async (req, res) => {
     queries = getQuery(queries);
     let myAggregate;
     if (!search) {
-      myAggregate = User.aggregate([{ $match: { $and: [queries] } }]);
+      myAggregate = Referral_Package.aggregate([
+        { $match: { $and: [queries] } },
+      ]);
     } else {
-      myAggregate = User.aggregate([
+      myAggregate = Referral_Package.aggregate([
         { $match: { $and: [{ $or: search }, queries] } },
       ]);
     }
