@@ -4,19 +4,23 @@ const imagekit = require("../config/imagekit");
 
 const getAllPackages = async (req, res) => {
   try {
-    let { page, limit, search, ...quries } = req.query;
+    let { page, limit, search, ...queries } = req.query;
     search = searchInColumns(search, ["title", "description"]);
-    quries = getQuery(quries);
-    const myAggrigate = await Referral_Package.aggregate([
-      { $match: { $and: [{ $or: search }, quries] } },
-    ]);
-
+    queries = getQuery(queries);
+    let myAggregate;
+    if (!search) {
+      myAggregate = User.aggregate([{ $match: { $and: [queries] } }]);
+    } else {
+      myAggregate = User.aggregate([
+        { $match: { $and: [{ $or: search }, queries] } },
+      ]);
+    }
     const options = {
       page: page || 1,
       limit: limit || 10,
     };
 
-    const data = await Referral_Package.aggregatePaginate(myAggrigate, options);
+    const data = await Referral_Package.aggregatePaginate(myAggregate, options);
 
     return res.status(200).send({
       message: "Successfully fetch Packages",

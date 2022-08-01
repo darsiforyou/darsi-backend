@@ -4,19 +4,24 @@ const imagekit = require("../config/imagekit");
 
 const getAllCategories = async (req, res) => {
   try {
-    let { page, limit, search, ...quries } = req.query;
+    let { page, limit, search, ...queries } = req.query;
     search = searchInColumns(search, ["title"]);
-    quries = getQuery(quries);
-    const myAggrigate = await Category.aggregate([
-      { $match: { $and: [{ $or: search }, quries] } },
-    ]);
+    queries = getQuery(queries);
+    let myAggregate;
+    if (!search) {
+      myAggregate = User.aggregate([{ $match: { $and: [queries] } }]);
+    } else {
+      myAggregate = User.aggregate([
+        { $match: { $and: [{ $or: search }, queries] } },
+      ]);
+    }
 
     const options = {
       page: page || 1,
       limit: limit || 10,
     };
 
-    const data = await Category.aggregatePaginate(myAggrigate, options);
+    const data = await Category.aggregatePaginate(myAggregate, options);
 
     return res.status(200).send({
       message: "Successfully fetch Categories",

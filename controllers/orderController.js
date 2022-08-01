@@ -6,19 +6,24 @@ const Product = require("../models/product");
 
 const getAllOrders = async (req, res) => {
   try {
-    let { page, limit, search, ...quries } = req.query;
+    let { page, limit, search, ...queries } = req.query;
     search = searchInColumns(search, ["user"]);
-    quries = getQuery(quries);
-    const myAggrigate = await Order.aggregate([
-      { $match: { $and: [{ $or: search }, quries] } },
-    ]);
+    queries = getQuery(queries);
+    let myAggregate;
+    if (!search) {
+      myAggregate = User.aggregate([{ $match: { $and: [queries] } }]);
+    } else {
+      myAggregate = User.aggregate([
+        { $match: { $and: [{ $or: search }, queries] } },
+      ]);
+    }
 
     const options = {
       page: page || 1,
       limit: limit || 10,
     };
 
-    const data = await Order.aggregatePaginate(myAggrigate, options);
+    const data = await Order.aggregatePaginate(myAggregate, options);
 
     return res.status(200).send({
       message: "Successfully fetch Orders",

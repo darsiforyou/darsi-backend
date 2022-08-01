@@ -4,19 +4,24 @@ const imagekit = require("../config/imagekit");
 
 const getAllDS = async (req, res) => {
   try {
-    let { page, limit, search, ...quries } = req.query;
+    let { page, limit, search, ...queries } = req.query;
     search = searchInColumns(search, ["title", "description"]);
-    quries = getQuery(quries);
-    const myAggrigate = await DS.aggregate([
-      { $match: { $and: [{ $or: search }, quries] } },
-    ]);
+    queries = getQuery(queries);
+    let myAggregate;
+    if (!search) {
+      myAggregate = User.aggregate([{ $match: { $and: [queries] } }]);
+    } else {
+      myAggregate = User.aggregate([
+        { $match: { $and: [{ $or: search }, queries] } },
+      ]);
+    }
 
     const options = {
       page: page || 1,
       limit: limit || 10,
     };
 
-    const data = await DS.aggregatePaginate(myAggrigate, options);
+    const data = await DS.aggregatePaginate(myAggregate, options);
 
     return res.status(200).send({
       message: "Successfully fetch DS",

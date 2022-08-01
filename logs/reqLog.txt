@@ -11,3 +11,16 @@
 20220730	02:04:43	455f8aa9-9077-41c7-a5ed-03fe009c04f6	GET	undefined	/users?role=Customer
 20220730	02:05:22	080345b6-0b5f-468e-b84e-a08a39970a0f	GET	undefined	/users?role=Customer&search=Vendor
 20220730	02:05:36	804a6e59-0e4c-4798-93f1-6698bcff9b4f	GET	undefined	/users?role=Vendor&search=Vendor
+20220730	21:27:21	0ab6196f-c662-4882-9c6e-2920b646596e	POST	undefined	/auth
+20220730	21:27:49	59e77d89-488e-4942-966b-dd605dfb04db	POST	undefined	/auth
+20220730	21:28:57	38b60f7f-4ec0-4ede-b416-3d7babdf826a	GET	undefined	/products?isFeatured=true
+20220730	21:32:31	874de007-7045-40f0-8382-280ed0f0d41d	GET	undefined	/products?isFeatured=true
+20220730	21:33:58	f6ffb3e5-bad1-45a9-a1f0-d000a1e8401b	GET	undefined	/products?isFeatured=true
+20220730	21:34:30	cbcdbc97-e71d-4eba-b4fb-7406633bf5b8	GET	undefined	/products?isFeatured=true
+20220730	21:46:32	e4db134c-fe3f-4d0f-bc53-0d49516863d7	GET	undefined	/products?isFeatured=true&title=bag
+20220730	21:46:46	a34b5f2c-c65c-4060-b2a8-3cf1bccc6259	GET	undefined	/products?isFeatured=true&title=bag3
+20220730	21:47:08	6f3aa723-9c9b-4dd4-bac3-57ceed8e2728	GET	undefined	/products?title=bag3
+20220730	21:48:52	7387a582-a373-4155-9d96-d54f1874ebcb	GET	undefined	/products?title=bag3
+20220730	21:49:11	aeba0a58-49cd-4ff9-b89e-dcfc77ef032a	GET	undefined	/products?search=bag3
+20220730	21:49:30	f23873ac-d396-4e86-a85d-ed1383817361	GET	undefined	/products?search=bag
+20220730	21:49:42	d9df6db7-d16b-4065-86c3-aeab7252721b	GET	undefined	/products

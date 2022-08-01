@@ -4,35 +4,58 @@ const imagekit = require("../config/imagekit");
 const { searchInColumns, getQuery } = require("../utils");
 const getAllProducts = async (req, res) => {
   try {
-    let { page, limit, search, ...quries } = req.query;
+    let { page, limit, search, ...queries } = req.query;
     search = searchInColumns(search, ["title", "description"]);
-    quries = getQuery(quries);
-    const myAggrigate = await Product.aggregate([
-      { $match: { $and: [{ $or: search }, quries] } },
-      {
-        $lookup: {
-          from: "categories",
-          localField: "category",
-          foreignField: "_id",
-          as: "category",
+    // queries = getQuery(queries);
+    let myAggregate;
+    if (!search) {
+      myAggregate = Product.aggregate([
+        { $match: { $and: [queries] } },
+        {
+          $lookup: {
+            from: "categories",
+            localField: "category",
+            foreignField: "_id",
+            as: "category",
+          },
         },
-      },
-      {
-        $lookup: {
-          from: "users",
-          localField: "vendor",
-          foreignField: "_id",
-          as: "vendor",
+        {
+          $lookup: {
+            from: "users",
+            localField: "vendor",
+            foreignField: "_id",
+            as: "vendor",
+          },
         },
-      },
-    ]);
+      ]);
+    } else {
+      myAggregate = Product.aggregate([
+        { $match: { $and: [{ $or: search }, queries] } },
+        {
+          $lookup: {
+            from: "categories",
+            localField: "category",
+            foreignField: "_id",
+            as: "category",
+          },
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "vendor",
+            foreignField: "_id",
+            as: "vendor",
+          },
+        },
+      ]);
+    }
 
     const options = {
       page: page || 1,
       limit: limit || 10,
     };
 
-    const data = await Product.aggregatePaginate(myAggrigate, options);
+    const data = await Product.aggregatePaginate(myAggregate, options);
 
     return res.status(200).send({
       message: "Successfully fetch products",
