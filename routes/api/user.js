@@ -7,7 +7,11 @@ const ROLES_LIST = require("../../config/roles_list");
 
 router
   .route("/")
-  .get(verifyJWT, verifyRoles(ROLES_LIST.Admin), userController.getAllUsers);
+  .get(
+    verifyJWT,
+    verifyRoles(ROLES_LIST.Admin, ROLES_LIST.Referral),
+    userController.getAllUsers
+  );
 
 router
   .route("/without_filter")

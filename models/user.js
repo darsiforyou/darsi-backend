@@ -42,6 +42,18 @@ const userSchema = Schema(
       type: Number,
       default: 0,
     },
+    orderCount: {
+      type: Number,
+      default: 0,
+    },
+    totalSale: {
+      type: Number,
+      default: 0,
+    },
+    totalVendorProductSold: {
+      type: Number,
+      default: 0,
+    },
     refreshToken: {
       type: String,
     },

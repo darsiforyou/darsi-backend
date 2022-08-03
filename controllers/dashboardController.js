@@ -82,6 +82,41 @@ const getCounts = async (req, res) => {
     res.status(500).json({ error: err });
   }
 };
+const getCountsRef = async (req, res) => {
+  try {
+    const user = await User.countDocuments({
+      referred_by: req.params.code,
+    });
+    const totalCommission = await User.aggregate([
+      { $match: { user_code: req.params.code } },
+      {
+        $group: {
+          _id: null,
+          total: {
+            $sum: "$commission",
+          },
+        },
+      },
+    ]);
+    res.json({
+      data: { user, totalCommission },
+    });
+  } catch (err) {
+    res.status(500).json({ error: err });
+  }
+};
+const getCountsVen = async (req, res) => {
+  try {
+    const products = await Product.countDocuments({
+      vendor: req.params.id,
+    });
+    res.json({
+      data: { products },
+    });
+  } catch (err) {
+    res.status(500).json({ error: err });
+  }
+};
 const getChartData = async (req, res) => {
   try {
     const chartData = await Order.aggregate([
@@ -94,50 +129,6 @@ const getChartData = async (req, res) => {
           averageOrderQuantity: { $avg: "$cart.totalQty" },
         },
       },
-      {
-        $sort: { _id: "ASC" },
-      },
-      // {
-      //   $unwind: "$orig",
-      // },
-      // {
-      //   $project: {
-      //     createdAt: "$orig.createdAt",
-      //     netCost: "$orig.netCost",
-      //     total: "$total",
-      //   },
-      // },
-      // {
-      //   $group: {
-      //     _id: "$createdAt",
-      //     netCost: {
-      //       $sum: "$netCost",
-      //     },
-      //     orig: {
-      //       $push: "$$ROOT.total",
-      //     },
-      //   },
-      // },
-      // {
-      //   $unwind: "$orig",
-      // },
-      // {
-      //   $group: {
-      //     _id: {
-      //       _id: "$_id",
-      //       netCost: "$netCost",
-      //       total: "$orig",
-      //     },
-      //   },
-      // },
-      // {
-      //   $project: {
-      //     createdAt: "$_id._id",
-      //     netCost: "$_id.netCost",
-      //     total: "$_id.total",
-      //     _id: 0,
-      //   },
-      // },
     ]);
     res.json({
       data: { chartData },
@@ -147,35 +138,60 @@ const getChartData = async (req, res) => {
   }
 };
 
-const geTopProducts = async (req, res) => {
+const getTopProducts = async (req, res) => {
+  try {
+    let { limit, vendor } = req.query;
+    const topProducts = await Product.find()
+      .sort({ stockCountConsumed: -1 })
+      .limit(limit || 10).select("_id title");
+    res.json({ data: topProducts });
+  } catch (error) {
+    res.status(500).json({ error: error });
+  }
+};
+const getTopCustomers = async (req, res) => {
   try {
     let { limit } = req.query;
 
-    const topProducts = await Product.find()
-      .sort({ stockCountConsumed: -1 })
-      .limit(limit || 10);
-    res.json({ data: { topProducts } });
+    const topUsers = await User.find({role: "Customer"})
+      .sort({ orderCount: -1 })
+      .limit(limit || 10).select("_id firstname lastname role");
+    res.json({ data:topUsers });
   } catch (error) {
-    res.status(500).json({ error: err });
+    res.status(500).json({ error: error });
   }
 };
-const geTopCustomers = async (req, res) => {
+const getTopVendors = async (req, res) => {
   try {
-    const topCustomers = await Order.aggregate([
-      {
-        $lookup: {
-          from: "users", // collection name in db
-          localField: "user",
-          foreignField: "_id",
-          as: "users",
-        },
-      },
-      { $sort: { user: -1 } },
-      { $limit: 10 },
-    ]);
-    res.json({ data: { topCustomers } });
+    let { limit } = req.query;
+
+    const topUsers = await User.find({role: "Vendor"})
+      .sort({ totalVendorProductSold: -1 })
+      .limit(limit || 10).select("_id firstname lastname role");
+    res.json({ data: topUsers  });
   } catch (error) {
-    res.status(500).json({ error: err });
+    res.status(500).json({ error: error });
   }
 };
-module.exports = { getCounts, getChartData, geTopProducts, geTopCustomers };
+const getTopReferrers = async (req, res) => {
+  try {
+    let { limit } = req.query;
+
+    const topUsers = await User.find({role: "Referrer"})
+      .sort({ commission: -1 })
+      .limit(limit || 10).select("_id firstname lastname role");
+    res.json({ data: topUsers  });
+  } catch (error) {
+    res.status(500).json({ error: error });
+  }
+};
+module.exports = {
+  getCounts,
+  getChartData,
+  getTopProducts,
+  getTopCustomers,
+  getCountsRef,
+  getCountsVen,
+  getTopReferrers,
+  getTopVendors
+};

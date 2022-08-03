@@ -1,6 +1,6 @@
 const ROLES_LIST = {
   Admin: "Admin",
-  Referral: "Referral",
+  Referral: "Referrer",
   Vendor: "Vendor",
 };
 

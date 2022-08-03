@@ -21,6 +21,7 @@ const getAllOrders = async (req, res) => {
     const options = {
       page: page || 1,
       limit: limit || 10,
+      sort: { createdAt: -1 }
     };
 
     const data = await Order.aggregatePaginate(myAggregate, options);
@@ -36,9 +37,9 @@ const getAllOrders = async (req, res) => {
 
 const createOrder = async (req, res) => {
   try {
-    const { products, user, applied_Referral_Code, address, name, email } =
+    const { products, user, applied_Referral_Code, address, name, email, phone, city, postalCode } =
       req.body;
-    let userData;
+    let refData;
     let _package;
     let totalCost = 0;
     let discount = 0;
@@ -55,6 +56,11 @@ const createOrder = async (req, res) => {
       let stockCountConsumed = x.stockCountConsumed + x.qty;
       let totalPrice = x.qty * x.price;
       let totalSale = x.totalSale + totalPrice;
+      // update vendor sold product quantity
+      const vendorData = await User.findById(x.vendor);
+      await User.findByIdAndUpdate(x.vendor, {
+        totalVendorProductSold: vendorData.totalVendorProductSold+totalQty
+      });
       // update product total sale
       await Product.updateOne(
         { _id: x.productId },
@@ -66,18 +72,18 @@ const createOrder = async (req, res) => {
       );
     }
     if (applied_Referral_Code) {
-      userData = await User.findOne({
+      refData = await User.findOne({
         user_code: applied_Referral_Code,
       });
     }
-    if (userData) {
-      _package = await Referral_Package.findById(userData.referral_package);
+    if (refData) {
+      _package = await Referral_Package.findById(refData.referral_package);
       discount = (totalCost * Number(_package.discount_percentage)) / 100;
       netCost = totalCost - discount;
       // calculate commission for user
       let commission = (totalCost * Number(_package.commission)) / 100;
-      commission = commission + userData.commission;
-      await User.findByIdAndUpdate(userData._id, {
+      commission = commission + refData.commission;
+      await User.findByIdAndUpdate(refData._id, {
         commission,
       });
     }
@@ -93,12 +99,19 @@ const createOrder = async (req, res) => {
       address,
       name,
       email,
+      phone, city, postalCode
     };
     if (applied_Referral_Code) {
       order.applied_Referral_Code = applied_Referral_Code;
     }
+
     if (user) {
       order.user = user;
+      const userData = await User.findById(user);
+      await User.findByIdAndUpdate(user, {
+        orderCount: userData.orderCount+1,
+        totalSale: userData.totalSale+netCost
+      });
     }
     let data = await Order.create(order);
     res.status(200).json({
