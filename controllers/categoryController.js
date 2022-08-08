@@ -36,12 +36,13 @@ const getAllCategoriesWithoutFilter = async (req, res) => {
 };
 const addCategory = async (req, res) => {
   try {
-    const { title, isActive, isFeatured } = req.body;
+    const { title, isActive, isFeatured, rank } = req.body;
     const file = req.file;
     let data = await Category.create({
       title,
       isActive,
       isFeatured,
+      rank,
     });
     if (file && data._id) {
       let img = await imagekit.upload({
@@ -82,12 +83,13 @@ const deleteCategory = async (req, res) => {
 };
 const updateCategory = async (req, res) => {
   try {
-    const { title, isActive, isFeatured } = req.body;
+    const { title, isActive, isFeatured, rank } = req.body;
     const file = req.file;
     let data = await Category.findByIdAndUpdate(req.params.id, {
       title,
       isActive,
       isFeatured,
+      rank,
     });
     if (file !== undefined) {
       const { imageId } = data;

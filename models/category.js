@@ -22,6 +22,13 @@ const categorySchema = Schema(
     imageId: {
       type: String,
     },
+    /// if rank is higher the category products will show on homepage
+    // value enter in number. 1,2,3,.... 1 rank is higher thn 2 rank
+    rank: {
+      type: String,
+      default: '0',
+    },
+
   },
   { timestamps: true }
 );
