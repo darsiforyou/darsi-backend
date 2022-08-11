@@ -4,9 +4,9 @@ const imagekit = require("../config/imagekit");
 const { searchInColumns, getQuery } = require("../utils");
 const getAllProducts = async (req, res) => {
   try {
-    let { page, limit, search, ...queries } = req.query;
+    let { page, limit, search, ...params } = req.query;
     search = searchInColumns(search, ["title", "description"]);
-    // queries = getQuery(queries);
+    const queries = getQuery(params);
     let myAggregate;
     if (!search) {
       myAggregate = Product.aggregate([
