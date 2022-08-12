@@ -6,7 +6,7 @@ const getAllProducts = async (req, res) => {
   try {
     let { page, limit, search, ...queries } = req.query;
     search = searchInColumns(search, ["title", "description"]);
-    // queries = getQuery(queries);
+    queries = getQuery(queries);
     let myAggregate;
     if (!search) {
       myAggregate = Product.aggregate([
