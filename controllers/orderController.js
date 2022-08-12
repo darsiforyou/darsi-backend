@@ -11,10 +11,27 @@ const getAllOrders = async (req, res) => {
     queries = getQuery(queries);
     let myAggregate;
     if (!search) {
-      myAggregate = Order.aggregate([{ $match: { $and: [queries] } }]);
+      myAggregate = Order.aggregate([
+        { $match: { $and: [queries] } }, 
+        {
+        $lookup: {
+          from: "users",
+          localField: "user",
+          foreignField: "_id",
+          as: "users",
+        },
+      },]);
     } else {
       myAggregate = Order.aggregate([
         { $match: { $and: [{ $or: search }, queries] } },
+        {
+          $lookup: {
+            from: "users",
+            localField: "user",
+            foreignField: "_id",
+            as: "users",
+          },
+        },
       ]);
     }
 
@@ -59,7 +76,7 @@ const createOrder = async (req, res) => {
       // update vendor sold product quantity
       const vendorData = await User.findById(x.vendor);
       await User.findByIdAndUpdate(x.vendor, {
-        totalVendorProductSold: vendorData.totalVendorProductSold+totalQty
+        totalVendorProductSold: vendorData.totalVendorProductSold + totalQty
       });
       // update product total sale
       await Product.updateOne(
@@ -109,8 +126,8 @@ const createOrder = async (req, res) => {
       order.user = user;
       const userData = await User.findById(user);
       await User.findByIdAndUpdate(user, {
-        orderCount: userData.orderCount+1,
-        totalSale: userData.totalSale+netCost
+        orderCount: userData.orderCount + 1,
+        totalSale: userData.totalSale + netCost
       });
     }
     let data = await Order.create(order);

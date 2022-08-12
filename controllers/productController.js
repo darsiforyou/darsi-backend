@@ -4,7 +4,7 @@ const imagekit = require("../config/imagekit");
 const { searchInColumns, getQuery } = require("../utils");
 const getAllProducts = async (req, res) => {
   try {
-    let { page, limit, search, ...params } = req.query;
+    let { page, limit, search, ...queries } = req.query;
     search = searchInColumns(search, ["title", "description"]);
     queries = getQuery(queries);
     let myAggregate;
@@ -16,7 +16,7 @@ const getAllProducts = async (req, res) => {
             from: "categories",
             localField: "category",
             foreignField: "_id",
-            as: "category",
+            as: "categories",
           },
         },
         {
@@ -24,7 +24,7 @@ const getAllProducts = async (req, res) => {
             from: "users",
             localField: "vendor",
             foreignField: "_id",
-            as: "vendor",
+            as: "vendors",
           },
         },
       ]);
@@ -62,6 +62,7 @@ const getAllProducts = async (req, res) => {
       data: data,
     });
   } catch (err) {
+    console.log(err);
     res.status(500).json({ error: err });
   }
 };
