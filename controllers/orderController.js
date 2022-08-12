@@ -6,12 +6,34 @@ const Product = require("../models/product");
 
 const getAllOrders = async (req, res) => {
   try {
-    let { page, limit, search, ...quries } = req.query;
+    let { page, limit, search, ...queries } = req.query;
     search = searchInColumns(search, ["user"]);
-    quries = getQuery(quries);
-    const myAggrigate = await Order.aggregate([
-      { $match: { $and: [{ $or: search }, quries] } },
-    ]);
+    queries = getQuery(queries);
+    let myAggregate;
+    if (!search) {
+      myAggregate = Order.aggregate([
+        { $match: { $and: [queries] } }, 
+        {
+        $lookup: {
+          from: "users",
+          localField: "user",
+          foreignField: "_id",
+          as: "users",
+        },
+      },]);
+    } else {
+      myAggregate = Order.aggregate([
+        { $match: { $and: [{ $or: search }, queries] } },
+        {
+          $lookup: {
+            from: "users",
+            localField: "user",
+            foreignField: "_id",
+            as: "users",
+          },
+        },
+      ]);
+    }
 
     const options = {
       page: page || 1,
@@ -19,7 +41,7 @@ const getAllOrders = async (req, res) => {
       sort: { createdAt: -1 }
     };
 
-    const data = await Order.aggregatePaginate(myAggrigate, options);
+    const data = await Order.aggregatePaginate(myAggregate, options);
 
     return res.status(200).send({
       message: "Successfully fetch Orders",
@@ -54,7 +76,7 @@ const createOrder = async (req, res) => {
       // update vendor sold product quantity
       const vendorData = await User.findById(x.vendor);
       await User.findByIdAndUpdate(x.vendor, {
-        totalVendorProductSold: vendorData.totalVendorProductSold+totalQty
+        totalVendorProductSold: vendorData.totalVendorProductSold + totalQty
       });
       // update product total sale
       await Product.updateOne(
@@ -104,8 +126,8 @@ const createOrder = async (req, res) => {
       order.user = user;
       const userData = await User.findById(user);
       await User.findByIdAndUpdate(user, {
-        orderCount: userData.orderCount+1,
-        totalSale: userData.totalSale+netCost
+        orderCount: userData.orderCount + 1,
+        totalSale: userData.totalSale + netCost
       });
     }
     let data = await Order.create(order);
