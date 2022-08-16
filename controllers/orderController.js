@@ -59,6 +59,7 @@ const createOrder = async (req, res) => {
     let refData;
     let _package;
     let totalCost = 0;
+    let totalVendorCost = 0;
     let discount = 0;
     let totalQty = 0;
     let netCost = 0;
@@ -66,6 +67,7 @@ const createOrder = async (req, res) => {
 
     for (const x of products) {
       totalCost = (totalCost + x.price) * x.qty;
+      totalVendorCost = (totalVendorCost + x.vendorPrice) * x.qty;
       netCost = (netCost + x.price) * x.qty;
       totalQty = totalQty + x.qty;
       totalProfitMargin = totalProfitMargin + x.profitMargin;
@@ -95,10 +97,10 @@ const createOrder = async (req, res) => {
     }
     if (refData) {
       _package = await Referral_Package.findById(refData.referral_package);
-      discount = (totalCost * Number(_package.discount_percentage)) / 100;
+      discount = (totalVendorCost * Number(_package.discount_percentage)) / 100;
       netCost = totalCost - discount;
       // calculate commission for user
-      let commission = (totalCost * Number(_package.commission)) / 100;
+      let commission = (totalVendorCost * Number(_package.commission)) / 100;
       commission = commission + refData.commission;
       await User.findByIdAndUpdate(refData._id, {
         commission,
