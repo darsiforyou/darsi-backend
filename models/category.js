@@ -26,7 +26,7 @@ const categorySchema = Schema(
     // value enter in number. 1,2,3,.... 1 rank is higher thn 2 rank
     rank: {
       type: Number,
-      default: 0,
+      default: 1,
     },
 
   },
