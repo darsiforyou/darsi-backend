@@ -7,7 +7,7 @@ const orderController = require("../../controllers/orderController");
 
 router
   .route("/")
-  .get(verifyJWT, verifyRoles(ROLES_LIST.Admin), orderController.getAllOrders)
+  .get(orderController.getAllOrders)
   .post(orderController.createOrder);
 
 router
