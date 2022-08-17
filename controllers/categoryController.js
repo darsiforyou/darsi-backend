@@ -33,7 +33,7 @@ const getAllCategories = async (req, res) => {
 };
 const getAllCategoriesWithoutFilter = async (req, res) => {
   try {
-    const categories = await Category.find(req.query);
+    const categories = await Category.find(req.query).sort({ rank: -1 });
     return res.json(categories);
   } catch (err) {
     res.status(500).json({ error: err });

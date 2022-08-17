@@ -301,3 +301,7 @@
 20220817	01:02:22	0d4ed26e-7ac0-4ea0-bed0-5ed024dfa5e0	OPTIONS	http://127.0.0.1:5173	/packages/without_filter
 20220817	01:02:22	e6ef7e4d-98fd-4911-8578-02c8a3339893	GET	http://127.0.0.1:5173	/packages/without_filter
 20220817	01:02:23	9f03cd59-b662-4c62-9305-a0d0b934ae2f	GET	http://127.0.0.1:5173	/packages/without_filter
+20220817	14:54:18	fa47aa2d-7d33-4e0c-8676-52eb0cffbe63	GET	undefined	/
+20220817	14:54:18	26c40754-961a-42db-90f9-210ceda544dd	GET	undefined	/css/style.css
+20220817	14:54:18	9d268811-fa52-48c6-ae93-ca741d2a301a	GET	undefined	/favicon.ico
+20220817	14:54:25	38565b9f-323d-4242-9b8d-eb34e848d005	GET	undefined	/categories/without_filter?isFeatured=true&isActive=true
