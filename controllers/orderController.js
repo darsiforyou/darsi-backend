@@ -97,7 +97,7 @@ const createOrder = async (req, res) => {
     }
     if (refData) {
       _package = await Referral_Package.findById(refData.referral_package);
-      discount = (totalVendorCost * Number(_package.discount_percentage)) / 100;
+      discount = calculateDiscount(totalCost,totalVendorCost,_package.discount_percentage)
       netCost = totalCost - discount;
       // calculate commission for user
       let commission = (totalVendorCost * Number(_package.commission)) / 100;
@@ -185,3 +185,12 @@ module.exports = {
   deleteOrder,
   createOrder,
 };
+
+const calculateDiscount = (total, vendorTotal, discount_percentage) => {
+  total = Number(total)
+  vendorTotal = Number(vendorTotal)
+  discount_percentage = Number(discount_percentage | 0)
+  let profit = total-vendorTotal
+  let netAmount = profit*discount_percentage/100
+  return netAmount
+}
