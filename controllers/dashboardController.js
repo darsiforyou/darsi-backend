@@ -84,22 +84,61 @@ const getCounts = async (req, res) => {
 };
 const getCountsRef = async (req, res) => {
   try {
-    const user = await User.countDocuments({
-      referred_by: req.params.code,
+    const ordersPending = await Order.countDocuments({
+      orderStatus: "Pending",
+      applied_Referral_Code: req.params.code
     });
-    const totalCommission = await User.aggregate([
-      { $match: { user_code: req.params.code } },
-      {
-        $group: {
-          _id: null,
-          total: {
-            $sum: "$commission",
-          },
-        },
-      },
-    ]);
+    const ordersAccepted = await Order.countDocuments({
+      orderStatus: "Order Accepted",
+      applied_Referral_Code: req.params.code
+
+    });
+    const ordersProcessing = await Order.countDocuments({
+      orderStatus: "Order Processing",
+      applied_Referral_Code: req.params.code
+
+    });
+    const ordersOutForDelivery = await Order.countDocuments({
+      orderStatus: "Out For Delivery",
+      applied_Referral_Code: req.params.code
+
+    });
+    const ordersCompleted = await Order.countDocuments({
+      orderStatus: "Delivered",
+      applied_Referral_Code: req.params.code
+
+    });
+    const ordersCancelled = await Order.countDocuments({
+      orderStatus: "Cancelled",
+      applied_Referral_Code: req.params.code
+
+    });
+    const userCustomer = await User.countDocuments({
+      role: "Customer",
+      referred_by: req.params.code
+
+    });
+    const userVendor = await User.countDocuments({
+      role: "Vendor",
+      referred_by: req.params.code
+
+    });
+    const userReferrer = await User.countDocuments({
+      role: "Referrer",
+      referred_by: req.params.code
+
+    });
     res.json({
-      data: { user, totalCommission },
+      data: {orders: {
+        ordersCompleted,
+        ordersPending,
+        ordersCancelled,
+        ordersAccepted,
+        ordersOutForDelivery,
+        ordersProcessing,
+      },
+      // revenues: { totalIncome, totalIncomePending, totalIncomeCancelled },
+      users: { userCustomer, userVendor, userReferrer },},
     });
   } catch (err) {
     res.status(500).json({ error: err });
