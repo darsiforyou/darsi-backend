@@ -86,59 +86,53 @@ const getCountsRef = async (req, res) => {
   try {
     const ordersPending = await Order.countDocuments({
       orderStatus: "Pending",
-      applied_Referral_Code: req.params.code
+      applied_Referral_Code: req.params.code,
     });
     const ordersAccepted = await Order.countDocuments({
       orderStatus: "Order Accepted",
-      applied_Referral_Code: req.params.code
-
+      applied_Referral_Code: req.params.code,
     });
     const ordersProcessing = await Order.countDocuments({
       orderStatus: "Order Processing",
-      applied_Referral_Code: req.params.code
-
+      applied_Referral_Code: req.params.code,
     });
     const ordersOutForDelivery = await Order.countDocuments({
       orderStatus: "Out For Delivery",
-      applied_Referral_Code: req.params.code
-
+      applied_Referral_Code: req.params.code,
     });
     const ordersCompleted = await Order.countDocuments({
       orderStatus: "Delivered",
-      applied_Referral_Code: req.params.code
-
+      applied_Referral_Code: req.params.code,
     });
     const ordersCancelled = await Order.countDocuments({
       orderStatus: "Cancelled",
-      applied_Referral_Code: req.params.code
-
+      applied_Referral_Code: req.params.code,
     });
     const userCustomer = await User.countDocuments({
       role: "Customer",
-      referred_by: req.params.code
-
+      referred_by: req.params.code,
     });
     const userVendor = await User.countDocuments({
       role: "Vendor",
-      referred_by: req.params.code
-
+      referred_by: req.params.code,
     });
     const userReferrer = await User.countDocuments({
       role: "Referrer",
-      referred_by: req.params.code
-
+      referred_by: req.params.code,
     });
     res.json({
-      data: {orders: {
-        ordersCompleted,
-        ordersPending,
-        ordersCancelled,
-        ordersAccepted,
-        ordersOutForDelivery,
-        ordersProcessing,
+      data: {
+        orders: {
+          ordersCompleted,
+          ordersPending,
+          ordersCancelled,
+          ordersAccepted,
+          ordersOutForDelivery,
+          ordersProcessing,
+        },
+        // revenues: { totalIncome, totalIncomePending, totalIncomeCancelled },
+        users: { userCustomer, userVendor, userReferrer },
       },
-      // revenues: { totalIncome, totalIncomePending, totalIncomeCancelled },
-      users: { userCustomer, userVendor, userReferrer },},
     });
   } catch (err) {
     res.status(500).json({ error: err });
@@ -158,7 +152,19 @@ const getCountsVen = async (req, res) => {
 };
 const getChartData = async (req, res) => {
   try {
+    let { startDate, endDate } = req.query;
+    let  todayDate = endDate ?? new Date().toISOString().slice(0, 10);
+    let dateObj = new Date()
+    let priorDate =  startDate ?? new Date(new Date().setDate(dateObj.getDate() - 30)).toISOString().slice(0, 10);
+    
+    
+
     const chartData = await Order.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: new Date(priorDate), $lt: new Date(todayDate) },
+        },
+      },
       {
         $group: {
           _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
@@ -168,6 +174,7 @@ const getChartData = async (req, res) => {
           averageOrderQuantity: { $avg: "$cart.totalQty" },
         },
       },
+      { $sort: { _id: 1 } },
     ]);
     res.json({
       data: { chartData },
@@ -182,7 +189,8 @@ const getTopProducts = async (req, res) => {
     let { limit, vendor } = req.query;
     const topProducts = await Product.find()
       .sort({ stockCountConsumed: -1 })
-      .limit(limit || 10).select("_id title");
+      .limit(limit || 10)
+      .select("_id title");
     res.json({ data: topProducts });
   } catch (error) {
     res.status(500).json({ error: error });
@@ -192,10 +200,11 @@ const getTopCustomers = async (req, res) => {
   try {
     let { limit } = req.query;
 
-    const topUsers = await User.find({role: "Customer"})
+    const topUsers = await User.find({ role: "Customer" })
       .sort({ orderCount: -1 })
-      .limit(limit || 10).select("_id firstname lastname role");
-    res.json({ data:topUsers });
+      .limit(limit || 10)
+      .select("_id firstname lastname role");
+    res.json({ data: topUsers });
   } catch (error) {
     res.status(500).json({ error: error });
   }
@@ -204,10 +213,11 @@ const getTopVendors = async (req, res) => {
   try {
     let { limit } = req.query;
 
-    const topUsers = await User.find({role: "Vendor"})
+    const topUsers = await User.find({ role: "Vendor" })
       .sort({ totalVendorProductSold: -1 })
-      .limit(limit || 10).select("_id firstname lastname role");
-    res.json({ data: topUsers  });
+      .limit(limit || 10)
+      .select("_id firstname lastname role");
+    res.json({ data: topUsers });
   } catch (error) {
     res.status(500).json({ error: error });
   }
@@ -216,10 +226,11 @@ const getTopReferrers = async (req, res) => {
   try {
     let { limit } = req.query;
 
-    const topUsers = await User.find({role: "Referrer"})
+    const topUsers = await User.find({ role: "Referrer" })
       .sort({ commission: -1 })
-      .limit(limit || 10).select("_id firstname lastname role");
-    res.json({ data: topUsers  });
+      .limit(limit || 10)
+      .select("_id firstname lastname role");
+    res.json({ data: topUsers });
   } catch (error) {
     res.status(500).json({ error: error });
   }
@@ -232,5 +243,5 @@ module.exports = {
   getCountsRef,
   getCountsVen,
   getTopReferrers,
-  getTopVendors
+  getTopVendors,
 };
