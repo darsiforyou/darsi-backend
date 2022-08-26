@@ -152,25 +152,37 @@ const getCountsVen = async (req, res) => {
 };
 const getChartData = async (req, res) => {
   try {
-    let { startDate, endDate } = req.query;
-    let  todayDate = endDate ?? new Date().toISOString().slice(0, 10);
-    let dateObj = new Date()
-    let priorDate =  startDate ?? new Date(new Date().setDate(dateObj.getDate() - 30)).toISOString().slice(0, 10);
-    
-    
+    let { startDate, endDate, role, code } = req.query;
+    let todayDate = endDate ?? new Date().toISOString().slice(0, 10);
+    let dateObj = new Date();
+    let priorDate =
+      startDate ??
+      new Date(new Date().setDate(dateObj.getDate() - 30))
+        .toISOString()
+        .slice(0, 10);
+
+    let match = {
+      createdAt: { $gte: new Date(priorDate), $lt: new Date(todayDate) },
+    };
+    if (role === "Referrer") {
+      match = {
+        $and: [
+          {
+            applied_Referral_Code: code,
+            createdAt: { $gte: new Date(priorDate), $lt: new Date(todayDate) },
+          },
+        ],
+      };
+    }
 
     const chartData = await Order.aggregate([
       {
-        $match: {
-          createdAt: { $gte: new Date(priorDate), $lt: new Date(todayDate) },
-        },
+        $match: match
       },
       {
         $group: {
           _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
-          totalOrderValue: {
-            $sum: { $multiply: ["$cart.netCost", "$cart.totalQty"] },
-          },
+          totalOrderValue: { $sum: "$cart.netCost" },
           averageOrderQuantity: { $avg: "$cart.totalQty" },
         },
       },

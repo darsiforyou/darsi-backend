@@ -40,16 +40,19 @@ const handleNewUser = async (req, res) => {
     if (role === "Referrer") {
       newUser.referred_by = referred_by;
       const package = await Package.findById(referral_package);
-      const referral = await User.findOne({ user_code: referred_by });
-      if (referral) {
-        let commission = (package.price * package.commission) / 100;
-        commission = commission + referral.commission;
-        let updateRef = await User.findByIdAndUpdate(referral._id, {
-          commission,
-        });
-      } else {
-        return res.json({ message: "Referrer is not exists" }); //Conflict
+      if(referred_by){
+        const referral = await User.findOne({ user_code: referred_by });
+        if (referral) {
+          let commission = (package.price * package.commission) / 100;
+          commission = commission + referral.commission;
+          let updateRef = await User.findByIdAndUpdate(referral._id, {
+            commission,
+          });
+        } else {
+          return res.json({ message: "Referrer does not exists" }); //Conflict
+        }
       }
+
     }
     let user = await User.create(newUser);
 

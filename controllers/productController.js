@@ -10,7 +10,7 @@ const getAllProducts = async (req, res) => {
     let myAggregate;
     if (!search) {
       myAggregate = Product.aggregate([
-        { $match: { $and: [queries], } },
+        { $match: { $and: [queries] } },
         {
           $lookup: {
             from: "categories",
