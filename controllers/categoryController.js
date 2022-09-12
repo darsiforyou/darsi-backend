@@ -1,6 +1,8 @@
 const Category = require("../models/category");
+const Product = require("../models/product");
 const { searchInColumns, getQuery } = require("../utils");
 const imagekit = require("../config/imagekit");
+const category = require("../models/category");
 
 const getAllCategories = async (req, res) => {
   try {
@@ -33,7 +35,40 @@ const getAllCategories = async (req, res) => {
 };
 const getAllCategoriesWithoutFilter = async (req, res) => {
   try {
-    const categories = await Category.find(req.query).sort({ rank: 1 });
+    // const categories = await Category.find(req.query).sort({ rank: 1 });
+    // let categoryId = await Category.find().select("_id").sort({ rank: 1 });
+    // console.log(categoryId);
+    // const ids = categoryId.map((categoryId) => categoryId._id);
+    // console.log(ids);
+    // const productCat = await Product.find({ category: { $in: ids } })
+    //   .populate("category")
+    //   .lean();
+    // const products = await Product.find();
+    const categories = await Category.aggregate([
+      {
+        $match: req.query,
+      },
+      {
+        $lookup: {
+          from: "products",
+          localField: "_id",
+          foreignField: "category",
+          as: "products",
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          title: 1,
+          products: { $size: "$products" },
+          imageId: 1,
+          imageURL: 1,
+          isFeatured: 1,
+          rank: 1,
+          isActive: 1,
+        },
+      },
+    ]);
     return res.json(categories);
   } catch (err) {
     res.status(500).json({ error: err });
