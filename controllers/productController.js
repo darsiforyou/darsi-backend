@@ -87,6 +87,7 @@ const addProduct = async (req, res) => {
       isFeatured,
       stockCountPending,
       description,
+      tags
     } = req.body;
     const file = req.file;
     let data = await Product.create({
@@ -100,6 +101,7 @@ const addProduct = async (req, res) => {
       isFeatured,
       stockCountPending,
       description,
+      tags,
       productCode: faker.phone.phoneNumber("###-###"),
       createdBy: req.userId,
       profitMargin: price - vendorPrice,
@@ -143,6 +145,7 @@ const deleteProduct = async (req, res) => {
 };
 const updateProduct = async (req, res) => {
   try {
+    
     const {
       title,
       category,
@@ -154,6 +157,7 @@ const updateProduct = async (req, res) => {
       stockCountPending,
       vendor,
       description,
+      tags
     } = req.body;
     const file = req.file;
     let data = await Product.findByIdAndUpdate(req.params.id, {
@@ -167,6 +171,7 @@ const updateProduct = async (req, res) => {
       isActive,
       stockCountPending,
       description,
+      tags,
       profitMargin: price - vendorPrice,
     });
     if (file !== undefined) {

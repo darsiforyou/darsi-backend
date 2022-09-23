@@ -44,6 +44,9 @@ const productSchema = Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Category",
     },
+    tags: {
+      type: String
+    },
     vendor: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
