@@ -52,6 +52,7 @@ app.use("/categories", require("./routes/api/categories"));
 app.use("/packages", require("./routes/api/referralPackages"));
 app.use("/dashboard-setting", require("./routes/api/dashboardSettings"));
 app.use("/dashboard", require("./routes/api/dashboard"));
+app.use("/image", require("./routes/api/imageUpload"));
 app.all("*", (req, res) => {
   res.status(404);
   if (req.accepts("html")) {

@@ -13,6 +13,11 @@ const productSchema = Schema(
       type: String,
       required: true,
     },
+    media: [{
+      imageUrl: {type: String},
+      imageId: {type: String},
+      isFront: {type: Boolean}
+    }],
     imageURL: {
       type: String,
     },

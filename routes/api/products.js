@@ -13,7 +13,6 @@ router
   .post(
     verifyJWT,
     verifyRoles(ROLES_LIST.Admin, ROLES_LIST.Vendor),
-    upload.single("file"),
     productController.addProduct
   );
 
@@ -26,7 +25,6 @@ router
   .put(
     verifyJWT,
     verifyRoles(ROLES_LIST.Admin, ROLES_LIST.Vendor),
-    upload.single("file"),
     productController.updateProduct
   )
   .delete(

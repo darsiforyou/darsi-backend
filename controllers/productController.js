@@ -87,9 +87,9 @@ const addProduct = async (req, res) => {
       isFeatured,
       stockCountPending,
       description,
-      tags
+      tags,
+      media,
     } = req.body;
-    const file = req.file;
     let data = await Product.create({
       title,
       category,
@@ -102,21 +102,42 @@ const addProduct = async (req, res) => {
       stockCountPending,
       description,
       tags,
-      productCode: faker.phone.phoneNumber("###-###"),
+      productCode: faker.phone.number("###-###"),
       createdBy: req.userId,
       profitMargin: price - vendorPrice,
+      media
     });
-    if (file && data._id) {
-      let img = await imagekit.upload({
-        file: file.buffer, //required
-        fileName: file.originalname, //required
-        folder: "/Products",
-      });
-      data = await Product.findByIdAndUpdate(data.id, {
-        imageURL: img.url,
-        imageId: img.fileId,
-      });
-    }
+
+    // if (file && data._id) {
+    //   let img = await imagekit.upload({
+    //     file: file.buffer, //required
+    //     fileName: file.originalname, //required
+    //     folder: "/Products",
+    //   });
+    //   data = await Product.findByIdAndUpdate(data.id, {
+    //     imageURL: img.url,
+    //     imageId: img.fileId,
+    //   });
+    // }
+
+    // if(files.length > 0 && data._id){
+    //   media = files.map(async(med) => {
+    //     let img = await imagekit.upload({
+    //       file: med.buffer, //required
+    //       fileName: med.originalname, //required
+    //       folder: "/Products",
+    //     });
+    //     return {
+    //       imageUrl: img.url,
+    //       imageId: img.fileId,
+    //       isFront: med.isFront
+    //     }
+    //   })
+    //   data = await Product.findByIdAndUpdate(data.id, {
+    //     media: media
+    //   });
+    // }
+
     res.status(200).json({
       message: "Your product has been Added Successfully.",
       data: data,
@@ -145,7 +166,6 @@ const deleteProduct = async (req, res) => {
 };
 const updateProduct = async (req, res) => {
   try {
-    
     const {
       title,
       category,
@@ -157,9 +177,10 @@ const updateProduct = async (req, res) => {
       stockCountPending,
       vendor,
       description,
-      tags
+      tags,
+      media
     } = req.body;
-    const file = req.file;
+    // const file = req.file;
     let data = await Product.findByIdAndUpdate(req.params.id, {
       title,
       category,
@@ -173,19 +194,20 @@ const updateProduct = async (req, res) => {
       description,
       tags,
       profitMargin: price - vendorPrice,
+      media
     });
-    if (file !== undefined) {
-      const { imageId } = data;
-      if (imageId) await imagekit.deleteFile(imageId);
-      let img = await imagekit.upload({
-        file: file.buffer, //required
-        fileName: file.originalname, //required
-      });
-      data = await Product.findByIdAndUpdate(data.id, {
-        imageURL: img.url,
-        imageId: img.fileId,
-      });
-    }
+    // if (file !== undefined) {
+    //   const { imageId } = data;
+    //   if (imageId) await imagekit.deleteFile(imageId);
+    //   let img = await imagekit.upload({
+    //     file: file.buffer, //required
+    //     fileName: file.originalname, //required
+    //   });
+    //   data = await Product.findByIdAndUpdate(data.id, {
+    //     imageURL: img.url,
+    //     imageId: img.fileId,
+    //   });
+    // }
     res.status(200).json({
       message: "Product has been updated",
       data: data,
