@@ -27,6 +27,14 @@ const getAllProducts = async (req, res) => {
             as: "vendors",
           },
         },
+        {
+          $lookup: {
+            from: "brands",
+            localField: "brand",
+            foreignField: "_id",
+            as: "brands",
+          },
+        },
       ]);
     } else {
       myAggregate = Product.aggregate([
@@ -45,6 +53,14 @@ const getAllProducts = async (req, res) => {
             localField: "vendor",
             foreignField: "_id",
             as: "vendor",
+          },
+        },
+        {
+          $lookup: {
+            from: "brands",
+            localField: "brand",
+            foreignField: "_id",
+            as: "brands",
           },
         },
       ]);
@@ -79,6 +95,7 @@ const addProduct = async (req, res) => {
     const {
       title,
       category,
+      brand,
       vendor,
       vendorPrice,
       price,
@@ -93,6 +110,7 @@ const addProduct = async (req, res) => {
     let data = await Product.create({
       title,
       category,
+      brand,
       vendorPrice,
       vendor,
       price,
@@ -169,6 +187,7 @@ const updateProduct = async (req, res) => {
     const {
       title,
       category,
+      brand,
       vendorPrice,
       price,
       available,
@@ -184,6 +203,7 @@ const updateProduct = async (req, res) => {
     let data = await Product.findByIdAndUpdate(req.params.id, {
       title,
       category,
+      brand,
       vendorPrice,
       price,
       isFeatured,
