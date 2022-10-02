@@ -19,6 +19,7 @@ const getAllBrands = async (req, res) => {
     const options = {
       page: page || 1,
       limit: limit || 10,
+      sort: { createdAt: -1 }
     };
 
     const data = await Brand.aggregatePaginate(myAggregate, options);

@@ -20,6 +20,7 @@ const getAllPackages = async (req, res) => {
     const options = {
       page: page || 1,
       limit: limit || 10,
+      sort: { createdAt: -1 }
     };
 
     const data = await Referral_Package.aggregatePaginate(myAggregate, options);

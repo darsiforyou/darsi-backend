@@ -69,6 +69,7 @@ const getAllProducts = async (req, res) => {
     const options = {
       page: page || 1,
       limit: limit || 10,
+      sort: { createdAt: -1 }
     };
 
     const data = await Product.aggregatePaginate(myAggregate, options);
