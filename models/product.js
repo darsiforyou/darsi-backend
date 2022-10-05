@@ -14,9 +14,9 @@ const productSchema = Schema(
       required: true,
     },
     media: [{
-      imageUrl: {type: String},
-      imageId: {type: String},
-      isFront: {type: Boolean}
+      imageUrl: { type: String },
+      imageId: { type: String },
+      isFront: { type: Boolean }
     }],
     imageURL: {
       type: String,
@@ -49,16 +49,29 @@ const productSchema = Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Category",
     },
+    category_name: {
+      type: String,
+    },
     brand: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Brand",
     },
+    brand_name: {
+      type: String,
+    },
     tags: {
       type: String
     },
+    options: [{
+      key: { type: String },
+      value: { type: String | Number | Array },
+    }],
     vendor: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
+    },
+    vendor_name: {
+      type: String,
     },
     available: {
       type: Boolean,

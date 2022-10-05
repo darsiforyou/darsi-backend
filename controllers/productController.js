@@ -107,6 +107,10 @@ const addProduct = async (req, res) => {
       description,
       tags,
       media,
+      options,
+      vendor_name,
+      brand_name,
+      category_name
     } = req.body;
     let data = await Product.create({
       title,
@@ -124,7 +128,11 @@ const addProduct = async (req, res) => {
       productCode: faker.phone.number("###-###"),
       createdBy: req.userId,
       profitMargin: price - vendorPrice,
-      media
+      media,
+      options,
+      vendor_name,
+      brand_name,
+      category_name
     });
 
     // if (file && data._id) {
@@ -198,7 +206,11 @@ const updateProduct = async (req, res) => {
       vendor,
       description,
       tags,
-      media
+      media,
+      options,
+      vendor_name,
+      brand_name,
+      category_name
     } = req.body;
     // const file = req.file;
     let data = await Product.findByIdAndUpdate(req.params.id, {
@@ -215,7 +227,11 @@ const updateProduct = async (req, res) => {
       description,
       tags,
       profitMargin: price - vendorPrice,
-      media
+      media,
+      options,
+      vendor_name,
+      brand_name,
+      category_name
     });
     // if (file !== undefined) {
     //   const { imageId } = data;
