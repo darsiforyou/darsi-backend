@@ -5,7 +5,7 @@ const { searchInColumns, getQuery } = require("../utils");
 const getAllProducts = async (req, res) => {
   try {
     let { page, limit, search, ...queries } = req.query;
-    search = searchInColumns(search, ["title", "description"]);
+    search = searchInColumns(search, ["category_name", "brand_name", "title", "isbn"]);
     queries = getQuery(queries);
     let myAggregate;
     if (!search) {
@@ -110,7 +110,8 @@ const addProduct = async (req, res) => {
       options,
       vendor_name,
       brand_name,
-      category_name
+      category_name,
+      isbn
     } = req.body;
     let data = await Product.create({
       title,
@@ -132,7 +133,8 @@ const addProduct = async (req, res) => {
       options,
       vendor_name,
       brand_name,
-      category_name
+      category_name,
+      isbn
     });
 
     // if (file && data._id) {
@@ -210,7 +212,8 @@ const updateProduct = async (req, res) => {
       options,
       vendor_name,
       brand_name,
-      category_name
+      category_name,
+      isbn
     } = req.body;
     // const file = req.file;
     let data = await Product.findByIdAndUpdate(req.params.id, {
@@ -231,7 +234,8 @@ const updateProduct = async (req, res) => {
       options,
       vendor_name,
       brand_name,
-      category_name
+      category_name,
+      isbn
     });
     // if (file !== undefined) {
     //   const { imageId } = data;

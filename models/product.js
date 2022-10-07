@@ -73,6 +73,9 @@ const productSchema = Schema(
     vendor_name: {
       type: String,
     },
+    isbn: {
+      type: String,
+    },
     available: {
       type: Boolean,
       default: true,
