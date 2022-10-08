@@ -64,7 +64,9 @@ const productSchema = Schema(
     },
     options: [{
       key: { type: String },
-      value: { type: String | Number | Array },
+      values: [{
+        type: String
+      }],
     }],
     vendor: {
       type: mongoose.Schema.Types.ObjectId,
