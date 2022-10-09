@@ -40,6 +40,14 @@ const orderSchema = Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: "Product",
           },
+          options: [{
+            key: { type: String },
+            selected: {type: String},
+          }],
+          vendor: {
+            type: Schema.Types.ObjectId,
+            ref: "User",
+          },
           qty: {
             type: Number,
             default: 0,
