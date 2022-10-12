@@ -10,8 +10,6 @@ const upload = multer({ storage });
 router
     .route("/upload")
     .post(
-        verifyJWT,
-        verifyRoles(ROLES_LIST.Admin),
         upload.single("file"),
         imageUploadController.uploadImage
     );
