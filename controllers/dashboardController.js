@@ -1,6 +1,8 @@
 const Order = require("../models/order");
 const User = require("../models/user");
 const Product = require("../models/product");
+const mongoose = require("mongoose");
+const ObjectId = mongoose.Types.ObjectId;
 
 const getCounts = async (req, res) => {
   try {
@@ -177,7 +179,7 @@ const getChartData = async (req, res) => {
 
     const chartData = await Order.aggregate([
       {
-        $match: match
+        $match: match,
       },
       {
         $group: {
@@ -199,7 +201,9 @@ const getChartData = async (req, res) => {
 const getTopProducts = async (req, res) => {
   try {
     let { limit, vendor } = req.query;
-    const topProducts = await Product.find()
+    const topProducts = await Product.find(
+      vendor ? { vendor: ObjectId(vendor) } : {}
+    )
       .sort({ stockCountConsumed: -1 })
       .limit(limit || 10);
     res.json({ data: topProducts });
