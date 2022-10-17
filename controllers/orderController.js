@@ -3,24 +3,32 @@ const { searchInColumns, getQuery } = require("../utils");
 const Referral_Package = require("../models/referral_packages");
 const User = require("../models/user");
 const Product = require("../models/product");
+const mongoose = require("mongoose");
 
+const ObjectId = mongoose.Types.ObjectId;
 const getAllOrders = async (req, res) => {
   try {
-    let { page, limit, search, ...queries } = req.query;
+    let { page, limit, search, vendorId, ...queries } = req.query;
     search = searchInColumns(search, ["user"]);
     queries = getQuery(queries);
+
+    if (vendorId) {
+      id = ObjectId(vendorId);
+      queries = { ...queries, "cart.items.vendor": id };
+    }
     let myAggregate;
     if (!search) {
       myAggregate = Order.aggregate([
-        { $match: { $and: [queries] } }, 
+        { $match: { $and: [queries] } },
         {
-        $lookup: {
-          from: "users",
-          localField: "user",
-          foreignField: "_id",
-          as: "users",
+          $lookup: {
+            from: "users",
+            localField: "user",
+            foreignField: "_id",
+            as: "users",
+          },
         },
-      },]);
+      ]);
     } else {
       myAggregate = Order.aggregate([
         { $match: { $and: [{ $or: search }, queries] } },
@@ -38,7 +46,7 @@ const getAllOrders = async (req, res) => {
     const options = {
       page: page || 1,
       limit: limit || 10,
-      sort: { createdAt: -1 }
+      sort: { createdAt: -1 },
     };
 
     const data = await Order.aggregatePaginate(myAggregate, options);
@@ -54,8 +62,17 @@ const getAllOrders = async (req, res) => {
 
 const createOrder = async (req, res) => {
   try {
-    const { products, user, applied_Referral_Code, address, name, email, phone, city, postalCode } =
-      req.body;
+    const {
+      products,
+      user,
+      applied_Referral_Code,
+      address,
+      name,
+      email,
+      phone,
+      city,
+      postalCode,
+    } = req.body;
     let refData;
     let _package;
     let totalCost = 0;
@@ -78,7 +95,7 @@ const createOrder = async (req, res) => {
       // update vendor sold product quantity
       const vendorData = await User.findById(x.vendor);
       await User.findByIdAndUpdate(x.vendor, {
-        totalVendorProductSold: vendorData.totalVendorProductSold + totalQty
+        totalVendorProductSold: vendorData.totalVendorProductSold + totalQty,
       });
       // update product total sale
       await Product.updateOne(
@@ -97,7 +114,11 @@ const createOrder = async (req, res) => {
     }
     if (refData) {
       _package = await Referral_Package.findById(refData.referral_package);
-      discount = calculateDiscount(totalCost,totalVendorCost,_package.discount_percentage)
+      discount = calculateDiscount(
+        totalCost,
+        totalVendorCost,
+        _package.discount_percentage
+      );
       netCost = totalCost - discount;
       // calculate commission for user
       let commission = (totalVendorCost * Number(_package.commission)) / 100;
@@ -118,7 +139,9 @@ const createOrder = async (req, res) => {
       address,
       name,
       email,
-      phone, city, postalCode
+      phone,
+      city,
+      postalCode,
     };
     if (applied_Referral_Code) {
       order.applied_Referral_Code = applied_Referral_Code;
@@ -129,7 +152,7 @@ const createOrder = async (req, res) => {
       const userData = await User.findById(user);
       await User.findByIdAndUpdate(user, {
         orderCount: userData.orderCount + 1,
-        totalSale: userData.totalSale + netCost
+        totalSale: userData.totalSale + netCost,
       });
     }
     let data = await Order.create(order);
@@ -187,10 +210,10 @@ module.exports = {
 };
 
 const calculateDiscount = (total, vendorTotal, discount_percentage) => {
-  total = Number(total)
-  vendorTotal = Number(vendorTotal)
-  discount_percentage = Number(discount_percentage | 0)
-  let profit = total-vendorTotal
-  let netAmount = profit*discount_percentage/100
-  return netAmount
-}
+  total = Number(total);
+  vendorTotal = Number(vendorTotal);
+  discount_percentage = Number(discount_percentage | 0);
+  let profit = total - vendorTotal;
+  let netAmount = (profit * discount_percentage) / 100;
+  return netAmount;
+};
