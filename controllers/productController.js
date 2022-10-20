@@ -5,7 +5,12 @@ const { searchInColumns, getQuery } = require("../utils");
 const getAllProducts = async (req, res) => {
   try {
     let { page, limit, search, ...queries } = req.query;
-    search = searchInColumns(search, ["category_name", "brand_name", "title", "isbn"]);
+    search = searchInColumns(search, [
+      "category_name",
+      "brand_name",
+      "title",
+      "isbn",
+    ]);
     queries = getQuery(queries);
     let myAggregate;
     if (!search) {
@@ -69,7 +74,7 @@ const getAllProducts = async (req, res) => {
     const options = {
       page: page || 1,
       limit: limit || 10,
-      sort: { createdAt: -1 }
+      sort: { createdAt: -1 },
     };
 
     const data = await Product.aggregatePaginate(myAggregate, options);
@@ -111,7 +116,7 @@ const addProduct = async (req, res) => {
       vendor_name,
       brand_name,
       category_name,
-      isbn
+      isbn,
     } = req.body;
     let data = await Product.create({
       title,
@@ -134,7 +139,7 @@ const addProduct = async (req, res) => {
       vendor_name,
       brand_name,
       category_name,
-      isbn
+      isbn,
     });
 
     // if (file && data._id) {
@@ -172,7 +177,10 @@ const addProduct = async (req, res) => {
       data: data,
     });
   } catch (err) {
-    res.status(500).json(err);
+    res.status(500).json({
+      errorMsg: "An error ocurred during submitting this product .",
+      error: err,
+    });
   }
 };
 const getProduct = async (req, res) => {
@@ -213,7 +221,7 @@ const updateProduct = async (req, res) => {
       vendor_name,
       brand_name,
       category_name,
-      isbn
+      isbn,
     } = req.body;
     // const file = req.file;
     let data = await Product.findByIdAndUpdate(req.params.id, {
@@ -235,7 +243,7 @@ const updateProduct = async (req, res) => {
       vendor_name,
       brand_name,
       category_name,
-      isbn
+      isbn,
     });
     // if (file !== undefined) {
     //   const { imageId } = data;
