@@ -47,6 +47,10 @@ const cartSchema = new mongoose.Schema(
       default: 0,
       required: true,
     },
+    shippingCharges: {
+      type: Number,
+      default: 0,
+    },
     totalProfitMargin: {
       type: Number,
       default: 0,

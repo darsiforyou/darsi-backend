@@ -24,6 +24,10 @@ const orderSchema = Schema(
         default: 0,
         required: true,
       },
+      shippingCharges: {
+        type: Number,
+        default: 0,
+      },
       netCost: {
         type: Number,
         default: 0,

@@ -75,11 +75,12 @@ const createOrder = async (req, res) => {
     } = req.body;
     let refData;
     let _package;
-    let totalCost = 0;
+    let shippingCharges = city === "Karachi" ? 50 : 100;
+    let totalCost = 0 + shippingCharges;
     let totalVendorCost = 0;
     let discount = 0;
-    let totalQty = 0;
-    let netCost = 0;
+    let totalQty = 0
+    let netCost = 0 + shippingCharges;
     let totalProfitMargin = 0;
 
     for (const x of products) {
@@ -133,6 +134,7 @@ const createOrder = async (req, res) => {
         totalCost: totalCost,
         discount: discount,
         netCost: netCost,
+        shippingCharges: shippingCharges,
         totalProfitMargin: totalProfitMargin,
         items: products,
       },
