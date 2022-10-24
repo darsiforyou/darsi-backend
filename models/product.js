@@ -80,11 +80,11 @@ const productSchema = Schema(
     },
     available: {
       type: Boolean,
-      default: true,
+      default: false,
     },
     isActive: {
       type: Boolean,
-      default: true,
+      default: false,
     },
     isFeatured: {
       type: Boolean,
