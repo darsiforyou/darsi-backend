@@ -27,4 +27,6 @@ router
   .put(verifyJWT, verifyRoles(ROLES_LIST.Admin), userController.updateUser);
 
 router.route("/code/:code").get(userController.getUserWithRefCode);
+router.route("/forgotPasswordOtp/:email").get(userController.forgotPasswordOtp);
+
 module.exports = router;

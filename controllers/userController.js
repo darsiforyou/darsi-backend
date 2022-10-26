@@ -1,6 +1,7 @@
 const User = require("../models/user");
 const { searchInColumns, getQuery } = require("../utils");
 const bcrypt = require("bcrypt");
+const send_email = require("../middleware/email");
 
 const getAllUsers = async (req, res) => {
   try {
@@ -100,7 +101,23 @@ const updateUser = async (req, res) => {
     res.status(500).json({ error: err });
   }
 };
+const forgotPasswordOtp = async (req, res) => {
+  try {
+    const user = await User.findOne({ email: req.params.email });
+    console.log(req.params.email)
+    // if (!user?._id) return res.json({ message: "User doesn't exist" });
 
+    await send_email(req.params.email).then(res=> {
+      return res.status(200).json({
+        message: "OPT has been sent to your email address",
+      });
+    }).catch((err)=> {
+      return res.status(500).json({ error: err });
+    })
+  } catch (err) {
+    res.status(500).json({ error: err });
+  }
+};
 module.exports = {
   getAllUsers,
   getUser,
@@ -108,4 +125,5 @@ module.exports = {
   getUserWithRefCode,
   deleteUser,
   updateUser,
+  forgotPasswordOtp
 };

@@ -202,10 +202,10 @@ const getTopProducts = async (req, res) => {
   try {
     let { limit, vendor } = req.query;
     const topProducts = await Product.find(
-      vendor ? { vendor: ObjectId(vendor) } : {}
+      vendor ? { vendor: ObjectId(vendor), stockCountConsumed: { $gte: 0} } : {stockCountConsumed: { $gte: 0}},
     )
       .sort({ stockCountConsumed: -1 })
-      .limit(limit || 10);
+      .limit(limit || 10)
     res.json({ data: topProducts });
   } catch (error) {
     res.status(500).json({ error: error });
