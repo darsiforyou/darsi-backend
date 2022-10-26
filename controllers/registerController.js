@@ -33,7 +33,7 @@ const handleNewUser = async (req, res) => {
       password: hashedPwd,
       referral_package,
     };
-    let user_code = email;
+    let user_code = firstname;
     newUser.user_code =
       user_code + "-" + faker.helpers.replaceSymbolWithNumber("####-####");
 
