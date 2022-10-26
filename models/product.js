@@ -13,11 +13,13 @@ const productSchema = Schema(
       type: String,
       required: true,
     },
-    media: [{
-      imageUrl: { type: String },
-      imageId: { type: String },
-      isFront: { type: Boolean }
-    }],
+    media: [
+      {
+        imageURL: { type: String },
+        imageId: { type: String },
+        isFront: { type: Boolean },
+      },
+    ],
     imageURL: {
       type: String,
     },
@@ -60,14 +62,18 @@ const productSchema = Schema(
       type: String,
     },
     tags: {
-      type: String
+      type: String,
     },
-    options: [{
-      key: { type: String },
-      values: [{
-        type: String
-      }],
-    }],
+    options: [
+      {
+        key: { type: String },
+        values: [
+          {
+            type: String,
+          },
+        ],
+      },
+    ],
     vendor: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
