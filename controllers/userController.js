@@ -1,4 +1,5 @@
 const User = require("../models/user");
+const OTP = require("../models/otp");
 const { searchInColumns, getQuery } = require("../utils");
 const bcrypt = require("bcrypt");
 const send_email = require("../middleware/email");
@@ -101,23 +102,76 @@ const updateUser = async (req, res) => {
     res.status(500).json({ error: err });
   }
 };
+function generateOTP() {
+  // Declare a digits variable 
+  // which stores all digits
+  var digits = '0123456789';
+  let OTP = '';
+  for (let i = 0; i < 4; i++ ) {
+      OTP += digits[Math.floor(Math.random() * 10)];
+  }
+  return OTP;
+}
 const forgotPasswordOtp = async (req, res) => {
   try {
     const user = await User.findOne({ email: req.params.email });
-    console.log(req.params.email)
-    // if (!user?._id) return res.json({ message: "User doesn't exist" });
 
-    await send_email(req.params.email).then(res=> {
-      return res.status(200).json({
+    if (!user?._id) return res.status(500).json({ message: "User doesn't exist" });
+    
+    let otp = generateOTP()
+    let otp_data = await OTP.create({
+      otp,
+      isActive: true,
+      email: req.params.email,
+    })
+    if(otp_data.id){
+      await send_email(req.params.email, otp).then(res=> {
+        console.log(res)
+      }).catch((err)=> {
+        return res.status(500).json({ error: err });
+      })
+
+      res.status(200).json({
         message: "OPT has been sent to your email address",
       });
-    }).catch((err)=> {
-      return res.status(500).json({ error: err });
-    })
+    }else{
+      return res.status(500).json({ error: "Something went wrong" });
+    }
+
   } catch (err) {
     res.status(500).json({ error: err });
   }
 };
+const changeUserPassword = async (req, res) => {
+  try {
+    const { user_email, otp_code, new_password } = req.body;
+    const otp = await OTP.findOne({ opt: otp_code });
+    const user = await User.findOne({ email: user_email });
+
+    if (!otp?._id) return res.status(500).json({ message: "OPT is invalid" });
+    if (!user?._id) return res.status(500).json({ message: "User doesn't exist" });
+
+    let currentTime = new Date();
+    currentTime.setMinutes(currentTime.getMinutes() + 5);
+    currentTime = currentTime.getMilliseconds()
+
+    let optCreatedTime = new Date(otp.createdAt).getMilliseconds();
+    // if(optCreatedTime > currentTime){
+
+    // }
+    const hashedPwd = await bcrypt.hash(new_password, 10);
+    const hashedNewPwd = hashedPwd;
+    await User.findByIdAndUpdate(user?._id, { password: hashedNewPwd });
+
+    res.status(200).json({
+      message: "password have been updated",
+    });
+
+  } catch (err) {
+    res.status(500).json({ error: err });
+  }
+};
+
 module.exports = {
   getAllUsers,
   getUser,
@@ -125,5 +179,6 @@ module.exports = {
   getUserWithRefCode,
   deleteUser,
   updateUser,
-  forgotPasswordOtp
+  forgotPasswordOtp,
+  changeUserPassword
 };

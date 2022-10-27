@@ -13081,6 +13081,7 @@
 20221027	23:43:13	6ab18a37-af88-4f53-bd6b-594737dc3162	GET	http://127.0.0.1:5173	/dashboard/top-referrers?limit=10
 20221027	23:43:14	71bf923f-e955-4d72-8acf-55cd0b6b44eb	OPTIONS	http://127.0.0.1:5173	/brands?search=&page=1&limit=10&productCode=&brand=&isFeatured=&isActive=
 20221027	23:43:14	ff28f9b6-b7ac-4cca-8fae-d456a5e4a863	GET	http://127.0.0.1:5173	/brands?search=&page=1&limit=10&productCode=&brand=&isFeatured=&isActive=
+<<<<<<< HEAD
 20221028	00:30:18	2c4ef097-bcef-4e36-9369-c3b5992dcdf8	OPTIONS	http://127.0.0.1:5173	/dashboard/top-products?limit=10
 20221028	00:30:18	460ffdd1-ee4a-43f8-98f2-133fe6e82657	OPTIONS	http://127.0.0.1:5173	/dashboard/top-products?limit=10
 20221028	00:30:18	1a552663-6a99-4a0a-86e1-012c40dd5dc4	OPTIONS	http://127.0.0.1:5173	/dashboard/top-customers?limit=10
@@ -14608,3 +14609,16 @@
 20221028	02:58:26	36625367-2bf9-4638-956c-cf0b50f4a462	GET	undefined	/orders
 20221028	02:58:52	7e0475a1-a232-473a-bf66-8733008c2aeb	GET	undefined	/dashboard/chart-data?startDate=Fri%20Sep%2002%202022%2000:00:00%20GMT+0500%20(Pakistan%20Standard%20Time)&endDate=Sat%20Oct%2001%202022%2000:00:00%20GMT+0500%20(Pakistan%20Standard%20Time)&role=Admin&code=admin@darsi.com-5568-9806&productId=635af5475cb9eb1c925d18b7
 20221028	02:59:08	c0339835-d8ce-4985-999e-c8d9f3e076b4	GET	undefined	/dashboard/chart-data?startDate=Fri%20Sep%2002%202022%2000:00:00%20GMT+0500%20(Pakistan%20Standard%20Time)&endDate=Sat%20Oct%2001%202022%2000:00:00%20GMT+0500%20(Pakistan%20Standard%20Time)&role=Admin&code=admin@darsi.com-5568-9806&productId=6359b8b8c7b06e172bca2e22
+=======
+20221028	01:45:59	888e362a-d707-46bf-9af5-5cfa7026ff51	GET	undefined	/users/forgotPasswordOtp/dev.hassanmujtaba@gmail.com
+20221028	01:46:10	2e380715-6451-4377-bd94-e0faa430e150	GET	undefined	/users/forgotPasswordOtp/dev.hassanmujtaba@gmail.com
+20221028	01:47:35	0a0586f5-811a-407f-8b1c-29cb721f6295	GET	undefined	/users/forgotPasswordOtp/dev.hassanmujtaba@gmail.com
+20221028	01:48:52	82774639-8696-436f-97c6-58fc0fea501f	GET	undefined	/users/forgotPasswordOtp/dev.hassanmujtaba@gmail.com
+20221028	01:49:23	48a9242e-19c3-43b1-ac34-a51ac95359d7	GET	undefined	/users/forgotPasswordOtp/dev.hassanmujtaba@gmail.com
+20221028	02:04:20	d061a4e3-aa25-46cb-b687-e8371af6d8e0	GET	undefined	/users/forgotPasswordOtp/dev.hassanmujtaba@gmail.com
+20221028	02:06:38	16155f8e-91d1-455a-9337-ee901681541e	GET	undefined	/users/forgotPasswordOtp/dev.hassanmujtaba@gmail.com
+20221028	02:10:18	7813fe5c-bb5d-4e4a-b86f-a2c3113c0663	POST	undefined	/users/changeUserPassword
+20221028	02:10:30	24250814-8302-46f4-99e3-8aeb87b8526a	POST	undefined	/users/changeUserPassword
+20221028	02:11:16	eed57f21-9a7d-4edb-bebe-55b7369dca38	POST	undefined	/users/changeUserPassword
+20221028	02:12:25	d689e25a-f996-4dc0-87e1-ad060e988464	POST	undefined	/users/changeUserPassword
+>>>>>>> b68ce89e2c22efb89b4d773b585d30d6b9a66ae0

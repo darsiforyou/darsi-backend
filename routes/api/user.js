@@ -28,5 +28,6 @@ router
 
 router.route("/code/:code").get(userController.getUserWithRefCode);
 router.route("/forgotPasswordOtp/:email").get(userController.forgotPasswordOtp);
+router.route("/changeUserPassword").post(userController.changeUserPassword);
 
 module.exports = router;
