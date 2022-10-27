@@ -154,7 +154,7 @@ const getCountsVen = async (req, res) => {
 };
 const getChartData = async (req, res) => {
   try {
-    let { startDate, endDate, role, code } = req.query;
+    let { startDate, endDate, role, code, productId } = req.query;
     let todayDate = endDate ?? new Date().toISOString().slice(0, 10);
     let dateObj = new Date();
     let priorDate =
@@ -177,9 +177,15 @@ const getChartData = async (req, res) => {
       };
     }
 
+    if (productId) {
+      match = { ...match, "cart.items.productId": productId };
+    }
+
     const chartData = await Order.aggregate([
       {
-        $match: match,
+        $match: {
+          $and: [match],
+        },
       },
       {
         $group: {
@@ -202,10 +208,12 @@ const getTopProducts = async (req, res) => {
   try {
     let { limit, vendor } = req.query;
     const topProducts = await Product.find(
-      vendor ? { vendor: ObjectId(vendor), stockCountConsumed: { $gte: 0} } : {stockCountConsumed: { $gte: 0}},
+      vendor
+        ? { vendor: ObjectId(vendor), stockCountConsumed: { $gte: 0 } }
+        : { stockCountConsumed: { $gte: 0 } }
     )
       .sort({ stockCountConsumed: -1 })
-      .limit(limit || 10)
+      .limit(limit || 10);
     res.json({ data: topProducts });
   } catch (error) {
     res.status(500).json({ error: error });
