@@ -20,7 +20,7 @@ const getAllPackages = async (req, res) => {
     const options = {
       page: page || 1,
       limit: limit || 10,
-      sort: { createdAt: -1 }
+      sort: { createdAt: -1 },
     };
 
     const data = await Referral_Package.aggregatePaginate(myAggregate, options);
@@ -95,7 +95,7 @@ const getReferralPackage = async (req, res) => {
 const deleteReferralPackage = async (req, res) => {
   try {
     await Referral_Package.findByIdAndDelete(req.params.id);
-    res.status(200).json("Referral Package has been deleted...");
+    res.status(200).json({ message: "Referral Package has been deleted..." });
   } catch (err) {
     res.status(500).json({ error: err });
   }

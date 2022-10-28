@@ -21,7 +21,7 @@ const getAllCategories = async (req, res) => {
     const options = {
       page: page || 1,
       limit: limit || 10,
-      sort: { createdAt: -1 }
+      sort: { createdAt: -1 },
     };
 
     const data = await Category.aggregatePaginate(myAggregate, options);
@@ -117,7 +117,7 @@ const getCategory = async (req, res) => {
 const deleteCategory = async (req, res) => {
   try {
     await Category.findByIdAndDelete(req.params.id);
-    res.status(200).json("Category has been deleted...");
+    res.status(200).json({ message: "Category has been deleted..." });
   } catch (err) {
     res.status(500).json({ error: err });
   }

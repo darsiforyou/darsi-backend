@@ -85,7 +85,7 @@ const getDS = async (req, res) => {
 const deleteDS = async (req, res) => {
   try {
     await DS.findByIdAndDelete(req.params.id);
-    res.status(200).json("DS has been deleted...");
+    res.status(200).json({ message: "DS has been deleted..." });
   } catch (err) {
     res.status(500).json({ error: err });
   }

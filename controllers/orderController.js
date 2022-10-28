@@ -79,7 +79,7 @@ const createOrder = async (req, res) => {
     let totalCost = 0 + shippingCharges;
     let totalVendorCost = 0;
     let discount = 0;
-    let totalQty = 0
+    let totalQty = 0;
     let netCost = 0 + shippingCharges;
     let totalProfitMargin = 0;
 
@@ -197,7 +197,7 @@ const getOrder = async (req, res) => {
 const deleteOrder = async (req, res) => {
   try {
     await Order.findByIdAndDelete(req.params.id);
-    res.status(200).json("Order has been deleted...");
+    res.status(200).json({ message: "Order has been deleted..." });
   } catch (err) {
     res.status(500).json({ error: err });
   }

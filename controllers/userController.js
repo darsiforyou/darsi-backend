@@ -21,7 +21,7 @@ const getAllUsers = async (req, res) => {
     const options = {
       page: page || 1,
       limit: limit || 10,
-      sort: { createdAt: -1 }
+      sort: { createdAt: -1 },
     };
 
     const data = await User.aggregatePaginate(myAggregate, options);
@@ -69,7 +69,7 @@ const getAllUsersWithoutFilter = async (req, res) => {
 const deleteUser = async (req, res) => {
   try {
     await User.findByIdAndDelete(req.params.id);
-    res.status(200).json("User has been deleted...");
+    res.status(200).json({ message: "User has been deleted..." });
   } catch (err) {
     res.status(500).json({ error: err });
   }
@@ -103,12 +103,12 @@ const updateUser = async (req, res) => {
   }
 };
 function generateOTP() {
-  // Declare a digits variable 
+  // Declare a digits variable
   // which stores all digits
-  var digits = '0123456789';
-  let OTP = '';
-  for (let i = 0; i < 4; i++ ) {
-      OTP += digits[Math.floor(Math.random() * 10)];
+  var digits = "0123456789";
+  let OTP = "";
+  for (let i = 0; i < 4; i++) {
+    OTP += digits[Math.floor(Math.random() * 10)];
   }
   return OTP;
 }
@@ -116,28 +116,30 @@ const forgotPasswordOtp = async (req, res) => {
   try {
     const user = await User.findOne({ email: req.params.email });
 
-    if (!user?._id) return res.status(500).json({ message: "User doesn't exist" });
-    
-    let otp = generateOTP()
+    if (!user?._id)
+      return res.status(500).json({ message: "User doesn't exist" });
+
+    let otp = generateOTP();
     let otp_data = await OTP.create({
       otp,
       isActive: true,
       email: req.params.email,
-    })
-    if(otp_data.id){
-      await send_email(req.params.email, otp).then(res=> {
-        console.log(res)
-      }).catch((err)=> {
-        return res.status(500).json({ error: err });
-      })
+    });
+    if (otp_data.id) {
+      await send_email(req.params.email, otp)
+        .then((res) => {
+          console.log(res);
+        })
+        .catch((err) => {
+          return res.status(500).json({ error: err });
+        });
 
       res.status(200).json({
         message: "OPT has been sent to your email address",
       });
-    }else{
+    } else {
       return res.status(500).json({ error: "Something went wrong" });
     }
-
   } catch (err) {
     res.status(500).json({ error: err });
   }
@@ -149,11 +151,12 @@ const changeUserPassword = async (req, res) => {
     const user = await User.findOne({ email: user_email });
 
     if (!otp?._id) return res.status(500).json({ message: "OPT is invalid" });
-    if (!user?._id) return res.status(500).json({ message: "User doesn't exist" });
+    if (!user?._id)
+      return res.status(500).json({ message: "User doesn't exist" });
 
     let currentTime = new Date();
     currentTime.setMinutes(currentTime.getMinutes() + 5);
-    currentTime = currentTime.getMilliseconds()
+    currentTime = currentTime.getMilliseconds();
 
     let optCreatedTime = new Date(otp.createdAt).getMilliseconds();
     // if(optCreatedTime > currentTime){
@@ -166,7 +169,6 @@ const changeUserPassword = async (req, res) => {
     res.status(200).json({
       message: "password have been updated",
     });
-
   } catch (err) {
     res.status(500).json({ error: err });
   }
@@ -180,5 +182,5 @@ module.exports = {
   deleteUser,
   updateUser,
   forgotPasswordOtp,
-  changeUserPassword
+  changeUserPassword,
 };
