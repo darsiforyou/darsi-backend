@@ -178,7 +178,7 @@ const getChartData = async (req, res) => {
     }
 
     if (productId) {
-      match = { ...match, "cart.items.productId": productId };
+      match = { "cart.items.productId": productId };
     }
 
     const chartData = await Order.aggregate([
@@ -207,13 +207,54 @@ const getChartData = async (req, res) => {
 const getTopProducts = async (req, res) => {
   try {
     let { limit, vendor } = req.query;
-    const topProducts = await Product.find(
-      vendor
-        ? { vendor: ObjectId(vendor), stockCountConsumed: { $gte: 0 } }
-        : { stockCountConsumed: { $gte: 0 } }
-    )
-      .sort({ stockCountConsumed: -1 })
-      .limit(limit || 10);
+    let { startDate, endDate, role, code, productId } = req.query;
+    let dateObj = new Date();
+    let priorDate =
+      startDate ??
+      new Date(new Date().setDate(dateObj.getDate() - 30))
+        .toISOString()
+        .slice(0, 10);
+    const today = new Date();
+    const tomorrow = endDate ?? new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    let match = {
+      createdAt: { $gte: new Date(priorDate), $lte: tomorrow },
+    };
+
+    const topProducts = await Order.aggregate([
+      {
+        $match: {
+          $and: [match],
+        },
+      },
+      {
+        $unwind: {
+          path: "$cart.items",
+        },
+      },
+      {
+        $group: {
+          _id: "$cart.items.productId",
+          title: {
+            $first: "$cart.items.title",
+          },
+          price: {
+            $sum: "$cart.items.price",
+          },
+          qty: {
+            $sum: "$cart.items.qty",
+          },
+        },
+      },
+      {
+        $sort: {
+          price: -1,
+        },
+      },
+      {
+        $limit: limit || 10,
+      },
+    ]);
     res.json({ data: topProducts });
   } catch (error) {
     res.status(500).json({ error: error });
@@ -221,13 +262,74 @@ const getTopProducts = async (req, res) => {
 };
 const getTopCustomers = async (req, res) => {
   try {
-    let { limit } = req.query;
+    let { limit, vendor } = req.query;
+    let { startDate, endDate, role, code, productId } = req.query;
+    let dateObj = new Date();
+    let priorDate =
+      startDate ??
+      new Date(new Date().setDate(dateObj.getDate() - 30))
+        .toISOString()
+        .slice(0, 10);
+    const today = new Date();
+    const tomorrow = endDate ?? new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    let match = {
+      createdAt: { $gte: new Date(priorDate), $lte: tomorrow },
+    };
 
-    const topUsers = await User.find({ role: "Customer" })
-      .sort({ orderCount: -1 })
-      .limit(limit || 10)
-      .select("_id firstname lastname role");
-    res.json({ data: topUsers });
+    const topProducts = await Order.aggregate([
+      {
+        $match: {
+          $and: [match],
+        },
+      },
+      // {
+      //   $unwind: {
+      //     path: "$cart.items",
+      //   },
+      // },
+      {
+        $group: {
+          _id: "$user",
+          price: {
+            $sum: "$cart.totalCost",
+          },
+          qty: {
+            $sum: "$cart.totalQty",
+          },
+        },
+      },
+      {
+        $sort: {
+          price: -1,
+        },
+      },
+      {
+        $lookup: {
+          from: "user",
+          localField: "user",
+          foreignField: "_id",
+          as: "customer",
+        },
+      },
+      // {
+      //   $unwind: {
+      //     path: "$customer",
+      //   },
+      // },
+      {
+        $project: {
+          id: "$user",
+          username: "$customer.firstname",
+          price: "$price",
+          qty: "$qty",
+        },
+      },
+      {
+        $limit: limit || 10,
+      },
+    ]);
+    res.json({ data: topProducts });
   } catch (error) {
     res.status(500).json({ error: error });
   }
