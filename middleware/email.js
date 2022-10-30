@@ -11,7 +11,7 @@ const send_email = (email, code) => {
                     from: 'darsiforyou@gmail.com', // Change to your verified sender
                     templateId: 'd-7e9e9f2863374a969506cccaa4e7806f',
                     dynamic_template_data: {
-                        code: 243445
+                        code: code
                     },
                 })
             .then((res) => {

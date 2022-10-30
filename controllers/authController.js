@@ -7,13 +7,13 @@ const handleLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
     if (!email || !password)
-      return res.status(401).json({
+      return res.status(203).json({
         message: "email and password are required.",
         data: {},
       });
     const foundUser = await User.findOne({ email: email });
     if (!foundUser)
-      return res.status(401).json({
+      return res.status(203).json({
         message: "email is Invalid",
         data: {},
       });
@@ -57,7 +57,7 @@ const handleLogin = async (req, res) => {
         data: { ...others, accessToken },
       });
     } else {
-      res.status(401).json({
+      res.status(203).json({
         message: "Password did not match",
         data: {},
       });

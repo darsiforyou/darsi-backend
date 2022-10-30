@@ -117,7 +117,7 @@ const forgotPasswordOtp = async (req, res) => {
     const user = await User.findOne({ email: req.params.email });
 
     if (!user?._id)
-      return res.status(500).json({ message: "User doesn't exist" });
+      return res.status(203).json({ message: "User doesn't exist" });
 
     let otp = generateOTP();
     let otp_data = await OTP.create({
@@ -148,11 +148,12 @@ const changeUserPassword = async (req, res) => {
   try {
     const { user_email, otp_code, new_password } = req.body;
     const otp = await OTP.findOne({ opt: otp_code });
+    console.log(otp);
     const user = await User.findOne({ email: user_email });
 
-    if (!otp?._id) return res.status(500).json({ message: "OPT is invalid" });
+    if (!otp?._id) return res.status(203).json({ message: "OPT is invalid" });
     if (!user?._id)
-      return res.status(500).json({ message: "User doesn't exist" });
+      return res.status(203).json({ message: "User doesn't exist" });
 
     let currentTime = new Date();
     currentTime.setMinutes(currentTime.getMinutes() + 5);
