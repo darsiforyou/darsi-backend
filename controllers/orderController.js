@@ -76,7 +76,7 @@ const createOrder = async (req, res) => {
     let refData;
     let _package;
     let shippingCharges = city === "Karachi" ? 50 : 100;
-    let totalCost = 0 + shippingCharges;
+    let totalCost = 0;
     let totalVendorCost = 0;
     let discount = 0;
     let totalQty = 0;
@@ -136,7 +136,7 @@ const createOrder = async (req, res) => {
       order_number: Number(dd + val),
       cart: {
         totalQty: totalQty,
-        totalCost: totalCost,
+        totalCost: totalCost + shippingCharges,
         discount: discount,
         netCost: netCost,
         shippingCharges: shippingCharges,
