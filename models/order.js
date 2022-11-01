@@ -8,6 +8,10 @@ const orderSchema = Schema(
       type: Schema.Types.ObjectId,
       ref: "User",
     },
+    order_number: {
+      type: Number,
+      required: true,
+    },
     cart: {
       totalQty: {
         type: Number,
@@ -44,10 +48,12 @@ const orderSchema = Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: "Product",
           },
-          options: [{
-            key: { type: String },
-            selected: {type: String},
-          }],
+          options: [
+            {
+              key: { type: String },
+              selected: { type: String },
+            },
+          ],
           vendor: {
             type: Schema.Types.ObjectId,
             ref: "User",

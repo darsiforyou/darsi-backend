@@ -128,7 +128,12 @@ const createOrder = async (req, res) => {
         commission,
       });
     }
+    const today = new Date();
+    const dd = String(today.getDate()).padStart(2, "0");
+    const val = Math.floor(1000 + Math.random() * 9000);
+    console.log(val);
     let order = {
+      order_number: Number(dd + val),
       cart: {
         totalQty: totalQty,
         totalCost: totalCost,
