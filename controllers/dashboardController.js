@@ -221,15 +221,26 @@ const getTopProducts = async (req, res) => {
       createdAt: { $gte: new Date(priorDate), $lte: tomorrow },
     };
 
+    if (vendor) {
+      match = { ...match, "cart.items.vendor": ObjectId(vendor) };
+    }
+
     const topProducts = await Order.aggregate([
+      {
+        $unwind: {
+          path: "$cart.items",
+        },
+      },
       {
         $match: {
           $and: [match],
         },
       },
       {
-        $unwind: {
-          path: "$cart.items",
+        $addFields: {
+          totalPrice: {
+            $multiply: ["$cart.items.price", "$cart.items.qty"],
+          },
         },
       },
       {
@@ -239,20 +250,20 @@ const getTopProducts = async (req, res) => {
             $first: "$cart.items.title",
           },
           price: {
-            $sum: "$cart.items.price",
+            $first: "$cart.items.price",
           },
           qty: {
             $sum: "$cart.items.qty",
+          },
+          totalPrice: {
+            $first: "$totalPrice",
           },
         },
       },
       {
         $sort: {
-          price: -1,
+          totalPrice: -1,
         },
-      },
-      {
-        $limit: limit || 10,
       },
     ]);
     res.json({ data: topProducts });
@@ -277,7 +288,7 @@ const getTopCustomers = async (req, res) => {
       createdAt: { $gte: new Date(priorDate), $lte: tomorrow },
     };
 
-    const topProducts = await Order.aggregate([
+    const topCustomers = await Order.aggregate([
       {
         $match: {
           $and: [match],
@@ -306,21 +317,22 @@ const getTopCustomers = async (req, res) => {
       },
       {
         $lookup: {
-          from: "user",
-          localField: "user",
+          from: "users",
+          localField: "_id",
           foreignField: "_id",
           as: "customer",
         },
       },
-      // {
-      //   $unwind: {
-      //     path: "$customer",
-      //   },
-      // },
+      {
+        $unwind: {
+          path: "$customer",
+        },
+      },
       {
         $project: {
           id: "$user",
-          username: "$customer.firstname",
+          firstname: "$customer.firstname",
+          lastname: "$customer.lastname",
           price: "$price",
           qty: "$qty",
         },
@@ -329,20 +341,83 @@ const getTopCustomers = async (req, res) => {
         $limit: limit || 10,
       },
     ]);
-    res.json({ data: topProducts });
+    res.json({ data: topCustomers });
   } catch (error) {
     res.status(500).json({ error: error });
   }
 };
 const getTopVendors = async (req, res) => {
   try {
-    let { limit } = req.query;
+    let { limit, vendor } = req.query;
+    let { startDate, endDate, role, code, productId } = req.query;
+    let dateObj = new Date();
+    let priorDate =
+      startDate ??
+      new Date(new Date().setDate(dateObj.getDate() - 30))
+        .toISOString()
+        .slice(0, 10);
+    const today = new Date();
+    const tomorrow = endDate ?? new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    let match = {
+      createdAt: { $gte: new Date(priorDate), $lte: tomorrow },
+      "cart.items.vendor": ObjectId(vendor),
+    };
 
-    const topUsers = await User.find({ role: "Vendor" })
-      .sort({ totalVendorProductSold: -1 })
-      .limit(limit || 10)
-      .select("_id firstname lastname role");
-    res.json({ data: topUsers });
+    const topVendors = await Order.aggregate([
+      {
+        $match: {
+          $and: [match],
+        },
+      },
+      {
+        $unwind: {
+          path: "$cart.items",
+        },
+      },
+      {
+        $group: {
+          _id: "$vendor",
+          price: {
+            $sum: "$cart.items.price",
+          },
+          qty: {
+            $sum: "$cart.items.qty",
+          },
+        },
+      },
+      {
+        $sort: {
+          price: -1,
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "_id",
+          foreignField: "_id",
+          as: "vendor",
+        },
+      },
+      {
+        $unwind: {
+          path: "$vendor",
+        },
+      },
+      {
+        $project: {
+          id: "$user",
+          firstname: "$vendor.firstname",
+          lastname: "$vendor.lastname",
+          price: "$price",
+          qty: "$qty",
+        },
+      },
+      {
+        $limit: limit || 10,
+      },
+    ]);
+    res.json({ data: topVendors });
   } catch (error) {
     res.status(500).json({ error: error });
   }
