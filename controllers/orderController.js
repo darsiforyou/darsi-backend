@@ -80,13 +80,13 @@ const createOrder = async (req, res) => {
     let totalVendorCost = 0;
     let discount = 0;
     let totalQty = 0;
-    let netCost = 0 + shippingCharges;
+    let netCost = 0;
     let totalProfitMargin = 0;
 
     for (const x of products) {
-      totalCost = (totalCost + x.price) * x.qty;
+      totalCost = totalCost + x.price * x.qty;
       totalVendorCost = (totalVendorCost + x.vendorPrice) * x.qty;
-      netCost = (netCost + x.price) * x.qty;
+      netCost = netCost + x.price * x.qty;
       totalQty = totalQty + x.qty;
       totalProfitMargin = totalProfitMargin + x.profitMargin;
       let stockCountPending = x.stockCountPending - x.qty;

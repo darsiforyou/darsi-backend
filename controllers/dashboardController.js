@@ -265,6 +265,9 @@ const getTopProducts = async (req, res) => {
           totalPrice: -1,
         },
       },
+      {
+        $limit: +limit || 10,
+      },
     ]);
     res.json({ data: topProducts });
   } catch (error) {
@@ -289,56 +292,34 @@ const getTopCustomers = async (req, res) => {
     };
 
     const topCustomers = await Order.aggregate([
-      {
-        $match: {
-          $and: [match],
-        },
-      },
       // {
-      //   $unwind: {
-      //     path: "$cart.items",
-      //   },
+      //   $match:match
       // },
       {
+        $unwind: {
+          path: "$cart.items",
+        },
+      },
+      {
         $group: {
-          _id: "$user",
-          price: {
-            $sum: "$cart.totalCost",
-          },
-          qty: {
-            $sum: "$cart.totalQty",
+          _id: "$email",
+          totalPurchase: {
+            $sum: "$cart.items.price",
           },
         },
       },
       {
         $sort: {
-          price: -1,
+          totalPurchase: -1,
         },
       },
       {
         $lookup: {
           from: "users",
           localField: "_id",
-          foreignField: "_id",
-          as: "customer",
+          foreignField: "email",
+          as: "customerdetails",
         },
-      },
-      {
-        $unwind: {
-          path: "$customer",
-        },
-      },
-      {
-        $project: {
-          id: "$user",
-          firstname: "$customer.firstname",
-          lastname: "$customer.lastname",
-          price: "$price",
-          qty: "$qty",
-        },
-      },
-      {
-        $limit: limit || 10,
       },
     ]);
     res.json({ data: topCustomers });
