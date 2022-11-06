@@ -9,6 +9,7 @@ const getAllProducts = async (req, res) => {
       "category_name",
       "brand_name",
       "title",
+      'description',
       "isbn",
     ]);
     queries = getQuery(queries);
