@@ -50,7 +50,7 @@ const getAllProducts = async (req, res) => {
             from: "categories",
             localField: "category",
             foreignField: "_id",
-            as: "category",
+            as: "categories",
           },
         },
         {
@@ -58,7 +58,7 @@ const getAllProducts = async (req, res) => {
             from: "users",
             localField: "vendor",
             foreignField: "_id",
-            as: "vendor",
+            as: "vendors",
           },
         },
         {
