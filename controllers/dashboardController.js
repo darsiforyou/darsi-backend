@@ -6,6 +6,7 @@ const ObjectId = mongoose.Types.ObjectId;
 
 const getCounts = async (req, res) => {
   try {
+    const { code } = req.query;
     const ordersPending = await Order.countDocuments({
       orderStatus: "Pending",
     });
@@ -33,8 +34,14 @@ const getCounts = async (req, res) => {
     const userReferrer = await User.countDocuments({
       role: "Referrer",
     });
+
+    let totalIncomeMatch = { orderStatus: "Delivered" };
+
+    if (code) {
+      totalIncomeMatch = { ...totalIncomeMatch, applied_Referral_Code: code };
+    }
     const totalIncome = await Order.aggregate([
-      { $match: { orderStatus: "Delivered" } },
+      { $match: { $and: [totalIncomeMatch] } },
       {
         $group: {
           _id: null,
