@@ -24,7 +24,7 @@ router
   .route("/:id")
   .get(userController.getUser)
   .delete(verifyJWT, verifyRoles(ROLES_LIST.Admin), userController.deleteUser)
-  .put(verifyJWT);
+  .put(verifyJWT, userController.updateUser);
 
 router.route("/code/:code").get(userController.getUserWithRefCode);
 router.route("/forgotPasswordOtp/:email").get(userController.forgotPasswordOtp);
