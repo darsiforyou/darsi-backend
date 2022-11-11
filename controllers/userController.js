@@ -11,10 +11,28 @@ const getAllUsers = async (req, res) => {
     queries = getQuery(queries);
     let myAggregate;
     if (!search) {
-      myAggregate = User.aggregate([{ $match: { $and: [queries] } }]);
+      myAggregate = User.aggregate([
+        { $match: { $and: [queries] } },
+        {
+          $lookup: {
+            from: "referral_packages",
+            localField: "referral_package",
+            foreignField: "_id",
+            as: "packageName",
+          },
+        },
+      ]);
     } else {
       myAggregate = User.aggregate([
         { $match: { $and: [{ $or: search }, queries] } },
+        {
+          $lookup: {
+            from: "referral_packages",
+            localField: "referral_package",
+            foreignField: "_id",
+            as: "packageName",
+          },
+        },
       ]);
     }
 
