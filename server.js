@@ -50,6 +50,7 @@ app.use("/products", require("./routes/api/products"));
 app.use("/orders", require("./routes/api/order"));
 app.use("/categories", require("./routes/api/categories"));
 app.use("/brands", require("./routes/api/brands"));
+app.use("/subjects", require("./routes/api/subjects"));
 app.use("/packages", require("./routes/api/referralPackages"));
 app.use("/dashboard-setting", require("./routes/api/dashboardSettings"));
 app.use("/dashboard", require("./routes/api/dashboard"));

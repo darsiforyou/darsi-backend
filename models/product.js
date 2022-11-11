@@ -84,6 +84,13 @@ const productSchema = Schema(
     isbn: {
       type: String,
     },
+    subject: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Subject",
+    },
+    subject_name: {
+      type: String,
+    },
     available: {
       type: Boolean,
       default: false,

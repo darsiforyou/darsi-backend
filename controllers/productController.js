@@ -50,7 +50,7 @@ const getAllProducts = async (req, res) => {
             from: "categories",
             localField: "category",
             foreignField: "_id",
-            as: "category",
+            as: "categories",
           },
         },
         {
@@ -58,7 +58,7 @@ const getAllProducts = async (req, res) => {
             from: "users",
             localField: "vendor",
             foreignField: "_id",
-            as: "vendor",
+            as: "vendors",
           },
         },
         {
@@ -103,6 +103,7 @@ const addProduct = async (req, res) => {
       title,
       category,
       brand,
+      subject,
       vendor,
       vendorPrice,
       price,
@@ -116,6 +117,7 @@ const addProduct = async (req, res) => {
       options,
       vendor_name,
       brand_name,
+      subject_name,
       category_name,
       isbn,
     } = req.body;
@@ -123,6 +125,7 @@ const addProduct = async (req, res) => {
       title,
       category,
       brand,
+      subject,
       vendorPrice,
       vendor,
       price,
@@ -140,6 +143,7 @@ const addProduct = async (req, res) => {
       vendor_name,
       brand_name,
       category_name,
+      subject_name,
       isbn,
     });
 
@@ -207,6 +211,7 @@ const updateProduct = async (req, res) => {
     const {
       title,
       category,
+      subject,
       brand,
       vendorPrice,
       price,
@@ -221,6 +226,7 @@ const updateProduct = async (req, res) => {
       options,
       vendor_name,
       brand_name,
+      subject_name,
       category_name,
       isbn,
     } = req.body;
@@ -229,6 +235,7 @@ const updateProduct = async (req, res) => {
       title,
       category,
       brand,
+      subject,
       vendorPrice,
       price,
       isFeatured,
@@ -243,6 +250,7 @@ const updateProduct = async (req, res) => {
       options,
       vendor_name,
       brand_name,
+      subject_name,
       category_name,
       isbn,
     });
