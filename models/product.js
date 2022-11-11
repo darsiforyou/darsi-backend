@@ -84,6 +84,9 @@ const productSchema = Schema(
     isbn: {
       type: String,
     },
+    subject: {
+      type: String,
+    },
     available: {
       type: Boolean,
       default: false,
