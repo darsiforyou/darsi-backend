@@ -2,7 +2,6 @@ const Category = require("../models/category");
 const Product = require("../models/product");
 const { searchInColumns, getQuery } = require("../utils");
 const imagekit = require("../config/imagekit");
-const category = require("../models/category");
 
 const getAllCategories = async (req, res) => {
   try {
