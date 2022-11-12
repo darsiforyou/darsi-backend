@@ -1,7 +1,10 @@
 const Product = require("../models/product");
+const User = require("../models/user");
 const { faker } = require("@faker-js/faker");
 const imagekit = require("../config/imagekit");
 const { searchInColumns, getQuery } = require("../utils");
+const send_email = require("../middleware/email");
+
 const getAllProducts = async (req, res) => {
   try {
     let { page, limit, search, ...queries } = req.query;
@@ -230,7 +233,7 @@ const updateProduct = async (req, res) => {
       category_name,
       isbn,
     } = req.body;
-    // const file = req.file;
+
     let data = await Product.findByIdAndUpdate(req.params.id, {
       title,
       category,
@@ -253,19 +256,27 @@ const updateProduct = async (req, res) => {
       subject_name,
       category_name,
       isbn,
+      updatedBy: req.userId,
     });
-    // if (file !== undefined) {
-    //   const { imageId } = data;
-    //   if (imageId) await imagekit.deleteFile(imageId);
-    //   let img = await imagekit.upload({
-    //     file: file.buffer, //required
-    //     fileName: file.originalname, //required
-    //   });
-    //   data = await Product.findByIdAndUpdate(data.id, {
-    //     imageURL: img.url,
-    //     imageId: img.fileId,
-    //   });
-    // }
+
+    const user = await User.findById(req.userId);
+    const _vendorData = await User.findById(vendor);
+
+    if (user?.role === 'Admin') {
+      let emailInput = {
+        subject: 'Product updates',
+        html: `<strong>Your product ${title} has been updated</strong>`,
+      }
+      await send_email(_vendorData.email, emailInput)
+        .then((res) => {
+          console.log(res);
+        })
+        .catch((err) => {
+          return res.status(500).json({ error: err });
+        });
+    }
+
+
     res.status(200).json({
       message: "Product has been updated",
       data: data,

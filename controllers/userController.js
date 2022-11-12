@@ -144,7 +144,11 @@ const forgotPasswordOtp = async (req, res) => {
       email: req.params.email,
     });
     if (otp_data.id) {
-      await send_email(req.params.email, otp)
+      let emailInput = {
+        subject: 'Forgot your password',
+        html: `<strong>Please enter the following OTP to Change your password ${otp} </strong>`,
+      }
+      await send_email(req.params.email, emailInput)
         .then((res) => {
           console.log(res);
         })

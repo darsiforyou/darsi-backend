@@ -119,9 +119,12 @@ const productSchema = Schema(
     },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
-      default: "62016d83fae21e29a43aa7aa", //TODO later on this field should be removed and data should be entried only after creating users
       ref: "User",
     },
+    updatedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    }
   },
   { timestamps: true }
 );
