@@ -9,14 +9,17 @@ function getQuery(query) {
       obj[key] = query[key];
     }
   });
-  if(obj['category']){
+  if (obj['category']) {
     obj['category'] = ObjectId(obj['category']);
   }
-  if(obj['brand']){
+  if (obj['brand']) {
     obj['brand'] = ObjectId(obj['brand']);
   }
-  if(obj['vendor']){
+  if (obj['vendor']) {
     obj['vendor'] = ObjectId(obj['vendor']);
+  }
+  if (obj['user']) {
+    obj['user'] = ObjectId(obj['user']);
   }
   return obj;
 }
