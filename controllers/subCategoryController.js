@@ -1,4 +1,4 @@
-const SubCategory = require("../models/subCategory");
+const SubCategory = require("../models/sub_category");
 const Product = require("../models/product");
 const { searchInColumns, getQuery } = require("../utils");
 
@@ -61,7 +61,7 @@ const addSubCategory = async (req, res) => {
       isActive,
       isFeatured,
       rank,
-      category
+      category,
     });
     res.status(200).json({
       message: "Your subCategory has been Added Successfully.",
@@ -74,7 +74,8 @@ const addSubCategory = async (req, res) => {
 const getSubCategory = async (req, res) => {
   try {
     const subCategory = await SubCategory.findById(req.params.id);
-    if (!subCategory) return res.status(404).send({ error: "SubCategory not found" });
+    if (!subCategory)
+      return res.status(404).send({ error: "SubCategory not found" });
     return res.json(subCategory);
   } catch (err) {
     res.status(500).json({ error: err });
@@ -91,14 +92,14 @@ const deleteSubCategory = async (req, res) => {
 };
 const updateSubCategory = async (req, res) => {
   try {
-    const { title, isActive, isFeatured, rank,category } = req.body;
+    const { title, isActive, isFeatured, rank, category } = req.body;
     const file = req.file;
     let data = await SubCategory.findByIdAndUpdate(req.params.id, {
       title,
       isActive,
       isFeatured,
       rank,
-      category
+      category,
     });
     res.status(200).json({
       message: "SubCategory has been updated",
