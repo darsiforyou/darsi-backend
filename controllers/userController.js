@@ -110,7 +110,9 @@ const updateUser = async (req, res) => {
       const hashedPwd = await bcrypt.hash(password, 10);
       updateUser.password = hashedPwd;
     }
-    let data = await User.findByIdAndUpdate(req.params.id, updateUser);
+    let data = await User.findByIdAndUpdate(req.params.id, updateUser, {
+      new: true,
+    });
 
     res.status(200).json({
       message: "User has been updated",
@@ -145,9 +147,9 @@ const forgotPasswordOtp = async (req, res) => {
     });
     if (otp_data.id) {
       let emailInput = {
-        subject: 'Forgot your password',
+        subject: "Forgot your password",
         html: `<strong>Please enter the following OTP to Change your password ${otp} </strong>`,
-      }
+      };
       await send_email(req.params.email, emailInput)
         .then((res) => {
           console.log(res);
