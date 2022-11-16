@@ -55,6 +55,7 @@ app.use("/subjects", require("./routes/api/subjects"));
 app.use("/packages", require("./routes/api/referralPackages"));
 app.use("/dashboard-setting", require("./routes/api/dashboardSettings"));
 app.use("/dashboard", require("./routes/api/dashboard"));
+app.use("/financials", require("./routes/api/financials"));
 app.use("/image", require("./routes/api/imageUpload"));
 app.all("*", (req, res) => {
   res.status(404);

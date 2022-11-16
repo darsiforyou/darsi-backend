@@ -3,6 +3,7 @@ const { searchInColumns, getQuery } = require("../utils");
 const Referral_Package = require("../models/referral_packages");
 const User = require("../models/user");
 const Product = require("../models/product");
+const Financial = require("../models/financial");
 const mongoose = require("mongoose");
 
 const ObjectId = mongoose.Types.ObjectId;
@@ -82,6 +83,8 @@ const createOrder = async (req, res) => {
     let totalQty = 0;
     let netCost = 0;
     let totalProfitMargin = 0;
+    let allVendors = [];
+    let referrer = {id: undefined, commission: 0};
 
     for (const x of products) {
       totalCost = totalCost + x.price * x.qty;
@@ -93,11 +96,15 @@ const createOrder = async (req, res) => {
       let stockCountConsumed = x.stockCountConsumed + x.qty;
       let totalPrice = x.qty * x.price;
       let totalSale = x.totalSale + totalPrice;
+
       // update vendor sold product quantity
+      allVendors.push({id: x.vendor, commission: totalPrice})
+
       const vendorData = await User.findById(x.vendor);
       await User.findByIdAndUpdate(x.vendor, {
         totalVendorProductSold: vendorData.totalVendorProductSold + totalQty,
       });
+      
       // update product total sale
       await Product.updateOne(
         { _id: x.productId },
@@ -124,6 +131,7 @@ const createOrder = async (req, res) => {
       // calculate commission for user
       let commission = (totalVendorCost * Number(_package.commission)) / 100;
       commission = commission + refData.commission;
+      referrer = {id: refData._id, commission}
       await User.findByIdAndUpdate(refData._id, {
         commission,
       });
@@ -131,7 +139,6 @@ const createOrder = async (req, res) => {
     const today = new Date();
     const dd = String(today.getDate()).padStart(2, "0");
     const val = Math.floor(1000 + Math.random() * 9000);
-    console.log(val);
     let order = {
       order_number: Number(dd + val),
       cart: {
@@ -162,7 +169,18 @@ const createOrder = async (req, res) => {
         totalSale: userData.totalSale + netCost,
       });
     }
+
     let data = await Order.create(order);
+
+    // Create financial entires for referrer 
+    if (refData) {
+      await Financial.create({ user: refData._id, order: data._id, amount: referrer.commission});
+    }
+    // Create financial entires for vendor
+    for (const vendor of allVendors) {
+      await Financial.create({ user: vendor.id, order: data._id, amount: vendor.commission});
+    } 
+   
     res.status(200).json({
       message: "Your order has been placed Successfully.",
       data: data,
