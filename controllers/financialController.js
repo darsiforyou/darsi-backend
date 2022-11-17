@@ -6,23 +6,23 @@ const getAllFinancials = async (req, res) => {
     let { page, limit, ...queries } = req.query;
     queries = getQuery(queries);
     let myAggregate = Financial.aggregate([{ $match: { $and: [queries] } },
-      {
-        $lookup: {
-          from: "orders",
-          localField: "order",
-          foreignField: "_id",
-          as: "order",
-        },
+    {
+      $lookup: {
+        from: "orders",
+        localField: "order",
+        foreignField: "_id",
+        as: "order",
       },
-      {
-        $lookup: {
-          from: "users",
-          localField: "user",
-          foreignField: "_id",
-          as: "user",
-        },
-      }]);
-    
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "user",
+        foreignField: "_id",
+        as: "user",
+      },
+    }]);
+
     const options = {
       page: page || 1,
       limit: limit || 10,
@@ -56,6 +56,7 @@ const deleteFinancial = async (req, res) => {
     res.status(500).json({ error: err });
   }
 };
+
 
 module.exports = {
   getAllFinancials,

@@ -7,7 +7,10 @@ const financialSchema = Schema(
     user: {
       type: Schema.Types.ObjectId,
       ref: "User",
-      required: true,
+    },
+    darsi: {
+      type: Boolean,
+      default: false,
     },
     order: {
       type: Schema.Types.ObjectId,

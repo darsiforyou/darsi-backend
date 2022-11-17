@@ -83,8 +83,8 @@ const createOrder = async (req, res) => {
     let totalQty = 0;
     let netCost = 0;
     let totalProfitMargin = 0;
-    let allVendors = [];
-    let referrer = {id: undefined, commission: 0};
+    let allVendors = {};
+    let referrer = { id: undefined, commission: 0 };
 
     for (const x of products) {
       totalCost = totalCost + x.price * x.qty;
@@ -98,13 +98,13 @@ const createOrder = async (req, res) => {
       let totalSale = x.totalSale + totalPrice;
 
       // update vendor sold product quantity
-      allVendors.push({id: x.vendor, commission: totalPrice})
+      allVendors[x.vendor] = { id: x.vendor, commission: (allVendors[x.vendor]?.commission || 0) + (x.qty * x.vendorPrice) }
 
       const vendorData = await User.findById(x.vendor);
       await User.findByIdAndUpdate(x.vendor, {
         totalVendorProductSold: vendorData.totalVendorProductSold + totalQty,
       });
-      
+
       // update product total sale
       await Product.updateOne(
         { _id: x.productId },
@@ -115,6 +115,7 @@ const createOrder = async (req, res) => {
         }
       );
     }
+
     if (applied_Referral_Code) {
       refData = await User.findOne({
         user_code: applied_Referral_Code,
@@ -129,9 +130,11 @@ const createOrder = async (req, res) => {
       );
       netCost = totalCost - discount;
       // calculate commission for user
-      let commission = (totalVendorCost * Number(_package.commission)) / 100;
+      let commission = (totalProfitMargin * Number(_package.commission)) / 100;
+
+      referrer = { id: refData._id, commission }
+
       commission = commission + refData.commission;
-      referrer = {id: refData._id, commission}
       await User.findByIdAndUpdate(refData._id, {
         commission,
       });
@@ -145,7 +148,7 @@ const createOrder = async (req, res) => {
         totalQty: totalQty,
         totalCost: totalCost + shippingCharges,
         discount: discount,
-        netCost: netCost,
+        netCost: netCost + shippingCharges,
         shippingCharges: shippingCharges,
         totalProfitMargin: totalProfitMargin,
         items: products,
@@ -174,13 +177,15 @@ const createOrder = async (req, res) => {
 
     // Create financial entires for referrer 
     if (refData) {
-      await Financial.create({ user: refData._id, order: data._id, amount: referrer.commission});
+      await Financial.create({ user: refData._id, order: data._id, amount: referrer.commission });
     }
     // Create financial entires for vendor
-    for (const vendor of allVendors) {
-      await Financial.create({ user: vendor.id, order: data._id, amount: vendor.commission});
-    } 
-   
+    for (const vendor of Object.values(allVendors)) {
+      await Financial.create({ user: vendor.id, order: data._id, amount: vendor.commission });
+    }
+    // Create financial entires for admin
+    await Financial.create({ darsi: true, order: data._id, amount: (totalProfitMargin - referrer.commission) + shippingCharges });
+
     res.status(200).json({
       message: "Your order has been placed Successfully.",
       data: data,
