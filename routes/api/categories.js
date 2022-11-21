@@ -10,7 +10,7 @@ const upload = multer({ storage });
 router
   .route("/")
   .get(categoryController.getAllCategories)
-  .get(categoryController.getAllCategoriesWithoutFilter)
+  // .get(categoryController.getAllCategoriesWithoutFilter)
   .post(
     verifyJWT,
     verifyRoles(ROLES_LIST.Admin),
@@ -20,6 +20,7 @@ router
 router
   .route("/without_filter")
   .get(categoryController.getAllCategoriesWithoutFilter);
+router.route("/with_child").get(categoryController.getCategories);
 router
   .route("/:id")
   .get(categoryController.getCategory)
