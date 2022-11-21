@@ -9,6 +9,9 @@ const financialController = require("../../controllers/financialController");
 router
   .route("/")
   .get(financialController.getAllFinancials)
+router
+  .route("/make-payment-request")
+  .post(financialController.makePaymentRequest)
 
 router
   .route("/:id")

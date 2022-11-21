@@ -48,6 +48,17 @@ const getFinancial = async (req, res) => {
     res.status(500).json({ error: err });
   }
 };
+const makePaymentRequest = async (req, res) => {
+  try {
+    const { f_ids } = req.body;
+    (f_ids || []).forEach(async id => {
+      await Financial.findByIdAndUpdate(id, { status: 'Requested' })
+    });
+    res.status(200).json({ message: "Request has been send to the admin" });
+  } catch (err) {
+    res.status(500).json({ error: err });
+  }
+};
 const deleteFinancial = async (req, res) => {
   try {
     await Financial.findByIdAndDelete(req.params.id);
@@ -62,4 +73,5 @@ module.exports = {
   getAllFinancials,
   getFinancial,
   deleteFinancial,
+  makePaymentRequest
 };
