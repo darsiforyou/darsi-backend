@@ -12,36 +12,167 @@ const getAllOrders = async (req, res) => {
     let { page, limit, search, vendorId, ...queries } = req.query;
     search = searchInColumns(search, ["user"]);
     queries = getQuery(queries);
-
+    let items = "";
     if (vendorId) {
       id = ObjectId(vendorId);
       queries = { ...queries, "cart.items.vendor": id };
+      items = {};
     }
     let myAggregate;
+    let arr = [
+      // {
+      //   $match: {
+      //     "cart.items.vendor": new ObjectId(vendorId),
+      //   },
+      // },
+      {
+        $addFields: {
+          items: "$cart.items",
+        },
+      },
+      {
+        $lookup: {
+          from: "products",
+          localField: "items.productId",
+          foreignField: "_id",
+          as: "prd",
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "items.vendor",
+          foreignField: "_id",
+          as: "vendorDetail",
+        },
+      },
+      {
+        $addFields: {
+          items: {
+            $map: {
+              input: "$items",
+              in: {
+                $mergeObjects: [
+                  "$$this",
+                  {
+                    lineItems: {
+                      $arrayElemAt: [
+                        {
+                          $filter: {
+                            input: "$prd",
+                            as: "j",
+                            cond: {
+                              $eq: ["$$this.productId", "$$j._id"],
+                            },
+                          },
+                        },
+                        0,
+                      ],
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        },
+      },
+      {
+        $addFields: {
+          items: {
+            $map: {
+              input: "$items",
+              in: {
+                $mergeObjects: [
+                  "$$this",
+                  {
+                    vendorDetail: {
+                      $arrayElemAt: [
+                        {
+                          $filter: {
+                            input: "$vendorDetail",
+                            as: "j",
+                            cond: {
+                              $eq: ["$$this.vendor", "$$j._id"],
+                            },
+                          },
+                        },
+                        0,
+                      ],
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        },
+      },
+    ];
     if (!search) {
-      myAggregate = Order.aggregate([
-        { $match: { $and: [queries] } },
-        {
-          $lookup: {
-            from: "users",
-            localField: "user",
-            foreignField: "_id",
-            as: "users",
+      if (vendorId) {
+        myAggregate = Order.aggregate([
+          {
+            $match: { $and: [queries] },
           },
-        },
-      ]);
+          ...arr,
+          {
+            $addFields: {
+              items: {
+                $filter: {
+                  input: "$items",
+                  as: "j",
+                  cond: {
+                    $and: [
+                      {
+                        $eq: ["$$j.vendor", new ObjectId(vendorId)],
+                      },
+                    ],
+                  },
+                },
+              },
+            },
+          },
+        ]);
+      } else {
+        myAggregate = Order.aggregate([
+          {
+            $match: { $and: [queries] },
+          },
+          ...arr,
+        ]);
+      }
     } else {
-      myAggregate = Order.aggregate([
-        { $match: { $and: [{ $or: search }, queries] } },
-        {
-          $lookup: {
-            from: "users",
-            localField: "user",
-            foreignField: "_id",
-            as: "users",
+      if (vendorId) {
+        myAggregate = Order.aggregate([
+          {
+            $match: { $and: [{ $or: search }, queries] },
           },
-        },
-      ]);
+          ...arr,
+          {
+            $addFields: {
+              items: {
+                $filter: {
+                  input: "$items",
+                  as: "j",
+                  cond: {
+                    $and: [
+                      {
+                        $eq: ["$$j.vendor", new ObjectId(vendorId)],
+                      },
+                    ],
+                  },
+                },
+              },
+            },
+          },
+        ]);
+      } else {
+        myAggregate = Order.aggregate([
+          {
+            $match: { $and: [{ $or: search }, queries] },
+          },
+          ...arr,
+        ]);
+      }
     }
 
     const options = {
@@ -98,7 +229,11 @@ const createOrder = async (req, res) => {
       let totalSale = x.totalSale + totalPrice;
 
       // update vendor sold product quantity
-      allVendors[x.vendor] = { id: x.vendor, commission: (allVendors[x.vendor]?.commission || 0) + (x.qty * x.vendorPrice) }
+      allVendors[x.vendor] = {
+        id: x.vendor,
+        commission:
+          (allVendors[x.vendor]?.commission || 0) + x.qty * x.vendorPrice,
+      };
 
       const vendorData = await User.findById(x.vendor);
       await User.findByIdAndUpdate(x.vendor, {
@@ -132,7 +267,7 @@ const createOrder = async (req, res) => {
       // calculate commission for user
       let commission = (totalProfitMargin * Number(_package.commission)) / 100;
 
-      referrer = { id: refData._id, commission }
+      referrer = { id: refData._id, commission };
 
       commission = commission + refData.commission;
       await User.findByIdAndUpdate(refData._id, {
@@ -175,16 +310,28 @@ const createOrder = async (req, res) => {
 
     let data = await Order.create(order);
 
-    // Create financial entires for referrer 
+    // Create financial entires for referrer
     if (refData) {
-      await Financial.create({ user: refData._id, order: data._id, amount: referrer.commission });
+      await Financial.create({
+        user: refData._id,
+        order: data._id,
+        amount: referrer.commission,
+      });
     }
     // Create financial entires for vendor
     for (const vendor of Object.values(allVendors)) {
-      await Financial.create({ user: vendor.id, order: data._id, amount: vendor.commission });
+      await Financial.create({
+        user: vendor.id,
+        order: data._id,
+        amount: vendor.commission,
+      });
     }
     // Create financial entires for admin
-    await Financial.create({ darsi: true, order: data._id, amount: (totalProfitMargin - referrer.commission) + shippingCharges });
+    await Financial.create({
+      darsi: true,
+      order: data._id,
+      amount: totalProfitMargin - referrer.commission + shippingCharges,
+    });
 
     res.status(200).json({
       message: "Your order has been placed Successfully.",
