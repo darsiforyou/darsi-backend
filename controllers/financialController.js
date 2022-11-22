@@ -39,6 +39,68 @@ const getAllFinancials = async (req, res) => {
     res.status(500).json({ error: err });
   }
 };
+const getAllRequests = async (req, res) => {
+  try {
+    let { page, limit, ...queries } = req.query;
+    queries = getQuery(queries);
+    let myAggregate = PaymentRequest.aggregate([{ $match: { $and: [queries] } },
+    {
+      $lookup: {
+        from: "users",
+        localField: "user",
+        foreignField: "_id",
+        as: "user",
+      },
+    },
+      // {
+      //   $lookup: {
+      //     from: "financials",
+      //     localField: "",
+      //     foreignField: "_id",
+      //     as: "order",
+      //   },
+      // },
+    ]);
+
+    const options = {
+      page: page || 1,
+      limit: limit || 10,
+      sort: { createdAt: -1 },
+    };
+    const data = await PaymentRequest.aggregatePaginate(myAggregate, options);
+
+    return res.status(200).send({
+      message: "Successfully fetch Financial",
+      data: data,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err });
+  }
+};
+const getRevenueTotal = async (req, res) => {
+  try {
+    let queries = getQuery(req.query);
+
+    const total = await Financial.aggregate([
+      {
+        '$match': queries
+      }, {
+        '$group': {
+          '_id': '$status',
+          'total': {
+            '$sum': '$amount'
+          }
+        }
+      }
+    ])
+    return res.status(200).send({
+      message: "Successfully fetch Financial Total",
+      total: total,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err });
+  }
+};
 const getFinancial = async (req, res) => {
   try {
     const financial = await Financial.findById(req.params.id);
@@ -68,6 +130,24 @@ const makePaymentRequest = async (req, res) => {
     res.status(500).json({ error: err });
   }
 };
+const acceptPaymentRequest = async (req, res) => {
+  try {
+    const id = req.params.id;
+    let request = await PaymentRequest.findById(id)
+    if (request._id) {
+      await PaymentRequest.findByIdAndUpdate(id, { status: "Accepted" })
+    }
+    let f_ids = await request.financial.map((f) => f)
+    await Financial.update(
+      { _id: { $in: f_ids } },
+      { $set: { status: "Withdraw" } },
+      { multi: true }
+    )
+    res.status(200).json({ message: "Request accepted" });
+  } catch (err) {
+    res.status(500).json({ error: err });
+  }
+};
 const deleteFinancial = async (req, res) => {
   try {
     await Financial.findByIdAndDelete(req.params.id);
@@ -82,5 +162,8 @@ module.exports = {
   getAllFinancials,
   getFinancial,
   deleteFinancial,
-  makePaymentRequest
+  makePaymentRequest,
+  getRevenueTotal,
+  getAllRequests,
+  acceptPaymentRequest
 };

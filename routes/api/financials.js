@@ -10,8 +10,20 @@ router
   .route("/")
   .get(financialController.getAllFinancials)
 router
+  .route("/requests")
+  .get(financialController.getAllRequests)
+
+router
   .route("/make-payment-request")
   .post(financialController.makePaymentRequest)
+
+router
+  .route("/accept-payment-request/:id")
+  .get(financialController.acceptPaymentRequest)
+
+router
+  .route("/get-revenue-total")
+  .get(financialController.getRevenueTotal)
 
 router
   .route("/:id")

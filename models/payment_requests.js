@@ -32,6 +32,7 @@ const paymentRequestSchema = Schema(
       enum: [
         "Pending",
         "Rejected",
+        "Accepted",
       ],
     },
   },
