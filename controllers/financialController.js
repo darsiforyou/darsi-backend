@@ -1,4 +1,5 @@
 const Financial = require("../models/financial");
+const PaymentRequest = require("../models/payment_requests");
 const { getQuery } = require("../utils");
 
 const getAllFinancials = async (req, res) => {
@@ -28,11 +29,10 @@ const getAllFinancials = async (req, res) => {
       limit: limit || 10,
       sort: { createdAt: -1 },
     };
-
     const data = await Financial.aggregatePaginate(myAggregate, options);
 
     return res.status(200).send({
-      message: "Successfully fetch Financials",
+      message: "Successfully fetch Financial",
       data: data,
     });
   } catch (err) {
@@ -50,10 +50,19 @@ const getFinancial = async (req, res) => {
 };
 const makePaymentRequest = async (req, res) => {
   try {
-    const { f_ids } = req.body;
-    (f_ids || []).forEach(async id => {
-      await Financial.findByIdAndUpdate(id, { status: 'Requested' })
-    });
+    const { user, darsi, amount } = req.body;
+    let financial = await Financial.find({ user: user })
+    console.log(financial);
+    let f_ids = await financial.map((f) => f._id)
+    console.log(f_ids);
+
+    await PaymentRequest.create({ user, darsi: darsi ? darsi : false, financial: f_ids, amount })
+
+    await Financial.update(
+      { _id: { $in: f_ids } },
+      { $set: { status: "Requested" } },
+      { multi: true }
+    )
     res.status(200).json({ message: "Request has been send to the admin" });
   } catch (err) {
     res.status(500).json({ error: err });
