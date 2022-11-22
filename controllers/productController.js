@@ -12,7 +12,8 @@ const getAllProducts = async (req, res) => {
       "category_name",
       "brand_name",
       "title",
-      'description',
+      "description",
+      "subject_name",
       "isbn",
     ]);
     queries = getQuery(queries);
@@ -262,11 +263,11 @@ const updateProduct = async (req, res) => {
     const user = await User.findById(req.userId);
     const _vendorData = await User.findById(vendor);
 
-    if (user?.role === 'Admin') {
+    if (user?.role === "Admin") {
       let emailInput = {
-        subject: 'Product updates',
+        subject: "Product updates",
         html: `<strong>Your product ${title} has been updated</strong>`,
-      }
+      };
       await send_email(_vendorData.email, emailInput)
         .then((res) => {
           console.log(res);
@@ -275,7 +276,6 @@ const updateProduct = async (req, res) => {
           return res.status(500).json({ error: err });
         });
     }
-
 
     res.status(200).json({
       message: "Product has been updated",

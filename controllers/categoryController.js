@@ -2,7 +2,41 @@ const Category = require("../models/category");
 const Product = require("../models/product");
 const { searchInColumns, getQuery } = require("../utils");
 const imagekit = require("../config/imagekit");
+const slugify = require("slugify");
+const shortid = require("shortid");
+function createCategories(categories, parentId = null) {
+  const categoryList = [];
+  let category;
+  if (parentId == null) {
+    category = categories.filter((cat) => cat.parentId == undefined);
+  } else {
+    category = categories.filter((cat) => cat.parentId == parentId);
+  }
 
+  for (let cate of category) {
+    categoryList.push({
+      _id: cate._id,
+      title: cate.title,
+      slug: cate.slug,
+      parentId: cate.parentId,
+      isActive: cate.isActive,
+      isFeatured: cate.isFeatured,
+      // type: cate.type,
+      children: createCategories(categories, cate._id),
+    });
+  }
+
+  return categoryList;
+}
+const getCategories = (req, res) => {
+  Category.find({}).exec((error, categories) => {
+    if (error) return res.status(400).json({ error });
+    if (categories) {
+      const categoryList = createCategories(categories);
+      res.status(200).json({ categoryList });
+    }
+  });
+};
 const getAllCategories = async (req, res) => {
   try {
     let { page, limit, search, ...queries } = req.query;
@@ -76,12 +110,13 @@ const getAllCategoriesWithoutFilter = async (req, res) => {
 };
 const addCategory = async (req, res) => {
   try {
-    const { title, isActive, isFeatured, rank } = req.body;
+    const { title, isActive, isFeatured, rank, parentId } = req.body;
     const file = req.file;
     let data = await Category.create({
       title,
       isActive,
       isFeatured,
+      slug: `${slugify(req.body.title)}-${shortid.generate()}`,
       rank,
     });
     if (file && data._id) {
@@ -93,6 +128,11 @@ const addCategory = async (req, res) => {
       data = await Category.findByIdAndUpdate(data.id, {
         imageURL: img.url,
         imageId: img.fileId,
+      });
+    }
+    if (parentId) {
+      data = await Category.findByIdAndUpdate(data.id, {
+        parentId,
       });
     }
     res.status(200).json({
@@ -156,6 +196,7 @@ module.exports = {
   getAllCategories,
   getAllCategoriesWithoutFilter,
   getCategory,
+  getCategories,
   addCategory,
   deleteCategory,
   updateCategory,
