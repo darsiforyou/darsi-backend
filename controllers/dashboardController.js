@@ -150,18 +150,17 @@ const getCountsRef = async (req, res) => {
 };
 const getCountsVen = async (req, res) => {
   try {
-    let id = ObjectId(req.params.id)
+    let id = ObjectId(req.params.id);
     const totalProducts = await Product.countDocuments({
       vendor: id,
     });
     const totalProductsActive = await Product.countDocuments({
       vendor: id,
       isActive: true,
-     
     });
     const totalProductsFeature = await Product.countDocuments({
       vendor: id,
-      isFeatured: true
+      isFeatured: true,
     });
 
     const ordersPending = await Order.countDocuments({
@@ -191,21 +190,29 @@ const getCountsVen = async (req, res) => {
 
     const revenue = await Financial.aggregate([
       {
-        '$match': {user: id}
-      }, {
-        '$group': {
-          '_id': '$status',
-          'total': {
-            '$sum': '$amount'
-          }
-        }
-      }
-    ])
+        $match: { user: id },
+      },
+      {
+        $group: {
+          _id: "$status",
+          total: {
+            $sum: "$amount",
+          },
+        },
+      },
+    ]);
     res.json({
-      data: { 
+      data: {
         product: { totalProducts, totalProductsFeature, totalProductsActive },
-        order: { ordersPending, ordersAccepted, ordersProcessing, ordersOutForDelivery, ordersCompleted, ordersCancelled },
-        revenue
+        order: {
+          ordersPending,
+          ordersAccepted,
+          ordersProcessing,
+          ordersOutForDelivery,
+          ordersCompleted,
+          ordersCancelled,
+        },
+        revenue,
       },
     });
   } catch (err) {
@@ -214,7 +221,7 @@ const getCountsVen = async (req, res) => {
 };
 const getChartData = async (req, res) => {
   try {
-    let { startDate, endDate, role, code, productId } = req.query;
+    let { startDate, endDate, role, code, productId, vendorId } = req.query;
     let todayDate = endDate ?? new Date().toISOString().slice(0, 10);
     let dateObj = new Date();
     let priorDate =
@@ -240,6 +247,9 @@ const getChartData = async (req, res) => {
     if (productId) {
       match = { "cart.items.productId": productId };
     }
+    if (vendorId) {
+      match = { "cart.items.vendor": ObjectId(vendorId), ...match };
+    }
 
     const chartData = await Order.aggregate([
       {
@@ -248,13 +258,63 @@ const getChartData = async (req, res) => {
         },
       },
       {
-        $group: {
-          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
-          totalOrderValue: { $sum: "$cart.netCost" },
-          averageOrderQuantity: { $avg: "$cart.totalQty" },
+        $addFields: {
+          totalAvgQty: {
+            $reduce: {
+              input: "$cart.items",
+              initialValue: 0,
+              in: {
+                $sum: ["$$value", "$$this.qty"],
+              },
+            },
+          },
         },
       },
-      { $sort: { _id: 1 } },
+      {
+        $addFields: {
+          cartItemPriceWithQTy: {
+            $reduce: {
+              input: "$cart.items",
+              initialValue: 0,
+              in: {
+                $sum: [
+                  "$$value",
+                  {
+                    $multiply: ["$$this.qty", "$$this.price"],
+                  },
+                ],
+              },
+            },
+          },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: "$createdAt",
+            },
+          },
+          totalOrderValue: {
+            $sum: "$cart.netCost",
+          },
+          averageOrderQuantity: {
+            $avg: "$cart.totalQty",
+          },
+          averageOrderQty: {
+            $avg: "$totalAvgQty",
+          },
+          totalPrice: {
+            $sum: "$cartItemPriceWithQTy",
+          },
+        },
+      },
+      {
+        $sort: {
+          _id: 1,
+        },
+      },
     ]);
     res.json({
       data: { chartData },
