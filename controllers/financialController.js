@@ -113,7 +113,7 @@ const getFinancial = async (req, res) => {
 const makePaymentRequest = async (req, res) => {
   try {
     const { user, darsi, amount } = req.body;
-    let financial = await Financial.find({ user: user })
+    let financial = await Financial.find({ user: user, status: "Pending" })
     let f_ids = await financial.map((f) => f._id)
 
     await PaymentRequest.create({ user, darsi: darsi ? darsi : false, financial: f_ids, amount })
