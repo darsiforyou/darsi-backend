@@ -1,6 +1,8 @@
+const mongoose = require("mongoose");
 const Financial = require("../models/financial");
 const PaymentRequest = require("../models/payment_requests");
 const { getQuery } = require("../utils");
+const ObjectId = mongoose.Types.ObjectId;
 
 const getAllFinancials = async (req, res) => {
   try {
@@ -81,7 +83,7 @@ const getRevenueTotal = async (req, res) => {
   try {
     let queries = getQuery(req.query);
 
-    const total = await Financial.aggregate([
+    const totalFinancial = await Financial.aggregate([
       {
         '$match': queries
       }, {
@@ -93,9 +95,29 @@ const getRevenueTotal = async (req, res) => {
         }
       }
     ])
+
+    const totalPaymentRequest = await PaymentRequest.aggregate([
+      {
+        '$match': queries
+      }, {
+        '$group': {
+          '_id': '$status',
+          'amount': {
+            '$sum': '$amount'
+          },
+          'amountRequested': {
+            '$sum': '$amountRequested'
+          },
+          'amountPending': {
+            '$sum': '$amountPending'
+          }
+        }
+      }
+    ])
     return res.status(200).send({
       message: "Successfully fetch Financial Total",
-      total: total,
+      totalFinancial,
+      totalPaymentRequest
     });
   } catch (err) {
     res.status(500).json({ error: err });
@@ -115,8 +137,23 @@ const makePaymentRequest = async (req, res) => {
     const { user, darsi, amount } = req.body;
     let financial = await Financial.find({ user: user, status: "Pending" })
     let f_ids = await financial.map((f) => f._id)
+    const pendingTotal = await Financial.aggregate([
+      {
+        '$match': { user: ObjectId(user), status: "Pending" }
+      }, {
+        '$group': {
+          '_id': '$status',
+          'total': {
+            '$sum': '$amount'
+          }
+        }
+      }
+    ])
+    let total = pendingTotal.reduce(
+      (obj, item) => Object.assign(obj, { [item._id]: item.total }), {});
+    let amountPending = total["Pending"] - amount
 
-    await PaymentRequest.create({ user, darsi: darsi ? darsi : false, financial: f_ids, amount })
+    await PaymentRequest.create({ user, darsi: darsi ? darsi : false, financial: f_ids, amount: total["Pending"], amountPending, amountRequested: amount })
 
     await Financial.update(
       { _id: { $in: f_ids } },
@@ -146,6 +183,24 @@ const acceptPaymentRequest = async (req, res) => {
     res.status(500).json({ error: err });
   }
 };
+const rejectPaymentRequest = async (req, res) => {
+  try {
+    const id = req.params.id;
+    let request = await PaymentRequest.findById(id)
+    if (request._id) {
+      await PaymentRequest.findByIdAndUpdate(id, { status: "Rejected" })
+    }
+    let f_ids = await request.financial.map((f) => f)
+    await Financial.update(
+      { _id: { $in: f_ids } },
+      { $set: { status: "Pending" } },
+      { multi: true }
+    )
+    res.status(200).json({ message: "Request Rejected" });
+  } catch (err) {
+    res.status(500).json({ error: err });
+  }
+};
 const deleteFinancial = async (req, res) => {
   try {
     await Financial.findByIdAndDelete(req.params.id);
@@ -163,5 +218,6 @@ module.exports = {
   makePaymentRequest,
   getRevenueTotal,
   getAllRequests,
-  acceptPaymentRequest
+  acceptPaymentRequest,
+  rejectPaymentRequest
 };

@@ -21,7 +21,12 @@ const paymentRequestSchema = Schema(
       default: 0,
       required: true,
     },
-    amountWithdraw: {
+    amountRequested: {
+      type: Number,
+      default: 0,
+      required: true,
+    },
+    amountPending: {
       type: Number,
       default: 0,
       required: true,

@@ -20,6 +20,9 @@ router
 router
   .route("/accept-payment-request/:id")
   .get(financialController.acceptPaymentRequest)
+router
+  .route("/reject-payment-request/:id")
+  .get(financialController.rejectPaymentRequest)
 
 router
   .route("/get-revenue-total")
