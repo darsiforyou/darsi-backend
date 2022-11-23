@@ -163,7 +163,7 @@ const deleteCategory = async (req, res) => {
 };
 const updateCategory = async (req, res) => {
   try {
-    const { title, isActive, isFeatured, rank } = req.body;
+    const { title, isActive, isFeatured, rank, parentId } = req.body;
     const file = req.file;
     let data = await Category.findByIdAndUpdate(req.params.id, {
       title,
@@ -171,6 +171,11 @@ const updateCategory = async (req, res) => {
       isFeatured,
       rank,
     });
+    if (parentId) {
+      data = await Category.findByIdAndUpdate(data.id, {
+        parentId,
+      });
+    }
     if (file !== undefined) {
       const { imageId } = data;
       if (imageId) await imagekit.deleteFile(imageId);
