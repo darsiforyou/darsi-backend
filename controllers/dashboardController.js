@@ -1,6 +1,7 @@
 const Order = require("../models/order");
 const User = require("../models/user");
 const Product = require("../models/product");
+const Financial = require("../models/financial");
 const mongoose = require("mongoose");
 const ObjectId = mongoose.Types.ObjectId;
 
@@ -149,11 +150,63 @@ const getCountsRef = async (req, res) => {
 };
 const getCountsVen = async (req, res) => {
   try {
-    const products = await Product.countDocuments({
-      vendor: req.params.id,
+    let id = ObjectId(req.params.id)
+    const totalProducts = await Product.countDocuments({
+      vendor: id,
     });
+    const totalProductsActive = await Product.countDocuments({
+      vendor: id,
+      isActive: true,
+     
+    });
+    const totalProductsFeature = await Product.countDocuments({
+      vendor: id,
+      isFeatured: true
+    });
+
+    const ordersPending = await Order.countDocuments({
+      "cart.items.vendor": id,
+      orderStatus: "Pending",
+    });
+    const ordersAccepted = await Order.countDocuments({
+      "cart.items.vendor": id,
+      orderStatus: "Order Accepted",
+    });
+    const ordersProcessing = await Order.countDocuments({
+      "cart.items.vendor": id,
+      orderStatus: "Order Processing",
+    });
+    const ordersOutForDelivery = await Order.countDocuments({
+      "cart.items.vendor": id,
+      orderStatus: "Out For Delivery",
+    });
+    const ordersCompleted = await Order.countDocuments({
+      "cart.items.vendor": id,
+      orderStatus: "Delivered",
+    });
+    const ordersCancelled = await Order.countDocuments({
+      "cart.items.vendor": id,
+      orderStatus: "Cancelled",
+    });
+
+    const revenue = await Financial.aggregate([
+      {
+        '$match': {user: id}
+      }, {
+        '$group': {
+          '_id': '$status',
+          'total': {
+            '$sum': '$amount'
+          }
+        }
+      }
+    ])
     res.json({
-      data: { products },
+      data: { 
+        product: { totalProducts, totalProductsFeature, totalProductsActive },
+        order: { ordersPending, ordersAccepted, ordersProcessing, ordersOutForDelivery, ordersCompleted, ordersCancelled },
+        revenue
+      },
     });
   } catch (err) {
     res.status(500).json({ error: err });

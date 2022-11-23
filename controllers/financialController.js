@@ -114,9 +114,7 @@ const makePaymentRequest = async (req, res) => {
   try {
     const { user, darsi, amount } = req.body;
     let financial = await Financial.find({ user: user })
-    console.log(financial);
     let f_ids = await financial.map((f) => f._id)
-    console.log(f_ids);
 
     await PaymentRequest.create({ user, darsi: darsi ? darsi : false, financial: f_ids, amount })
 
