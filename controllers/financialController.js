@@ -81,43 +81,61 @@ const getAllRequests = async (req, res) => {
 };
 const getRevenueTotal = async (req, res) => {
   try {
-    let queries = getQuery(req.query);
+    let {darsi} = req.query
+    console.log(darsi);
 
-    const totalFinancial = await Financial.aggregate([
+    let filter = {}
+    if(darsi){
+      filter['darsi'] = true
+    }else{
+      filter['user'] = ObjectId(req.params.id)
+    }
+    console.log(filter);
+
+    const TF = await Financial.aggregate([
       {
-        '$match': queries
+        '$match': filter
       }, {
         '$group': {
-          '_id': '$status',
-          'total': {
-            '$sum': '$amount'
-          }
+          '_id': '',
+          'total': { '$sum': '$amount' }
         }
       }
     ])
-
-    const totalPaymentRequest = await PaymentRequest.aggregate([
+    const TPR = await PaymentRequest.aggregate([
       {
-        '$match': queries
+        '$match': {status: "Accepted", ...filter}
       }, {
         '$group': {
-          '_id': '$status',
-          'amount': {
-            '$sum': '$amount'
+          '_id': '',
+          'amountAccepted': {
+            '$sum': '$amountAccepted'
           },
           'amountRequested': {
             '$sum': '$amountRequested'
           },
-          'amountPending': {
-            '$sum': '$amountPending'
-          }
         }
       }
     ])
+
+    let financial = {}
+    let paymentRequest = {}
+   
+    await (TF || []).forEach(async (x) => {
+      financial['total'] = await x.total
+    });
+    await (TPR || []).forEach(async (x) => {
+      paymentRequest = await { amountAccepted: x.amountAccepted, amountRequested: x.amountRequested };
+    });
+
+    const data = {
+      walletAmount: (financial.total-paymentRequest.amountAccepted||0),
+      withdraw: (paymentRequest.amountAccepted||0)
+    }
+
     return res.status(200).send({
       message: "Successfully fetch Financial Total",
-      totalFinancial,
-      totalPaymentRequest
+      data
     });
   } catch (err) {
     res.status(500).json({ error: err });
@@ -135,31 +153,8 @@ const getFinancial = async (req, res) => {
 const makePaymentRequest = async (req, res) => {
   try {
     const { user, darsi, amount } = req.body;
-    let financial = await Financial.find({ user: user, status: "Pending" })
-    let f_ids = await financial.map((f) => f._id)
-    const pendingTotal = await Financial.aggregate([
-      {
-        '$match': { user: ObjectId(user), status: "Pending" }
-      }, {
-        '$group': {
-          '_id': '$status',
-          'total': {
-            '$sum': '$amount'
-          }
-        }
-      }
-    ])
-    let total = pendingTotal.reduce(
-      (obj, item) => Object.assign(obj, { [item._id]: item.total }), {});
-    let amountPending = total["Pending"] - amount
+    await PaymentRequest.create({ user, darsi: darsi ? darsi : false, amountRequested: amount })
 
-    await PaymentRequest.create({ user, darsi: darsi ? darsi : false, financial: f_ids, amount: total["Pending"], amountPending, amountRequested: amount })
-
-    await Financial.update(
-      { _id: { $in: f_ids } },
-      { $set: { status: "Requested" } },
-      { multi: true }
-    )
     res.status(200).json({ message: "Request has been send to the admin" });
   } catch (err) {
     res.status(500).json({ error: err });
@@ -172,13 +167,7 @@ const acceptPaymentRequest = async (req, res) => {
     if (request._id) {
       await PaymentRequest.findByIdAndUpdate(id, { status: "Accepted" })
     }
-    let f_ids = await request.financial.map((f) => f)
-    await Financial.update(
-      { _id: { $in: f_ids } },
-      { $set: { status: "Withdraw" } },
-      { multi: true }
-    )
-    res.status(200).json({ message: "Request accepted" });
+    res.status(200).json({ message: "Request Accepted" });
   } catch (err) {
     res.status(500).json({ error: err });
   }
@@ -190,12 +179,6 @@ const rejectPaymentRequest = async (req, res) => {
     if (request._id) {
       await PaymentRequest.findByIdAndUpdate(id, { status: "Rejected" })
     }
-    let f_ids = await request.financial.map((f) => f)
-    await Financial.update(
-      { _id: { $in: f_ids } },
-      { $set: { status: "Pending" } },
-      { multi: true }
-    )
     res.status(200).json({ message: "Request Rejected" });
   } catch (err) {
     res.status(500).json({ error: err });

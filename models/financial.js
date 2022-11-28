@@ -21,21 +21,6 @@ const financialSchema = Schema(
       default: 0,
       required: true,
     },
-    amountWithdraw: {
-      type: Number,
-      default: 0,
-      required: true,
-    },
-    status: {
-      type: String,
-      default: "Pending",
-      enum: [
-        "Pending",
-        "Requested",
-        "Withdraw",
-        "Rejected",
-      ],
-    },
   },
   { timestamps: true }
 );

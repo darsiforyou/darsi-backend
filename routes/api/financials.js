@@ -25,7 +25,7 @@ router
   .get(financialController.rejectPaymentRequest)
 
 router
-  .route("/get-revenue-total")
+  .route("/get-revenue-total/:id")
   .get(financialController.getRevenueTotal)
 
 router

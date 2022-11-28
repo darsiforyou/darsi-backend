@@ -12,21 +12,12 @@ const paymentRequestSchema = Schema(
       type: Boolean,
       default: false,
     },
-    financial: [{
-      type: Schema.Types.ObjectId,
-      ref: "Financial",
-    }],
-    amount: {
+    amountAccepted: {
       type: Number,
       default: 0,
       required: true,
     },
     amountRequested: {
-      type: Number,
-      default: 0,
-      required: true,
-    },
-    amountPending: {
       type: Number,
       default: 0,
       required: true,
