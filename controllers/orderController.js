@@ -303,35 +303,35 @@ const createOrder = async (req, res) => {
       order.user = user;
       const userData = await User.findById(user);
       await User.findByIdAndUpdate(user, {
-        orderCount: userData.orderCount + 1,
+        orderCount: (userData?.orderCount || 0) + 1,
         totalSale: userData.totalSale + netCost,
       });
     }
 
     let data = await Order.create(order);
 
-    // Create financial entires for referrer
-    if (refData) {
-      await Financial.create({
-        user: refData._id,
-        order: data._id,
-        amount: referrer.commission,
-      });
-    }
-    // Create financial entires for vendor
-    for (const vendor of Object.values(allVendors)) {
-      await Financial.create({
-        user: vendor.id,
-        order: data._id,
-        amount: vendor.commission,
-      });
-    }
-    // Create financial entires for admin
-    await Financial.create({
-      darsi: true,
-      order: data._id,
-      amount: totalProfitMargin - referrer.commission + shippingCharges,
-    });
+    // // Create financial entires for referrer
+    // if (refData) {
+    //   await Financial.create({
+    //     user: refData._id,
+    //     order: data._id,
+    //     amount: referrer.commission,
+    //   });
+    // }
+    // // Create financial entires for vendor
+    // for (const vendor of Object.values(allVendors)) {
+    //   await Financial.create({
+    //     user: vendor.id,
+    //     order: data._id,
+    //     amount: vendor.commission,
+    //   });
+    // }
+    // // Create financial entires for admin
+    // await Financial.create({
+    //   darsi: true,
+    //   order: data._id,
+    //   amount: totalProfitMargin - referrer.commission + shippingCharges,
+    // });
 
     res.status(200).json({
       message: "Your order has been placed Successfully.",
@@ -347,15 +347,61 @@ const createOrder = async (req, res) => {
 const updateOrderStatus = async (req, res) => {
   try {
     const { orderStatus } = req.body;
-    let data = await Order.findByIdAndUpdate(req.params.id, {
+    let order = await Order.findByIdAndUpdate(req.params.id, {
       orderStatus,
     });
+    if (orderStatus === "Delivered") {
+
+      let totalProfitMargin = 0;
+      let allVendors = {}
+      let referrer = { id: undefined, commission: 0 };
+
+      for (const product of order.cart.items) {
+        totalProfitMargin = totalProfitMargin + product.profitMargin;
+        allVendors[product.vendor] = {
+          id: product.vendor,
+          commission:
+            (allVendors[product.vendor]?.commission || 0) + product.qty * product.vendorPrice,
+        };
+      }
+      if (order.applied_Referral_Code !== "None") {
+        let refData = await User.findOne({
+          user_code: order.applied_Referral_Code,
+        });
+        let _package = await Referral_Package.findById(refData.referral_package);
+        let commission = (totalProfitMargin * Number(_package.commission)) / 100;
+        referrer = { id: refData._id, commission };
+
+        // Create financial entires for referrer
+        await Financial.create({
+          user: refData._id,
+          order: order._id,
+          amount: referrer.commission,
+        });
+      }
+
+      // Create financial entires for vendor
+      for (const vendor of Object.values(allVendors)) {
+        await Financial.create({
+          user: vendor.id,
+          order: order._id,
+          amount: vendor.commission,
+        });
+      }
+      // Create financial entires for admin
+      await Financial.create({
+        darsi: true,
+        order: order._id,
+        amount: totalProfitMargin - referrer.commission + order.cart.shippingCharges,
+      });
+    }
 
     res.status(200).json({
       message: "Order status has been updated",
-      data: data,
+      data: order,
     });
   } catch (err) {
+    console.log(err)
     res.status(500).json({ error: err });
   }
 };
