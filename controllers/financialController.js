@@ -54,14 +54,6 @@ const getAllRequests = async (req, res) => {
         as: "user",
       },
     },
-      // {
-      //   $lookup: {
-      //     from: "financials",
-      //     localField: "",
-      //     foreignField: "_id",
-      //     as: "order",
-      //   },
-      // },
     ]);
 
     const options = {
@@ -88,9 +80,9 @@ const getRevenueTotal = async (req, res) => {
     if(darsi){
       filter['darsi'] = true
     }else{
-      filter['user'] = ObjectId(req.params.id)
+      filter['user'] = new ObjectId(req.params.id)
     }
-    console.log(filter);
+    console.log('filter', filter);
 
     const TF = await Financial.aggregate([
       {
@@ -102,6 +94,8 @@ const getRevenueTotal = async (req, res) => {
         }
       }
     ])
+    console.log("TF", TF);
+
     const TPR = await PaymentRequest.aggregate([
       {
         '$match': {status: "Accepted", ...filter}
@@ -117,9 +111,10 @@ const getRevenueTotal = async (req, res) => {
         }
       }
     ])
+    console.log("TPR", TPR);
 
-    let financial = {}
-    let paymentRequest = {}
+    let financial = {total: 0}
+    let paymentRequest = {amountAccepted: 0}
    
     await (TF || []).forEach(async (x) => {
       financial['total'] = await x.total
@@ -127,10 +122,12 @@ const getRevenueTotal = async (req, res) => {
     await (TPR || []).forEach(async (x) => {
       paymentRequest = await { amountAccepted: x.amountAccepted, amountRequested: x.amountRequested };
     });
+    console.log("financial", financial);
+    console.log("paymentRequest", paymentRequest);
 
     const data = {
-      walletAmount: (financial.total-paymentRequest.amountAccepted||0),
-      withdraw: (paymentRequest.amountAccepted||0)
+      walletAmount: financial.total-paymentRequest.amountAccepted,
+      withdraw: paymentRequest.amountAccepted
     }
 
     return res.status(200).send({
@@ -163,9 +160,10 @@ const makePaymentRequest = async (req, res) => {
 const acceptPaymentRequest = async (req, res) => {
   try {
     const id = req.params.id;
+    const {amount} = req.query
     let request = await PaymentRequest.findById(id)
     if (request._id) {
-      await PaymentRequest.findByIdAndUpdate(id, { status: "Accepted" })
+      await PaymentRequest.findByIdAndUpdate(id, { status: "Accepted", amountAccepted: amount })
     }
     res.status(200).json({ message: "Request Accepted" });
   } catch (err) {

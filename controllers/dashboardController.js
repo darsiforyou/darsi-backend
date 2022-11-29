@@ -2,6 +2,7 @@ const Order = require("../models/order");
 const User = require("../models/user");
 const Product = require("../models/product");
 const Financial = require("../models/financial");
+const PaymentRequest = require("../models/payment_requests");
 const mongoose = require("mongoose");
 const ObjectId = mongoose.Types.ObjectId;
 
@@ -150,7 +151,7 @@ const getCountsRef = async (req, res) => {
 };
 const getCountsVen = async (req, res) => {
   try {
-    let id = ObjectId(req.params.id);
+    let id = new ObjectId(req.params.id);
     const totalProducts = await Product.countDocuments({
       vendor: id,
     });
@@ -188,19 +189,47 @@ const getCountsVen = async (req, res) => {
       orderStatus: "Cancelled",
     });
 
-    const revenue = await Financial.aggregate([
+    const TF = await Financial.aggregate([
       {
-        $match: { user: id },
-      },
+        '$match': {user: id}
+      }, {
+        '$group': {
+          '_id': '',
+          'total': { '$sum': '$amount' }
+        }
+      }
+    ])
+
+    const TPR = await PaymentRequest.aggregate([
       {
-        $group: {
-          _id: "$status",
-          total: {
-            $sum: "$amount",
+        '$match': {status: "Accepted", user: id}
+      }, {
+        '$group': {
+          '_id': '',
+          'amountAccepted': {
+            '$sum': '$amountAccepted'
           },
-        },
-      },
-    ]);
+          'amountRequested': {
+            '$sum': '$amountRequested'
+          },
+        }
+      }
+    ])
+
+    let financial = {total: 0}
+    let paymentRequest = {amountAccepted: 0}
+   
+    await (TF || []).forEach(async (x) => {
+      financial['total'] = await x.total
+    });
+    await (TPR || []).forEach(async (x) => {
+      paymentRequest = await { amountAccepted: x.amountAccepted, amountRequested: x.amountRequested };
+    });
+
+    const revenue = {
+      walletAmount: financial.total-paymentRequest.amountAccepted,
+      withdraw: paymentRequest.amountAccepted
+    }
     res.json({
       data: {
         product: { totalProducts, totalProductsFeature, totalProductsActive },
