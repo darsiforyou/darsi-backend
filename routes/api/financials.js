@@ -22,7 +22,7 @@ router
   .get(financialController.acceptPaymentRequest)
 router
   .route("/reject-payment-request/:id")
-  .get(financialController.rejectPaymentRequest)
+  .delete(financialController.rejectPaymentRequest)
 
 router
   .route("/get-revenue-total/:id")
