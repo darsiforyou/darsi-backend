@@ -5,9 +5,9 @@ const verifyRoles = require("../../middleware/verifyRoles");
 const verifyJWT = require("../../middleware/verifyJWT");
 const ROLES_LIST = require("../../config/roles_list");
 
-router.route("/:id").get(
+router.route("/user/:userId").get(
   // verifyJWT,
-  // verifyRoles(ROLES_LIST.Admin, ROLES_LIST.Referral),
+  // verifyRoles(ROLES_LIST.Vendor, ROLES_LIST.Referral),
   userBankAccountController.getAccountsByUserId
 );
 
@@ -17,9 +17,24 @@ router.route("/").get(
   userBankAccountController.getAllAccounts
 );
 
-router.route("/:id").post(
-  verifyJWT,
-  // verifyRoles(ROLES_LIST.Admin, ROLES_LIST.Referral),
-  userBankAccountController.createAccount
-);
+router
+  .route("/")
+  .post(
+    verifyJWT,
+    verifyRoles(ROLES_LIST.Vendor, ROLES_LIST.Referral),
+    userBankAccountController.createAccount
+  );
+
+router
+  .route("/:id")
+  .delete(
+    verifyJWT,
+    verifyRoles(ROLES_LIST.Vendor, ROLES_LIST.Referral),
+    userBankAccountController.deleteAccount
+  )
+  .put(
+    verifyJWT,
+    verifyRoles(ROLES_LIST.Vendor, ROLES_LIST.Referral),
+    userBankAccountController.updateAccount
+  );
 module.exports = router;
