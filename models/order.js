@@ -66,6 +66,10 @@ const orderSchema = Schema(
             type: Number,
             default: 0,
           },
+          vendorPrice: {
+            type: Number,
+            default: 0,
+          },
           profitMargin: {
             type: Number,
             default: 0,
