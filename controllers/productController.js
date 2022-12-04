@@ -86,7 +86,7 @@ const getAllProducts = async (req, res) => {
 
     return res.status(200).send({
       message: "Successfully fetch products",
-      change: "Changes applied",
+      change: "Changes applied again",
       data: data,
     });
   } catch (err) {
