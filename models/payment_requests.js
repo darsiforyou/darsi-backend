@@ -8,6 +8,11 @@ const paymentRequestSchema = Schema(
       type: Schema.Types.ObjectId,
       ref: "User",
     },
+    accountId: {
+      type: Schema.Types.ObjectId,
+      ref: "userbankaccounts",
+      required: true,
+    },
     darsi: {
       type: Boolean,
       default: false,
@@ -25,11 +30,7 @@ const paymentRequestSchema = Schema(
     status: {
       type: String,
       default: "Pending",
-      enum: [
-        "Pending",
-        "Rejected",
-        "Accepted",
-      ],
+      enum: ["Pending", "Rejected", "Accepted"],
     },
   },
   { timestamps: true }

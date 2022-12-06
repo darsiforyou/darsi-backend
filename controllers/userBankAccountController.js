@@ -13,7 +13,6 @@ const createAccount = async (req, res) => {
       type,
       bankName,
       account_number,
-      holderName,
       iban,
     });
     return res.status(200).send({
@@ -132,7 +131,6 @@ const updateAccount = async (req, res) => {
       type,
       bankName,
       account_number,
-      holderName,
       iban,
     });
     return res.status(200).send({

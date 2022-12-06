@@ -19,10 +19,6 @@ const userBankAccountSchema = Schema(
     bankName: {
       type: String,
     },
-    holderName: {
-      type: String,
-      required: true,
-    },
     account_number: {
       type: String,
       required: true,
