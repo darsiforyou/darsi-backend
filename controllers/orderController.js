@@ -5,7 +5,7 @@ const User = require("../models/user");
 const Product = require("../models/product");
 const Financial = require("../models/financial");
 const mongoose = require("mongoose");
-
+const axios = require("axios");
 const ObjectId = mongoose.Types.ObjectId;
 const getAllOrders = async (req, res) => {
   try {
@@ -344,6 +344,221 @@ const createOrder = async (req, res) => {
     });
   }
 };
+
+const createPayment = async (req, res) => {
+  try {
+    const {
+      products,
+      user,
+      applied_Referral_Code,
+      address,
+      name,
+      email,
+      phone,
+      city,
+      postalCode,
+    } = req.body;
+    let refData;
+    let _package;
+    let shippingCharges = city === "Karachi" ? 50 : 100;
+    let totalCost = 0;
+    let totalVendorCost = 0;
+    let discount = 0;
+    let totalQty = 0;
+    let netCost = 0;
+    let totalProfitMargin = 0;
+    let allVendors = {};
+    let referrer = { id: undefined, commission: 0 };
+    const paymentproducts = [];
+    for (const x of products) {
+      totalCost = totalCost + x.price * x.qty;
+      totalVendorCost = (totalVendorCost + x.vendorPrice) * x.qty;
+      netCost = netCost + x.price * x.qty;
+      totalQty = totalQty + x.qty;
+      totalProfitMargin = totalProfitMargin + x.profitMargin;
+      let stockCountPending = x.stockCountPending - x.qty;
+      let stockCountConsumed = x.stockCountConsumed + x.qty;
+      let totalPrice = x.qty * x.price;
+      let totalSale = x.totalSale + totalPrice;
+      x.amount_cents = x.price;
+      x.quantity = x.qty;
+
+      paymentproducts.push({
+        name: x.title,
+        amount_cents: x.price,
+        description: x.title + " is a darsi product",
+        quantity: x.qty,
+      });
+      // update vendor sold product quantity
+      allVendors[x.vendor] = {
+        id: x.vendor,
+        commission:
+          (allVendors[x.vendor]?.commission || 0) + x.qty * x.vendorPrice,
+      };
+
+      const vendorData = await User.findById(x.vendor);
+      await User.findByIdAndUpdate(x.vendor, {
+        totalVendorProductSold: vendorData.totalVendorProductSold + totalQty,
+      });
+
+      // update product total sale
+      await Product.updateOne(
+        { _id: x.productId },
+        {
+          stockCountConsumed: stockCountConsumed,
+          stockCountPending: stockCountPending,
+          totalSale: totalSale,
+        }
+      );
+    }
+
+    if (applied_Referral_Code) {
+      refData = await User.findOne({
+        user_code: applied_Referral_Code,
+      });
+    }
+    if (refData) {
+      _package = await Referral_Package.findById(refData.referral_package);
+      discount = calculateDiscount(
+        totalCost,
+        totalVendorCost,
+        _package.discount_percentage
+      );
+      netCost = totalCost - discount;
+      // calculate commission for user
+      let commission = (totalProfitMargin * Number(_package.commission)) / 100;
+
+      referrer = { id: refData._id, commission };
+
+      commission = commission + refData.commission;
+      await User.findByIdAndUpdate(refData._id, {
+        commission,
+      });
+    }
+    const today = new Date();
+    const dd = String(today.getDate()).padStart(2, "0");
+    const val = Math.floor(1000 + Math.random() * 9000);
+    let order = {
+      order_number: Number(dd + val),
+      cart: {
+        totalQty: totalQty,
+        totalCost: totalCost + shippingCharges,
+        discount: discount,
+        netCost: netCost + shippingCharges,
+        shippingCharges: shippingCharges,
+        totalProfitMargin: totalProfitMargin,
+        items: products,
+      },
+      address,
+      name,
+      email,
+      phone,
+      city,
+      postalCode,
+    };
+    if (applied_Referral_Code) {
+      order.applied_Referral_Code = applied_Referral_Code;
+    }
+
+    if (user) {
+      order.user = user;
+      const userData = await User.findById(user);
+      await User.findByIdAndUpdate(user, {
+        orderCount: (userData?.orderCount || 0) + 1,
+        totalSale: userData.totalSale + netCost,
+      });
+    }
+
+    const tokenRes = await axios.post(
+      "https://pakistan.paymob.com/api/auth/tokens",
+      {
+        api_key: process.env.PAYMOB_API,
+      }
+    );
+
+    const { token } = tokenRes.data;
+
+    const paymobobj = {
+      auth_token: token,
+      delivery_needed: "false",
+      amount_cents: order.cart.totalCost * 100,
+      currency: "PKR",
+      items: paymentproducts,
+    };
+
+    const payment = await axios.post(
+      "https://pakistan.paymob.com/api/ecommerce/orders",
+      paymobobj
+    );
+
+    const paymentdetails = payment.data;
+
+    console.log(paymentdetails);
+
+    const pktRes = await axios.post(
+      "https://pakistan.paymob.com/api/acceptance/payment_keys",
+      {
+        auth_token: token,
+        amount_cents: order.cart.totalCost * 100,
+        expiration: 3600,
+        order_id: paymentdetails.id.toString(),
+        billing_data: {
+          apartment: "803",
+          email: "claudette09@exa.com",
+          floor: "42",
+          first_name: "Clifford",
+          street: "Ethan Land",
+          building: "8028",
+          phone_number: "+86(8)9135210487",
+          shipping_method: "PKG",
+          postal_code: "01898",
+          city: "Jaskolskiburgh",
+          country: "CR",
+          last_name: "Nicolas",
+          state: "Utah",
+        },
+        currency: "PKR",
+        integration_id: 47022,
+      }
+    );
+    console.log(pktRes.data);
+    // let data = await Order.create(order);
+
+    // // Create financial entires for referrer
+    // if (refData) {
+    //   await Financial.create({
+    //     user: refData._id,
+    //     order: data._id,
+    //     amount: referrer.commission,
+    //   });
+    // }
+    // // Create financial entires for vendor
+    // for (const vendor of Object.values(allVendors)) {
+    //   await Financial.create({
+    //     user: vendor.id,
+    //     order: data._id,
+    //     amount: vendor.commission,
+    //   });
+    // }
+    // // Create financial entires for admin
+    // await Financial.create({
+    //   darsi: true,
+    //   order: data._id,
+    //   amount: totalProfitMargin - referrer.commission + shippingCharges,
+    // });
+
+    res.status(200).json({
+      message: "Your order has been placed Successfully.",
+      data: pktRes.data.token,
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: err.message,
+      data: {},
+    });
+  }
+};
+
 const updateOrderStatus = async (req, res) => {
   try {
     const { orderStatus } = req.body;
@@ -351,9 +566,8 @@ const updateOrderStatus = async (req, res) => {
       orderStatus,
     });
     if (orderStatus === "Delivered") {
-
       let totalProfitMargin = 0;
-      let allVendors = {}
+      let allVendors = {};
       let referrer = { id: undefined, commission: 0 };
 
       for (const product of order.cart.items) {
@@ -361,15 +575,19 @@ const updateOrderStatus = async (req, res) => {
         allVendors[product.vendor] = {
           id: product.vendor,
           commission:
-            (allVendors[product.vendor]?.commission || 0) + product.qty * product.vendorPrice,
+            (allVendors[product.vendor]?.commission || 0) +
+            product.qty * product.vendorPrice,
         };
       }
       if (order.applied_Referral_Code !== "None") {
         let refData = await User.findOne({
           user_code: order.applied_Referral_Code,
         });
-        let _package = await Referral_Package.findById(refData.referral_package);
-        let commission = (totalProfitMargin * Number(_package.commission)) / 100;
+        let _package = await Referral_Package.findById(
+          refData.referral_package
+        );
+        let commission =
+          (totalProfitMargin * Number(_package.commission)) / 100;
         referrer = { id: refData._id, commission };
 
         // Create financial entires for referrer
@@ -392,7 +610,8 @@ const updateOrderStatus = async (req, res) => {
       await Financial.create({
         darsi: true,
         order: order._id,
-        amount: totalProfitMargin - referrer.commission + order.cart.shippingCharges,
+        amount:
+          totalProfitMargin - referrer.commission + order.cart.shippingCharges,
       });
     }
 
@@ -401,7 +620,7 @@ const updateOrderStatus = async (req, res) => {
       data: order,
     });
   } catch (err) {
-    console.log(err)
+    console.log(err);
     res.status(500).json({ error: err });
   }
 };
@@ -430,6 +649,7 @@ module.exports = {
   updateOrderStatus,
   deleteOrder,
   createOrder,
+  createPayment,
 };
 
 const calculateDiscount = (total, vendorTotal, discount_percentage) => {
