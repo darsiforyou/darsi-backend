@@ -131,6 +131,15 @@ const orderSchema = Schema(
       type: String,
       default: "None",
     },
+    paymentStatus: {
+      type: Boolean,
+      default: false,
+    },
+    paymentStatus: {
+      type: String,
+      default: 'COD',
+      enum: ['COD', 'CARD', 'EP', 'BANK']
+    }
   },
   { timestamps: true }
 );

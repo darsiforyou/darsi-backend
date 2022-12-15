@@ -204,6 +204,7 @@ const createOrder = async (req, res) => {
       phone,
       city,
       postalCode,
+      paymentMethod
     } = req.body;
     let refData;
     let _package;
@@ -294,6 +295,7 @@ const createOrder = async (req, res) => {
       phone,
       city,
       postalCode,
+      paymentMethod: paymentMethod
     };
     if (applied_Referral_Code) {
       order.applied_Referral_Code = applied_Referral_Code;
