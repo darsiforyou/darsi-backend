@@ -359,6 +359,7 @@ const createPayment = async (req, res) => {
       phone,
       city,
       postalCode,
+      paymentMethod
     } = req.body;
     let refData;
     let _package;
@@ -457,6 +458,7 @@ const createPayment = async (req, res) => {
       phone,
       city,
       postalCode,
+      paymentMethod
     };
     if (applied_Referral_Code) {
       order.applied_Referral_Code = applied_Referral_Code;
@@ -470,61 +472,53 @@ const createPayment = async (req, res) => {
         totalSale: userData.totalSale + netCost,
       });
     }
-
-    const tokenRes = await axios.post(
-      "https://pakistan.paymob.com/api/auth/tokens",
-      {
-        api_key: process.env.PAYMOB_API,
-      }
-    );
-
-    const { token } = tokenRes.data;
-
-    const paymobobj = {
-      auth_token: token,
-      delivery_needed: "false",
-      amount_cents: order.cart.totalCost * 100,
-      currency: "PKR",
-      items: paymentproducts,
-    };
-
-    const payment = await axios.post(
-      "https://pakistan.paymob.com/api/ecommerce/orders",
-      paymobobj
-    );
-
-    const paymentdetails = payment.data;
-
-    console.log(paymentdetails);
-
-    const pktRes = await axios.post(
-      "https://pakistan.paymob.com/api/acceptance/payment_keys",
-      {
+    if (paymentMethod !== "COD") {
+      const tokenRes = await axios.post(
+        "https://pakistan.paymob.com/api/auth/tokens",
+        {
+          api_key: process.env.PAYMOB_API,
+        }
+      );
+      const { token } = tokenRes.data;
+      const paymobobj = {
         auth_token: token,
-        amount_cents: order.cart.totalCost * 100,
-        expiration: 3600,
-        order_id: paymentdetails.id.toString(),
-        billing_data: {
-          apartment: "803",
-          email: "claudette09@exa.com",
-          floor: "42",
-          first_name: "Clifford",
-          street: "Ethan Land",
-          building: "8028",
-          phone_number: "+86(8)9135210487",
-          shipping_method: "PKG",
-          postal_code: "01898",
-          city: "Jaskolskiburgh",
-          country: "CR",
-          last_name: "Nicolas",
-          state: "Utah",
-        },
+        delivery_needed: "false",
+        amount_cents: order.cart.netCost * 100,
         currency: "PKR",
-        integration_id: 47022,
-      }
-    );
-    console.log(pktRes.data);
-    // let data = await Order.create(order);
+        items: paymentproducts,
+      };
+      const payment = await axios.post(
+        "https://pakistan.paymob.com/api/ecommerce/orders",
+        paymobobj
+      );
+      const paymentdetails = payment.data;
+      console.log(paymentdetails);
+      const pktRes = await axios.post(
+        "https://pakistan.paymob.com/api/acceptance/payment_keys",
+        {
+          auth_token: token,
+          amount_cents: order.cart.netCost * 100,
+          expiration: 3600,
+          order_id: paymentdetails.id.toString(),
+          billing_data: {
+            email: order.email,
+            first_name: order.name,
+            last_name: "",
+            street: order.address,
+            phone_number: order.phone,
+            shipping_method: "PKG",
+            postal_code: order.postalCode,
+            city: order.city,
+            country: "PK",
+            state: "Sindh",
+          },
+          currency: "PKR",
+          integration_id: 47022,
+        }
+      );
+      console.log(pktRes.data);
+    }
+    let data = await Order.create(order);
 
     // // Create financial entires for referrer
     // if (refData) {
@@ -551,7 +545,8 @@ const createPayment = async (req, res) => {
 
     res.status(200).json({
       message: "Your order has been placed Successfully.",
-      data: pktRes.data.token,
+      paymentToken: paymentMethod !== "COD" ? pktRes.data.token : '',
+      data: data
     });
   } catch (err) {
     res.status(500).json({
