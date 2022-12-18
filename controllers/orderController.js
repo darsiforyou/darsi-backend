@@ -472,6 +472,11 @@ const createPayment = async (req, res) => {
         totalSale: userData.totalSale + netCost,
       });
     }
+    let data = await Order.create(order);
+    let pktRes
+
+    const pMethods = { 'CARD': 47022, 'BANK': 47022, 'EP': 47022 }
+
     if (paymentMethod !== "COD") {
       const tokenRes = await axios.post(
         "https://pakistan.paymob.com/api/auth/tokens",
@@ -486,6 +491,7 @@ const createPayment = async (req, res) => {
         amount_cents: order.cart.netCost * 100,
         currency: "PKR",
         items: paymentproducts,
+        merchant_order_id: data._id
       };
       const payment = await axios.post(
         "https://pakistan.paymob.com/api/ecommerce/orders",
@@ -493,7 +499,7 @@ const createPayment = async (req, res) => {
       );
       const paymentdetails = payment.data;
       console.log(paymentdetails);
-      const pktRes = await axios.post(
+      pktRes = await axios.post(
         "https://pakistan.paymob.com/api/acceptance/payment_keys",
         {
           auth_token: token,
@@ -513,12 +519,11 @@ const createPayment = async (req, res) => {
             state: "Sindh",
           },
           currency: "PKR",
-          integration_id: 47022,
+          integration_id: pMethods[paymentMethod],
         }
       );
       console.log(pktRes.data);
     }
-    let data = await Order.create(order);
 
     // // Create financial entires for referrer
     // if (refData) {
