@@ -22,6 +22,10 @@ const brandSchema = Schema(
     imageId: {
       type: String,
     },
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
   },
   { timestamps: true }
 );

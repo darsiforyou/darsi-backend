@@ -12,24 +12,19 @@ router
   .route("/")
   .get(brandController.getAllBrands)
   .get(brandController.getAllBrandsWithoutFilter)
-  .post(
-    upload.single("file"),
-    brandController.addBrand
-  );
-router
-  .route("/without_filter")
-  .get(brandController.getAllBrandsWithoutFilter);
+  .post(upload.single("file"), brandController.addBrand);
+router.route("/without_filter").get(brandController.getAllBrandsWithoutFilter);
 router
   .route("/:id")
   .get(brandController.getBrand)
   .delete(
     verifyJWT,
-    verifyRoles(ROLES_LIST.Admin),
+    verifyRoles(ROLES_LIST.Admin, ROLES_LIST.Vendor),
     brandController.deleteBrand
   )
   .put(
     verifyJWT,
-    verifyRoles(ROLES_LIST.Admin),
+    verifyRoles(ROLES_LIST.Admin, ROLES_LIST.Vendor),
     upload.single("file"),
     brandController.updateBrand
   );

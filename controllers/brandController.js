@@ -65,12 +65,13 @@ const getAllBrandsWithoutFilter = async (req, res) => {
 };
 const addBrand = async (req, res) => {
   try {
-    const { title, isActive, isFeatured } = req.body;
+    const { title, isActive, isFeatured, userId } = req.body;
     const file = req.file;
     let data = await Brand.create({
       title,
       isActive,
       isFeatured,
+      userId,
     });
     if (file && data._id) {
       let img = await imagekit.upload({
@@ -111,12 +112,13 @@ const deleteBrand = async (req, res) => {
 };
 const updateBrand = async (req, res) => {
   try {
-    const { title, isActive, isFeatured } = req.body;
+    const { title, isActive, isFeatured, userId } = req.body;
     const file = req.file;
     let data = await Brand.findByIdAndUpdate(req.params.id, {
       title,
       isActive,
       isFeatured,
+      userId,
     });
     if (file !== undefined) {
       const { imageId } = data;
