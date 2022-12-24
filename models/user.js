@@ -26,6 +26,11 @@ const userSchema = Schema(
       default: "Customer",
       enum: ["Customer", "Admin", "Referrer", "Vendor", "FeedAdmin"],
     }, //FeedAdmin kept for now can be removed later
+    status: {
+      type: Boolean,
+      default: false,
+      required: true,
+    },
     referral_package: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Referral_Package",

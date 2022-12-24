@@ -2,6 +2,8 @@ const User = require("../models/user");
 const Package = require("../models/referral_packages");
 const bcrypt = require("bcrypt");
 const { faker } = require("@faker-js/faker");
+const Financial = require("../models/financial");
+
 const handleNewUser = async (req, res) => {
   try {
     const {
@@ -29,6 +31,7 @@ const handleNewUser = async (req, res) => {
       firstname,
       lastname,
       role: role ? role : "Customer",
+      status: true,
       email,
       password: hashedPwd,
       referral_package,
@@ -38,16 +41,27 @@ const handleNewUser = async (req, res) => {
       user_code + "-" + faker.helpers.replaceSymbolWithNumber("####-####");
 
     if (role === "Referrer") {
-      newUser.referred_by = referred_by;
       const package = await Package.findById(referral_package);
+      let commission = (package.price * package.commission) / 100;
+      let adminAmount = referred_by ? (package.price - commission) : package.price;
+      await Financial.create({
+        darsi: true,
+        package: package._id,
+        amount: adminAmount,
+        type: "PACKAGE"
+      });
+
       if (referred_by) {
         const referral = await User.findOne({ user_code: referred_by });
         if (referral) {
-          let commission = (package.price * package.commission) / 100;
-          commission = commission + referral.commission;
-          let updateRef = await User.findByIdAndUpdate(referral._id, {
-            commission,
+          // Create financial entires for referrer
+          await Financial.create({
+            user: referral._id,
+            package: package._id,
+            amount: commission,
+            type: "PACKAGE"
           });
+          newUser.referred_by = referred_by;
         } else {
           return res.json({ message: "Referrer does not exists" }); //Conflict
         }

@@ -16,6 +16,14 @@ const financialSchema = Schema(
       type: Schema.Types.ObjectId,
       ref: "Order",
     },
+    package: {
+      type: Schema.Types.ObjectId,
+      ref: "Referral_Package",
+    },
+    type: {
+      type: String,
+      default: "ORDER",
+    },
     amount: {
       type: Number,
       default: 0,
