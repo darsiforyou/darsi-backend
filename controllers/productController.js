@@ -7,7 +7,7 @@ const send_email = require("../middleware/email");
 
 const getAllProducts = async (req, res) => {
   try {
-    let { page, limit, search, ...queries } = req.query;
+    let { page, limit, search, sort, ...queries } = req.query;
     search = searchInColumns(search, [
       "category_name",
       "brand_name",
@@ -75,11 +75,26 @@ const getAllProducts = async (req, res) => {
         },
       ]);
     }
-
+    let sortOption = {}
+    if (sort) {
+      switch (sort) {
+        case "PRICE_HIGH_TO_LOW":
+          sortOption = { price: -1 }
+          break;
+        case "PRICE_LOW_TO_HIGH":
+          sortOption = { price: 1 }
+          break;
+        case "RECENT":
+          sortOption = { createdAt: -1 }
+          break;
+      }
+    } else {
+      sortOption = { createdAt: -1 }
+    }
     const options = {
       page: page || 1,
       limit: limit || 10,
-      sort: { createdAt: -1 },
+      sort: sortOption,
     };
 
     const data = await Product.aggregatePaginate(myAggregate, options);
