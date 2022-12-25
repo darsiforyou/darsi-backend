@@ -2,10 +2,10 @@
   "name": "12tut",
   "version": "1.0.0",
   "description": "Express tutorial",
-  "main": "server.js",
+  "main": "index.js",
   "scripts": {
-    "start": "nodemon server",
-    "dev": "nodemon server"
+    "start": "nodemon index",
+    "dev": "nodemon index"
   },
   "author": "Dave Gray",
   "license": "ISC",
