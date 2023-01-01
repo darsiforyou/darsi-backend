@@ -480,32 +480,64 @@ const createPayment = async (req, res) => {
     const tokenRes = await axios.post(
       "https://demoapi.paypro.com.pk/v2/ppro/auth",
       {
-        ClientID: "xiCMUQdXavqT9XM",
-        ClientSecret: "NnXzMQVGWJdOIQX",
+        clientid: "xiCMUQdXavqT9XM",
+        clientsecret: "NnXzMQVGWJdOIQX",
       }
     );
-    const { token } = tokenRes.data;
+    const token = tokenRes.headers.token;
 
-    const { payment } = await axios.post(
-      "https://demoapi.paypro.com.pk/v2/ppro/co",
-      [
-        {
-          merchantId: "Darsi_Pk",
-        },
-        {
-          OrderNumber: "Test-803",
-          OrderAmount: order.cart.netCost * 100,
-          OrderDueDate: "25/10/2021",
-          OrderType: "Service",
-          IssueDate: "05/05/2021",
-          OrderExpireAfterSeconds: "0",
-          CustomerName: order.name,
-          CustomerMobile: order.phone,
-          CustomerEmail: order.email,
-          CustomerAddress: order.address,
-        },
-      ]
-    );
+    console.log(token);
+
+    var myHeaders = new Headers();
+    myHeaders.append("token", token);
+    myHeaders.append("Content-Type", "application/json");
+
+    // var myHeaders = new Headers();
+    // myHeaders.append("token", token);
+    // myHeaders.append("Content-Type", "application/json");
+
+    var raw = JSON.stringify([
+      {
+        MerchantId: "Darsi_Pk",
+      },
+      {
+        OrderNumber: "Test-565",
+        OrderAmount: "200",
+        OrderDueDate: "25/12/2023",
+        OrderType: "Service",
+        IssueDate: "05/05/2021",
+        OrderExpireAfterSeconds: "0",
+        CustomerName: "Fahad",
+        CustomerMobile: "",
+        CustomerEmail: "",
+        CustomerAddress: "",
+      },
+    ]);
+
+    var requestOptions = {
+      method: "POST",
+      headers: { token },
+      body: raw,
+      redirect: "follow",
+    };
+
+    // await fetch("https://demoapi.paypro.com.pk/v2/ppro/co", requestOptions)
+    //   .then((response) => response.text())
+    //   .then((result) => console.log(result))
+    //   .catch((error) => console.log("error", error));
+
+    const payment = await fetch("https://demoapi.paypro.com.pk/v2/ppro/co", {
+      method: "POST",
+      headers: {
+        token,
+        "Content-Type": "application/json",
+      },
+      body: raw,
+      redirect: "follow",
+    });
+    const paymentres = await payment.json();
+
+    console.log(paymentres);
     // if (paymentMethod !== "COD") {
     //   const tokenRes = await axios.post(
     //     "https://pakistan.paymob.com/api/auth/tokens",
