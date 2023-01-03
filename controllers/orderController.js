@@ -547,7 +547,7 @@ const createPayment = async (req, res) => {
 
     res.status(200).json({
       message: "Your order has been placed Successfully.",
-      paymentToken: pktRes[1].Click2Pay,
+      paymentToken: paymentMethod !== "COD" ? pktRes[1].Click2Pay : "",
       data: data,
     });
   } catch (err) {
