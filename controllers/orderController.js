@@ -473,145 +473,81 @@ const createPayment = async (req, res) => {
       });
     }
     let data = await Order.create(order);
+    console.log(data.id);
     let pktRes;
 
     const pMethods = { CARD: 47022, BANK: 47022, EP: 47022 };
 
-    const tokenRes = await axios.post(
-      "https://demoapi.paypro.com.pk/v2/ppro/auth",
-      {
-        clientid: "xiCMUQdXavqT9XM",
-        clientsecret: "NnXzMQVGWJdOIQX",
-      }
-    );
-    const token = tokenRes.headers.token;
+    if (paymentMethod !== "COD") {
+      const tokenRes = await axios.post(
+        "https://demoapi.paypro.com.pk/v2/ppro/auth",
+        {
+          clientid: "xiCMUQdXavqT9XM",
+          clientsecret: "NnXzMQVGWJdOIQX",
+        }
+      );
+      const token = tokenRes.headers.token;
 
-    console.log(token);
+      let myHeaders = new Headers();
+      myHeaders.append("token", token);
+      myHeaders.append("Content-Type", "application/json");
 
-    var myHeaders = new Headers();
-    myHeaders.append("token", token);
-    myHeaders.append("Content-Type", "application/json");
+      let raw = JSON.stringify([
+        {
+          MerchantId: "Darsi_Pk",
+        },
+        {
+          OrderNumber: data.id,
+          OrderAmount: order.cart.netCost * 100,
+          OrderDueDate: "25/12/2023",
+          OrderType: "Service",
+          IssueDate: "05/05/2021",
+          OrderExpireAfterSeconds: "0",
+          CustomerName: order.name,
+          CustomerMobile: order.phone,
+          CustomerEmail: order.email,
+          CustomerAddress: order.address,
+        },
+      ]);
 
-    // var myHeaders = new Headers();
-    // myHeaders.append("token", token);
-    // myHeaders.append("Content-Type", "application/json");
+      const payment = await fetch("https://demoapi.paypro.com.pk/v2/ppro/co", {
+        method: "POST",
+        headers: {
+          token,
+          "Content-Type": "application/json",
+        },
+        body: raw,
+        redirect: "follow",
+      });
+      pktRes = await payment.json();
+    }
 
-    var raw = JSON.stringify([
-      {
-        MerchantId: "Darsi_Pk",
-      },
-      {
-        OrderNumber: "Test-565",
-        OrderAmount: "200",
-        OrderDueDate: "25/12/2023",
-        OrderType: "Service",
-        IssueDate: "05/05/2021",
-        OrderExpireAfterSeconds: "0",
-        CustomerName: "Fahad",
-        CustomerMobile: "",
-        CustomerEmail: "",
-        CustomerAddress: "",
-      },
-    ]);
-
-    var requestOptions = {
-      method: "POST",
-      headers: { token },
-      body: raw,
-      redirect: "follow",
-    };
-
-    // await fetch("https://demoapi.paypro.com.pk/v2/ppro/co", requestOptions)
-    //   .then((response) => response.text())
-    //   .then((result) => console.log(result))
-    //   .catch((error) => console.log("error", error));
-
-    const payment = await fetch("https://demoapi.paypro.com.pk/v2/ppro/co", {
-      method: "POST",
-      headers: {
-        token,
-        "Content-Type": "application/json",
-      },
-      body: raw,
-      redirect: "follow",
+    // Create financial entires for referrer
+    if (refData) {
+      await Financial.create({
+        user: refData._id,
+        order: data._id,
+        amount: referrer.commission,
+      });
+    }
+    // Create financial entires for vendor
+    for (const vendor of Object.values(allVendors)) {
+      await Financial.create({
+        user: vendor.id,
+        order: data._id,
+        amount: vendor.commission,
+      });
+    }
+    // Create financial entires for admin
+    await Financial.create({
+      darsi: true,
+      order: data._id,
+      amount: totalProfitMargin - referrer.commission + shippingCharges,
     });
-    const paymentres = await payment.json();
-
-    console.log(paymentres);
-    // if (paymentMethod !== "COD") {
-    //   const tokenRes = await axios.post(
-    //     "https://pakistan.paymob.com/api/auth/tokens",
-    //     {
-    //       api_key: process.env.PAYMOB_API,
-    //     }
-    //   );
-    //   const { token } = tokenRes.data;
-    //   const paymobobj = {
-    //     auth_token: token,
-    //     delivery_needed: "false",
-    //     amount_cents: order.cart.netCost * 100,
-    //     currency: "PKR",
-    //     items: paymentproducts,
-    //     merchant_order_id: data._id
-    //   };
-    //   const payment = await axios.post(
-    //     "https://pakistan.paymob.com/api/ecommerce/orders",
-    //     paymobobj
-    //   );
-    //   const paymentdetails = payment.data;
-    //   console.log(paymentdetails);
-    //   pktRes = await axios.post(
-    //     "https://pakistan.paymob.com/api/acceptance/payment_keys",
-    //     {
-    //       auth_token: token,
-    //       amount_cents: order.cart.netCost * 100,
-    //       expiration: 3600,
-    //       order_id: paymentdetails.id.toString(),
-    //       billing_data: {
-    //         email: order.email,
-    //         first_name: order.name,
-    //         last_name: "",
-    //         street: order.address,
-    //         phone_number: order.phone,
-    //         shipping_method: "PKG",
-    //         postal_code: order.postalCode,
-    //         city: order.city,
-    //         country: "PK",
-    //         state: "Sindh",
-    //       },
-    //       currency: "PKR",
-    //       integration_id: pMethods[paymentMethod],
-    //     }
-    //   );
-    //   console.log(pktRes.data);
-    // }
-
-    // // Create financial entires for referrer
-    // if (refData) {
-    //   await Financial.create({
-    //     user: refData._id,
-    //     order: data._id,
-    //     amount: referrer.commission,
-    //   });
-    // }
-    // // Create financial entires for vendor
-    // for (const vendor of Object.values(allVendors)) {
-    //   await Financial.create({
-    //     user: vendor.id,
-    //     order: data._id,
-    //     amount: vendor.commission,
-    //   });
-    // }
-    // // Create financial entires for admin
-    // await Financial.create({
-    //   darsi: true,
-    //   order: data._id,
-    //   amount: totalProfitMargin - referrer.commission + shippingCharges,
-    // });
 
     res.status(200).json({
       message: "Your order has been placed Successfully.",
-      paymentToken: paymentMethod !== "COD" ? pktRes.data.token : "",
+      paymentToken: pktRes[1].Click2Pay,
       data: data,
     });
   } catch (err) {
