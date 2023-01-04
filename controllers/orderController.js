@@ -501,7 +501,7 @@ const createPayment = async (req, res) => {
           OrderAmount: order.cart.netCost * 100,
           OrderDueDate: "25/12/2023",
           OrderType: "Service",
-          IssueDate: "05/05/2021",
+          IssueDate: new Date(),
           OrderExpireAfterSeconds: "0",
           CustomerName: order.name,
           CustomerMobile: order.phone,

@@ -137,9 +137,9 @@ const orderSchema = Schema(
     },
     paymentMethod: {
       type: String,
-      default: 'COD',
-      enum: ['COD', 'CARD', 'EP', 'BANK']
-    }
+      default: "COD",
+      enum: ["COD", "PAYPRO"],
+    },
   },
   { timestamps: true }
 );
