@@ -35,6 +35,15 @@ const userSchema = Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Referral_Package",
     },
+    referral_payment: {
+      type: Number,
+      required: false,
+    },
+    referral_payment_status: {
+      type: Boolean,
+      default: false,
+      required: false,
+    },
     user_code: {
       type: String,
       // unique: true,

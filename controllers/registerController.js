@@ -43,12 +43,64 @@ const handleNewUser = async (req, res) => {
     if (role === "Referrer") {
       const package = await Package.findById(referral_package);
       let commission = (package.price * package.commission) / 100;
-      let adminAmount = referred_by ? (package.price - commission) : package.price;
+      let adminAmount = referred_by
+        ? package.price - commission
+        : package.price;
+      const tokenRes = await fetch(
+        "https://demoapi.paypro.com.pk/v2/ppro/auth",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            clientid: "xiCMUQdXavqT9XM",
+            clientsecret: "NnXzMQVGWJdOIQX",
+          }),
+        }
+      );
+      const token = tokenRes.headers.token;
+
+      let myHeaders = new Headers();
+      myHeaders.append("token", token);
+      myHeaders.append("Content-Type", "application/json");
+
+      let raw = JSON.stringify([
+        {
+          MerchantId: "Darsi_Pk",
+        },
+        {
+          OrderNumber: Math.random().toString(),
+          OrderAmount: package.price,
+          OrderDueDate: "25/12/2024",
+          OrderType: "Service",
+          IssueDate: new Date(),
+          OrderExpireAfterSeconds: "0",
+          CustomerName: newUser.firstname,
+          CustomerMobile: "",
+          CustomerEmail: newUser.email,
+          CustomerAddress: "",
+        },
+      ]);
+
+      const payment = await fetch("https://demoapi.paypro.com.pk/v2/ppro/co", {
+        method: "POST",
+        headers: {
+          token,
+          "Content-Type": "application/json",
+        },
+        body: raw,
+        redirect: "follow",
+      });
+      let pktRes = await payment.json();
+      if (pktRes) {
+        return res.status(200).json({
+          message: "Your order has been placed Successfully.",
+          paymentToken: pktRes[1].Click2Pay,
+        });
+      }
       await Financial.create({
         darsi: true,
         package: package._id,
         amount: adminAmount,
-        type: "PACKAGE"
+        type: "PACKAGE",
       });
 
       if (referred_by) {
@@ -59,7 +111,7 @@ const handleNewUser = async (req, res) => {
             user: referral._id,
             package: package._id,
             amount: commission,
-            type: "PACKAGE"
+            type: "PACKAGE",
           });
           newUser.referred_by = referred_by;
         } else {
