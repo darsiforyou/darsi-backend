@@ -1,6 +1,7 @@
 const User = require("../models/user");
 const Package = require("../models/referral_packages");
 const bcrypt = require("bcrypt");
+const axios = require("axios");
 const { faker } = require("@faker-js/faker");
 const Financial = require("../models/financial");
 
@@ -46,14 +47,11 @@ const handleNewUser = async (req, res) => {
       let adminAmount = referred_by
         ? package.price - commission
         : package.price;
-      const tokenRes = await fetch(
+      const tokenRes = await axios.post(
         "https://demoapi.paypro.com.pk/v2/ppro/auth",
         {
-          method: "POST",
-          body: JSON.stringify({
-            clientid: "xiCMUQdXavqT9XM",
-            clientsecret: "NnXzMQVGWJdOIQX",
-          }),
+          clientid: "xiCMUQdXavqT9XM",
+          clientsecret: "NnXzMQVGWJdOIQX",
         }
       );
       const token = tokenRes.headers.token;
@@ -79,17 +77,36 @@ const handleNewUser = async (req, res) => {
           CustomerAddress: "",
         },
       ]);
-
-      const payment = await fetch("https://demoapi.paypro.com.pk/v2/ppro/co", {
-        method: "POST",
-        headers: {
-          token,
-          "Content-Type": "application/json",
+      let json = [
+        {
+          MerchantId: "Darsi_Pk",
         },
-        body: raw,
-        redirect: "follow",
-      });
-      let pktRes = await payment.json();
+        {
+          OrderNumber: Math.random().toString(),
+          OrderAmount: package.price,
+          OrderDueDate: "25/12/2024",
+          OrderType: "Service",
+          IssueDate: new Date(),
+          OrderExpireAfterSeconds: "0",
+          CustomerName: newUser.firstname,
+          CustomerMobile: "",
+          CustomerEmail: newUser.email,
+          CustomerAddress: "",
+        },
+      ];
+
+      const payment = await axios.post(
+        "https://demoapi.paypro.com.pk/v2/ppro/co",
+        json,
+        {
+          headers: {
+            token,
+            "Content-Type": "application/json",
+          },
+          redirect: "follow",
+        }
+      );
+      let pktRes = await payment.data;
       if (pktRes) {
         return res.status(200).json({
           message: "Your order has been placed Successfully.",
