@@ -488,9 +488,9 @@ const createPayment = async (req, res) => {
       );
       const token = tokenRes.headers.token;
 
-      let myHeaders = new Headers();
-      myHeaders.append("token", token);
-      myHeaders.append("Content-Type", "application/json");
+      // let myHeaders = new Headers();
+      // myHeaders.append("token", token);
+      // myHeaders.append("Content-Type", "application/json");
 
       let raw = JSON.stringify([
         {
