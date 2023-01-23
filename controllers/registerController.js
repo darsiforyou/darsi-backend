@@ -107,12 +107,12 @@ const handleNewUser = async (req, res) => {
         }
       );
       let pktRes = await payment.data;
-      if (pktRes) {
-        return res.status(200).json({
-          message: "Your order has been placed Successfully.",
-          paymentToken: pktRes[1].Click2Pay,
-        });
-      }
+      // if (pktRes) {
+      //   return res.status(200).json({
+      //     message: "Your order has been placed Successfully.",
+      //     paymentToken: pktRes[1].Click2Pay,
+      //   });
+      // }
       await Financial.create({
         darsi: true,
         package: package._id,
