@@ -479,17 +479,20 @@ const createPayment = async (req, res) => {
     const pMethods = { CARD: 47022, BANK: 47022, EP: 47022 };
 
     if (paymentMethod !== "COD") {
-      const tokenRes = await axios.post("https://api.paypro.com.pk", {
-        clientid: "HuKGSh097NstKqn",
-        clientsecret: "fvX8MDrf5cRb52G",
-      });
+      const tokenRes = await axios.post(
+        "https://api.paypro.com.pk/v2/ppro/auth",
+        {
+          clientid: "HuKGSh097NstKqn",
+          clientsecret: "fvX8MDrf5cRb52G",
+        }
+      );
       const token = tokenRes.headers.token;
 
       // let myHeaders = new Headers();
       // myHeaders.append("token", token);
       // myHeaders.append("Content-Type", "application/json");
 
-      let raw = JSON.stringify([
+      let raw = [
         {
           MerchantId: "Darsi_Pk",
         },
@@ -505,18 +508,20 @@ const createPayment = async (req, res) => {
           CustomerEmail: order.email,
           CustomerAddress: order.address,
         },
-      ]);
+      ];
 
-      const payment = await fetch("https://api.paypro.com.pk", {
-        method: "POST",
-        headers: {
-          token,
-          "Content-Type": "application/json",
-        },
-        body: raw,
-        redirect: "follow",
-      });
-      pktRes = await payment.json();
+      const payment = await axios.post(
+        "https://api.paypro.com.pk/v2/ppro/co",
+        raw,
+        {
+          headers: {
+            token,
+            "Content-Type": "application/json",
+          },
+          redirect: "follow",
+        }
+      );
+      pktRes = await payment.data;
     }
 
     // Create financial entires for referrer
