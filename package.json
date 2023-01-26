@@ -4,8 +4,8 @@
   "description": "Express tutorial",
   "main": "index.js",
   "scripts": {
-    "start": "node index",
-    "dev": "nodemon index"
+    "start": "node src/index",
+    "dev": "nodemon src/index"
   },
   "author": "Dave Gray",
   "license": "ISC",
