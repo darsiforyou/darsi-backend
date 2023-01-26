@@ -208,7 +208,7 @@ const suggestProducts = async (req, res) => {
 
     return res.status(200).send({
       message: "Successfully fetch products",
-      change: "Changes applied again",
+      change: "Changes applied for testing123",
       data: data,
     });
   } catch (err) {
