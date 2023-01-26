@@ -75,21 +75,128 @@ const getAllProducts = async (req, res) => {
         },
       ]);
     }
-    let sortOption = {}
+    let sortOption = {};
     if (sort) {
       switch (sort) {
         case "PRICE_HIGH_TO_LOW":
-          sortOption = { price: -1 }
+          sortOption = { price: -1 };
           break;
         case "PRICE_LOW_TO_HIGH":
-          sortOption = { price: 1 }
+          sortOption = { price: 1 };
           break;
         case "RECENT":
-          sortOption = { createdAt: -1 }
+          sortOption = { createdAt: -1 };
           break;
       }
     } else {
-      sortOption = { createdAt: -1 }
+      sortOption = { createdAt: -1 };
+    }
+    const options = {
+      page: page || 1,
+      limit: limit || 10,
+      sort: sortOption,
+    };
+
+    const data = await Product.aggregatePaginate(myAggregate, options);
+
+    return res.status(200).send({
+      message: "Successfully fetch products",
+      change: "Changes applied for test",
+      data: data,
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: err });
+  }
+};
+
+const suggestProducts = async (req, res) => {
+  try {
+    let { page, limit, search, sort, ...queries } = req.query;
+    search = searchInColumns(search, [
+      "category_name",
+      "brand_name",
+      "title",
+      "description",
+      "subject_name",
+      "isbn",
+    ]);
+    queries = getQuery(queries);
+    let myAggregate;
+    if (!search) {
+      myAggregate = Product.aggregate([
+        { $match: { $and: [queries] } },
+        { $sample: { size: +limit } },
+        {
+          $lookup: {
+            from: "categories",
+            localField: "category",
+            foreignField: "_id",
+            as: "categories",
+          },
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "vendor",
+            foreignField: "_id",
+            as: "vendors",
+          },
+        },
+        {
+          $lookup: {
+            from: "brands",
+            localField: "brand",
+            foreignField: "_id",
+            as: "brands",
+          },
+        },
+      ]);
+    } else {
+      myAggregate = Product.aggregate([
+        { $match: { $and: [{ $or: search }, queries] } },
+        { $sample: { size: +limit } },
+        {
+          $lookup: {
+            from: "categories",
+            localField: "category",
+            foreignField: "_id",
+            as: "categories",
+          },
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "vendor",
+            foreignField: "_id",
+            as: "vendors",
+          },
+        },
+        {
+          $lookup: {
+            from: "brands",
+            localField: "brand",
+            foreignField: "_id",
+            as: "brands",
+          },
+        },
+      ]);
+    }
+    let sortOption = {};
+    if (sort) {
+      switch (sort) {
+        case "PRICE_HIGH_TO_LOW":
+          sortOption = { price: -1 };
+          break;
+        case "PRICE_LOW_TO_HIGH":
+          sortOption = { price: 1 };
+          break;
+        case "RECENT":
+          sortOption = { createdAt: -1 };
+          break;
+      }
+    } else {
+      sortOption = { createdAt: -1 };
     }
     const options = {
       page: page || 1,
@@ -309,4 +416,5 @@ module.exports = {
   getProduct,
   deleteProduct,
   updateProduct,
+  suggestProducts,
 };

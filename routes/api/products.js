@@ -16,6 +16,8 @@ router
     productController.addProduct
   );
 
+router.route("/suggest").get(productController.suggestProducts);
+
 router
   .route("/without_filter")
   .get(productController.getAllProductWithoutFilter);
