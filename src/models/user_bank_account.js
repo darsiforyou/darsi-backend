@@ -21,7 +21,7 @@ const userBankAccountSchema = Schema(
     },
     account_number: {
       type: String,
-      required: true,
+      required: false,
     },
     iban: {
       type: String,

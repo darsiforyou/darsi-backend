@@ -103,6 +103,9 @@ const productSchema = Schema(
       type: Boolean,
       default: false,
     },
+    targetAge: {
+      type: Number,
+    },
     stockCountPending: {
       type: Number,
       required: true,
@@ -124,7 +127,7 @@ const productSchema = Schema(
     updatedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-    }
+    },
   },
   { timestamps: true }
 );

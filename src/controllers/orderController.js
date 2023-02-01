@@ -491,14 +491,14 @@ const createPayment = async (req, res) => {
       // let myHeaders = new Headers();
       // myHeaders.append("token", token);
       // myHeaders.append("Content-Type", "application/json");
-
+      const percent = (order.cart.netCost * 3) / 100;
       let raw = [
         {
           MerchantId: "Darsi_Pk",
         },
         {
           OrderNumber: data.id,
-          OrderAmount: order.cart.netCost,
+          OrderAmount: order.cart.netCost + percent,
           OrderDueDate: "25/12/2023",
           OrderType: "Service",
           IssueDate: new Date(),
