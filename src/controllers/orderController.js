@@ -480,10 +480,10 @@ const createPayment = async (req, res) => {
 
     if (paymentMethod !== "COD") {
       const tokenRes = await axios.post(
-        "https://api.paypro.com.pk/v2/ppro/auth",
+        "https://demoapi.paypro.com.pk/v2/ppro/auth",
         {
-          clientid: "HuKGSh097NstKqn",
-          clientsecret: "fvX8MDrf5cRb52G",
+          clientid: "xiCMUQdXavqT9XM",
+          clientsecret: "NnXzMQVGWJdOIQX",
         }
       );
       const token = tokenRes.headers.token;
@@ -511,7 +511,7 @@ const createPayment = async (req, res) => {
       ];
 
       const payment = await axios.post(
-        "https://api.paypro.com.pk/v2/ppro/co",
+        "https://demoapi.paypro.com.pk/v2/ppro/co",
         raw,
         {
           headers: {
@@ -546,10 +546,13 @@ const createPayment = async (req, res) => {
       order: data._id,
       amount: totalProfitMargin - referrer.commission + shippingCharges,
     });
-
+    const encodeURl = encodeURI("https://backend.darsi.pk/payment/product");
     res.status(200).json({
       message: "Your order has been placed Successfully.",
-      paymentToken: paymentMethod !== "COD" ? pktRes[1].Click2Pay : "",
+      paymentToken:
+        paymentMethod !== "COD"
+          ? pktRes[1].Click2Pay + "&callback_url=" + encodeURl
+          : "",
       data: data,
     });
   } catch (err) {

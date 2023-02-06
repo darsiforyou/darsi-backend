@@ -21,6 +21,12 @@ const userSchema = Schema(
       type: String,
       require: true,
     },
+    imageURL: {
+      type: String,
+    },
+    imageId: {
+      type: String,
+    },
     role: {
       type: String,
       default: "Customer",

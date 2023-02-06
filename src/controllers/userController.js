@@ -96,6 +96,7 @@ const updateUser = async (req, res) => {
   try {
     const { firstname, lastname, password, email, role } = req.body;
     const user = await User.findById(req.params.id);
+    const file = req.file;
 
     if (user.email === email && user._id != req.params.id)
       return res.json({ message: "Email already exists" });
@@ -113,6 +114,19 @@ const updateUser = async (req, res) => {
     let data = await User.findByIdAndUpdate(req.params.id, updateUser, {
       new: true,
     });
+
+    if (file !== undefined) {
+      const { imageId } = data;
+      if (imageId) await imagekit.deleteFile(imageId);
+      let img = await imagekit.upload({
+        file: file.buffer, //required
+        fileName: file.originalname, //required
+      });
+      data = await Category.findByIdAndUpdate(data.id, {
+        imageURL: img.url,
+        imageId: img.fileId,
+      });
+    }
 
     res.status(200).json({
       message: "User has been updated",

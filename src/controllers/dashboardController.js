@@ -191,45 +191,50 @@ const getCountsVen = async (req, res) => {
 
     const TF = await Financial.aggregate([
       {
-        '$match': {user: id}
-      }, {
-        '$group': {
-          '_id': '',
-          'total': { '$sum': '$amount' }
-        }
-      }
-    ])
+        $match: { user: id },
+      },
+      {
+        $group: {
+          _id: "",
+          total: { $sum: "$amount" },
+        },
+      },
+    ]);
 
     const TPR = await PaymentRequest.aggregate([
       {
-        '$match': {status: "Accepted", user: id}
-      }, {
-        '$group': {
-          '_id': '',
-          'amountAccepted': {
-            '$sum': '$amountAccepted'
+        $match: { status: "Accepted", user: id },
+      },
+      {
+        $group: {
+          _id: "",
+          amountAccepted: {
+            $sum: "$amountAccepted",
           },
-          'amountRequested': {
-            '$sum': '$amountRequested'
+          amountRequested: {
+            $sum: "$amountRequested",
           },
-        }
-      }
-    ])
+        },
+      },
+    ]);
 
-    let financial = {total: 0}
-    let paymentRequest = {amountAccepted: 0}
-   
+    let financial = { total: 0 };
+    let paymentRequest = { amountAccepted: 0 };
+
     await (TF || []).forEach(async (x) => {
-      financial['total'] = await x.total
+      financial["total"] = await x.total;
     });
     await (TPR || []).forEach(async (x) => {
-      paymentRequest = await { amountAccepted: x.amountAccepted, amountRequested: x.amountRequested };
+      paymentRequest = await {
+        amountAccepted: x.amountAccepted,
+        amountRequested: x.amountRequested,
+      };
     });
 
     const revenue = {
-      walletAmount: financial.total-paymentRequest.amountAccepted,
-      withdraw: paymentRequest.amountAccepted
-    }
+      walletAmount: financial.total - paymentRequest.amountAccepted,
+      withdraw: paymentRequest.amountAccepted,
+    };
     res.json({
       data: {
         product: { totalProducts, totalProductsFeature, totalProductsActive },
@@ -380,6 +385,19 @@ const getTopProducts = async (req, res) => {
           path: "$cart.items",
         },
       },
+      // {
+      //   $lookup: {
+      //     from: "products",
+      //     localField: "$cart.items.productId",
+      //     foreignField: "_id",
+      //     as: "productss",
+      //   },
+      // },
+      {
+        $unwind: {
+          path: "$productss",
+        },
+      },
       {
         $match: {
           $and: [match],
@@ -392,6 +410,7 @@ const getTopProducts = async (req, res) => {
           },
         },
       },
+
       {
         $group: {
           _id: "$cart.items.productId",
@@ -406,6 +425,9 @@ const getTopProducts = async (req, res) => {
           },
           totalPrice: {
             $first: "$totalPrice",
+          },
+          media: {
+            $first: "$products",
           },
         },
       },
