@@ -12,20 +12,21 @@ const handleLogin = async (req, res) => {
         data: {},
       });
     const foundUser = await User.findOne({ email: email });
+
     if (!foundUser)
       return res.status(203).json({
         message: "email is Invalid",
         data: {},
       });
 
-    if (foundUser.role === "Referrer") {
-      if (foundUser.referral_payment_status === false) {
-        return res.status(200).json({
-          message: "You have not paid your account fee",
-          data: null,
-        });
-      }
-    }
+    // if (foundUser.role === "Referrer") {
+    //   if (foundUser.referral_payment_status === false) {
+    //     return res.status(200).json({
+    //       message: "You have not paid your account fee",
+    //       data: null,
+    //     });
+    //   }
+    // }
     // evaluate password
     const pass = foundUser.password;
     const match = await bcrypt.compare(password, pass);
