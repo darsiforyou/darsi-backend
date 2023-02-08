@@ -360,10 +360,11 @@ const createPayment = async (req, res) => {
       city,
       postalCode,
       paymentMethod,
+      shippingCharges,
     } = req.body;
     let refData;
     let _package;
-    let shippingCharges = city === "Karachi" ? 50 : 100;
+    // let shippingCharges = city === "Karachi" ? 50 : 100;
     let totalCost = 0;
     let totalVendorCost = 0;
     let discount = 0;

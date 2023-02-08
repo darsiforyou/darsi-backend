@@ -12,10 +12,12 @@ router
   .route("/")
   .get(subjectController.getAllSubjects)
   .post(
+    verifyJWT,
+    verifyRoles(ROLES_LIST.Admin, ROLES_LIST.Vendor),
     upload.single("file"),
     subjectController.addSubject
   );
-  router
+router
   .route("/without_filter")
   .get(subjectController.getAllSubjectWithoutFilter);
 router
@@ -23,12 +25,12 @@ router
   .get(subjectController.getSubject)
   .delete(
     verifyJWT,
-    verifyRoles(ROLES_LIST.Admin),
+    verifyRoles(ROLES_LIST.Admin, ROLES_LIST.Vendor, ROLES_LIST.Referral),
     subjectController.deleteSubject
   )
   .put(
     verifyJWT,
-    verifyRoles(ROLES_LIST.Admin),
+    verifyRoles(ROLES_LIST.Admin, ROLES_LIST.Vendor, ROLES_LIST.Referral),
     upload.single("file"),
     subjectController.updateSubject
   );

@@ -12,7 +12,12 @@ router
   .route("/")
   .get(brandController.getAllBrands)
   .get(brandController.getAllBrandsWithoutFilter)
-  .post(upload.single("file"), brandController.addBrand);
+  .post(
+    upload.single("file"),
+    verifyJWT,
+    verifyRoles(ROLES_LIST.Admin, ROLES_LIST.Vendor),
+    brandController.addBrand
+  );
 router.route("/without_filter").get(brandController.getAllBrandsWithoutFilter);
 router
   .route("/:id")

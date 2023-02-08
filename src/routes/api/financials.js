@@ -17,9 +17,19 @@ router
   .get(verifyJWT, financialController.acceptPaymentRequest);
 router
   .route("/reject-payment-request/:id")
-  .delete(financialController.rejectPaymentRequest);
+  .delete(
+    verifyJWT,
+    verifyRoles(ROLES_LIST.Admin, ROLES_LIST.Vendor, ROLES_LIST.Referral),
+    financialController.rejectPaymentRequest
+  );
 
-router.route("/get-revenue-total/:id").get(financialController.getRevenueTotal);
+router
+  .route("/get-revenue-total/:id")
+  .get(
+    verifyJWT,
+    verifyRoles(ROLES_LIST.Admin, ROLES_LIST.Vendor, ROLES_LIST.Referral),
+    financialController.getRevenueTotal
+  );
 
 router
   .route("/:id")
