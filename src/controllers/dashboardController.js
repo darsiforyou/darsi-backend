@@ -393,11 +393,11 @@ const getTopProducts = async (req, res) => {
       //     as: "productss",
       //   },
       // },
-      {
-        $unwind: {
-          path: "$productss",
-        },
-      },
+      // {
+      //   $unwind: {
+      //     path: "$productss",
+      //   },
+      // },
       {
         $match: {
           $and: [match],
@@ -425,9 +425,6 @@ const getTopProducts = async (req, res) => {
           },
           totalPrice: {
             $first: "$totalPrice",
-          },
-          media: {
-            $first: "$products",
           },
         },
       },
