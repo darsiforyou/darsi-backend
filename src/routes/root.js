@@ -1,3 +1,4 @@
+const { default: axios } = require("axios");
 const express = require("express");
 const router = express.Router();
 const path = require("path");
@@ -10,16 +11,22 @@ router.get("^/$|/index(.html)?", (req, res) => {
 
 router.get("/payment/product", async (req, res) => {
   try {
-    const { username, password, csvinvoiceids } = req.query;
-    console.log();
-    const order = Order.findByIdAndUpdate(csvinvoiceids, {
-      paymentStatus: true,
+    const { status, ordId, msg } = req.query;
+    const res = await axios.get("https://demoapi.paypro.com.pk/v2/ppro/ggos", {
+      userName: "Darsi_Pk",
+      cpayId: ordId,
+    });
+    const orderStatus = res.data;
+
+    console.log(orderStatus);
+    const order = Order.findByIdAndUpdate(orderStatus?.OrderNumber, {
+      paymentStatus: status === "Success" ? true : false,
     });
 
-    console.log({ username, password, csvinvoiceids });
-
-    res.redirect("https://darsi.pk/success");
-    return { username, password, csvinvoiceids };
+    if (status) {
+      res.redirect("https://darsi.pk/success");
+    }
+    res.redirect("https://darsi.pk/failed");
   } catch (err) {
     res.status(500).json({
       message: err.message,

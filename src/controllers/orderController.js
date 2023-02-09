@@ -388,10 +388,10 @@ const createPayment = async (req, res) => {
       x.quantity = x.qty;
 
       paymentproducts.push({
-        name: x.title,
-        amount_cents: x.price,
-        description: x.title + " is a darsi product",
-        quantity: x.qty,
+        LineItem: x.title,
+        Quantity: x.qty,
+        UnitPrice: x.price,
+        SubTotal: x.price * x.qty,
       });
       // update vendor sold product quantity
       allVendors[x.vendor] = {
@@ -508,6 +508,7 @@ const createPayment = async (req, res) => {
           CustomerMobile: order.phone,
           CustomerEmail: order.email,
           CustomerAddress: order.address,
+          BillDetail01: paymentproducts,
         },
       ];
 
@@ -547,7 +548,7 @@ const createPayment = async (req, res) => {
       order: data._id,
       amount: totalProfitMargin - referrer.commission + shippingCharges,
     });
-    const encodeURl = encodeURI("https://backend.darsi.pk/payment/product");
+    const encodeURl = encodeURI("http://localhost:4200/payment/product");
     res.status(200).json({
       message: "Your order has been placed Successfully.",
       paymentToken:
