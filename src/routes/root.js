@@ -12,21 +12,44 @@ router.get("^/$|/index(.html)?", (req, res) => {
 router.get("/payment/product", async (req, res) => {
   try {
     const { status, ordId, msg } = req.query;
-    const res = await axios.get("https://demoapi.paypro.com.pk/v2/ppro/ggos", {
+    const tokenRes = await axios.post(
+      "https://demoapi.paypro.com.pk/v2/ppro/auth",
+      {
+        clientid: "xiCMUQdXavqT9XM",
+        clientsecret: "NnXzMQVGWJdOIQX",
+      }
+    );
+    const data = JSON.stringify({
       userName: "Darsi_Pk",
       cpayId: ordId,
     });
-    const orderStatus = res.data;
+
+    const token = tokenRes.headers.token;
+    const config = {
+      method: "get",
+      maxBodyLength: Infinity,
+      url: "https://demoapi.paypro.com.pk/v2/ppro/ggos",
+      headers: {
+        token: token,
+        "Content-Type": "application/json",
+      },
+      data: data,
+    };
+
+    const payres = await axios(config);
+    const orderStatus = payres.data;
 
     console.log(orderStatus);
-    const order = Order.findByIdAndUpdate(orderStatus?.OrderNumber, {
+    const order = await Order.findByIdAndUpdate(orderStatus[1]?.OrderNumber, {
       paymentStatus: status === "Success" ? true : false,
     });
 
+    console.log(order);
+
     if (status) {
-      res.redirect("https://darsi.pk/success");
+      res.redirect(301, "http://localhost:3001/success");
     }
-    res.redirect("https://darsi.pk/failed");
+    res.redirect("http://darsi.pk/failed");
   } catch (err) {
     res.status(500).json({
       message: err.message,
