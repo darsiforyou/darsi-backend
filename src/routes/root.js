@@ -40,16 +40,31 @@ router.get("/payment/product", async (req, res) => {
     const orderStatus = payres.data;
 
     console.log(orderStatus);
-    const order = await Order.findByIdAndUpdate(orderStatus[1]?.OrderNumber, {
-      paymentStatus: status === "Success" ? true : false,
-    });
+    const orderobj = await Order.findById(orderStatus[1]?.OrderNumber);
+    // const userobj = await User.findById(orderStatus[1]?.OrderNumber);
+    if (orderobj) {
+      const order = await Order.findByIdAndUpdate(orderStatus[1]?.OrderNumber, {
+        paymentStatus: status === "Success" ? true : false,
+        paymentMethod: "PAYPRO",
+      });
+      if (status) {
+        res.redirect(301, "http://localhost:3001/success");
+      }
+      res.redirect("http://darsi.pk/failed");
+    } else {
+      const referrer = await User.findByIdAndUpdate(
+        orderStatus[1]?.OrderNumber,
+        {
+          referral_payment_status: status === "Success" ? true : false,
+          paymentMethod: "PAYPRO",
+        }
+      );
 
-    console.log(order);
-
-    if (status) {
-      res.redirect(301, "http://localhost:3001/success");
+      if (status) {
+        res.redirect(301, "https://dashboard.darsi.pk/success");
+      }
+      res.redirect("http://darsi.pk/failed");
     }
-    res.redirect("http://darsi.pk/failed");
   } catch (err) {
     res.status(500).json({
       message: err.message,

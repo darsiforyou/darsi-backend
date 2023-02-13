@@ -24,7 +24,7 @@ const handleNewUser = async (req, res) => {
     const isUser = await User.findOne({ email });
 
     if (isUser?.email === email)
-      return res.json({ message: "email already exists" }); //Conflict
+      return res.status(409).json({ message: "email already exists" }); //Conflict
     //encrypt the password
     const hashedPwd = await bcrypt.hash(password, 10);
     //store the new user
@@ -43,10 +43,13 @@ const handleNewUser = async (req, res) => {
 
     if (role === "Referrer") {
       const package = await Package.findById(referral_package);
+
       let commission = (package.price * package.commission) / 100;
       let adminAmount = referred_by
         ? package.price - commission
         : package.price;
+      let user = await User.create(newUser);
+
       const tokenRes = await axios.post(
         "https://demoapi.paypro.com.pk/v2/ppro/auth",
         {
@@ -55,10 +58,6 @@ const handleNewUser = async (req, res) => {
         }
       );
       const token = tokenRes.headers.token;
-
-      // let myHeaders = new Headers();
-      // myHeaders.append("token", token);
-      // myHeaders.append("Content-Type", "application/json");
 
       let raw = JSON.stringify([
         {
@@ -82,7 +81,7 @@ const handleNewUser = async (req, res) => {
           MerchantId: "Darsi_Pk",
         },
         {
-          OrderNumber: Math.random().toString(),
+          OrderNumber: user.id,
           OrderAmount: package.price,
           OrderDueDate: "25/12/2024",
           OrderType: "Service",
@@ -107,12 +106,14 @@ const handleNewUser = async (req, res) => {
         }
       );
       let pktRes = await payment.data;
-      // if (pktRes) {
-      //   return res.status(200).json({
-      //     message: "Your order has been placed Successfully.",
-      //     paymentToken: pktRes[1].Click2Pay,
-      //   });
-      // }
+      if (pktRes) {
+        const encodeURl = encodeURI("http://localhost:4200/payment/product");
+
+        return res.status(200).json({
+          message: "Your order has been placed Successfully.",
+          paymentToken: pktRes[1].Click2Pay + "&callback_url=" + encodeURl,
+        });
+      }
       await Financial.create({
         darsi: true,
         package: package._id,

@@ -112,7 +112,7 @@ const getAllProducts = async (req, res) => {
 
 const suggestProducts = async (req, res) => {
   try {
-    let { page, limit, search, sort, ...queries } = req.query;
+    let { page, limit, search, sort, targetAge, ...queries } = req.query;
     search = searchInColumns(search, [
       "category_name",
       "brand_name",
@@ -125,7 +125,7 @@ const suggestProducts = async (req, res) => {
     let myAggregate;
     if (!search) {
       myAggregate = Product.aggregate([
-        { $match: { $and: [queries] } },
+        { $match: { targetAge } },
         { $sample: { size: +limit } },
         {
           $lookup: {
@@ -335,6 +335,7 @@ const deleteProduct = async (req, res) => {
     res.status(500).json({ error: err });
   }
 };
+
 const updateProduct = async (req, res) => {
   try {
     const {

@@ -4,7 +4,9 @@ const userController = require("../../controllers/userController");
 const verifyRoles = require("../../middleware/verifyRoles");
 const verifyJWT = require("../../middleware/verifyJWT");
 const ROLES_LIST = require("../../config/roles_list");
-
+const multer = require("multer");
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 router
   .route("/")
   .get(
@@ -24,7 +26,7 @@ router
   .route("/:id")
   .get(userController.getUser)
   .delete(verifyJWT, verifyRoles(ROLES_LIST.Admin), userController.deleteUser)
-  .put(verifyJWT, userController.updateUser);
+  .put(verifyJWT, upload.single("file"), userController.updateUser);
 
 router.route("/code/:code").get(userController.getUserWithRefCode);
 router.route("/forgotPasswordOtp/:email").get(userController.forgotPasswordOtp);
