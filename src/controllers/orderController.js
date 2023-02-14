@@ -548,7 +548,7 @@ const createPayment = async (req, res) => {
       order: data._id,
       amount: totalProfitMargin - referrer.commission + shippingCharges,
     });
-    const encodeURl = encodeURI("http://localhost:4200/payment/product");
+    const encodeURl = encodeURI("http://backend.darsi.pk/payment/product");
     res.status(200).json({
       message: "Your order has been placed Successfully.",
       paymentToken:

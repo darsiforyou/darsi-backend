@@ -17,6 +17,9 @@ function getQuery(query) {
   if (obj["category"]) {
     obj["category"] = ObjectId(obj["category"]);
   }
+  if (obj["targetAge"]) {
+    obj["targetAge"] = parseInt(obj["targetAge"]);
+  }
   if (obj["brand"]) {
     obj["brand"] = ObjectId(obj["brand"]);
   }

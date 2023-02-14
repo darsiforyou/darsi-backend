@@ -21,6 +21,7 @@ const getAllProducts = async (req, res) => {
     if (!search) {
       myAggregate = Product.aggregate([
         { $match: { $and: [queries] } },
+
         {
           $lookup: {
             from: "categories",
@@ -112,7 +113,7 @@ const getAllProducts = async (req, res) => {
 
 const suggestProducts = async (req, res) => {
   try {
-    let { page, limit, search, sort, targetAge, ...queries } = req.query;
+    let { page, limit = 12, search, sort, targetAge, ...queries } = req.query;
     search = searchInColumns(search, [
       "category_name",
       "brand_name",
@@ -125,32 +126,32 @@ const suggestProducts = async (req, res) => {
     let myAggregate;
     if (!search) {
       myAggregate = Product.aggregate([
-        { $match: { targetAge } },
+        { $match: { targetAge: +targetAge } },
         { $sample: { size: +limit } },
-        {
-          $lookup: {
-            from: "categories",
-            localField: "category",
-            foreignField: "_id",
-            as: "categories",
-          },
-        },
-        {
-          $lookup: {
-            from: "users",
-            localField: "vendor",
-            foreignField: "_id",
-            as: "vendors",
-          },
-        },
-        {
-          $lookup: {
-            from: "brands",
-            localField: "brand",
-            foreignField: "_id",
-            as: "brands",
-          },
-        },
+        // {
+        //   $lookup: {
+        //     from: "categories",
+        //     localField: "category",
+        //     foreignField: "_id",
+        //     as: "categories",
+        //   },
+        // },
+        // {
+        //   $lookup: {
+        //     from: "users",
+        //     localField: "vendor",
+        //     foreignField: "_id",
+        //     as: "vendors",
+        //   },
+        // },
+        // {
+        //   $lookup: {
+        //     from: "brands",
+        //     localField: "brand",
+        //     foreignField: "_id",
+        //     as: "brands",
+        //   },
+        // },
       ]);
     } else {
       myAggregate = Product.aggregate([

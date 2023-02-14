@@ -82,8 +82,8 @@ const handleNewUser = async (req, res) => {
         },
         {
           OrderNumber: user.id,
-          OrderAmount: package.price,
-          OrderDueDate: "25/12/2024",
+          OrderAmount: 100,
+          OrderDueDate: new Date(),
           OrderType: "Service",
           IssueDate: new Date(),
           OrderExpireAfterSeconds: "0",
@@ -107,7 +107,7 @@ const handleNewUser = async (req, res) => {
       );
       let pktRes = await payment.data;
       if (pktRes) {
-        const encodeURl = encodeURI("http://localhost:4200/payment/product");
+        const encodeURl = encodeURI("http://localhost:3000/payment/product");
 
         return res.status(200).json({
           message: "Your order has been placed Successfully.",
