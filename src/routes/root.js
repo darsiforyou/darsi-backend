@@ -4,7 +4,7 @@ const router = express.Router();
 const path = require("path");
 const Order = require("../models/order");
 const User = require("../models/user");
-import React from react-dom
+
 
 router.get("^/$|/index(.html)?", (req, res) => {
   res.sendFile(path.join(__dirname, "..", "views", "index.html"));
