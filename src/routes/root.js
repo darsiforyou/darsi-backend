@@ -4,6 +4,7 @@ const router = express.Router();
 const path = require("path");
 const Order = require("../models/order");
 const User = require("../models/user");
+import React from react-dom
 
 router.get("^/$|/index(.html)?", (req, res) => {
   res.sendFile(path.join(__dirname, "..", "views", "index.html"));
@@ -13,10 +14,10 @@ router.get("/payment/product", async (req, res) => {
   try {
     const { status, ordId, msg } = req.query;
     const tokenRes = await axios.post(
-      "https://api.paypro.com.pk/v2/ppro/auth",
+      "https://demoapi.paypro.com.pk/v2/ppro/auth",
       {
-        clientid: process.env.CLIENT_ID,
-        clientsecret: process.env.CLIENT_SECRET,
+        clientid: "xiCMUQdXavqT9XM",
+        clientsecret: "NnXzMQVGWJdOIQX",
       }
     );
     const data = JSON.stringify({
@@ -28,7 +29,7 @@ router.get("/payment/product", async (req, res) => {
     const config = {
       method: "get",
       maxBodyLength: Infinity,
-      url: "https://api.paypro.com.pk/v2/ppro/ggos",
+      url: "https://demoapi.paypro.com.pk/v2/ppro/ggos",
       headers: {
         token: token,
         "Content-Type": "application/json",
