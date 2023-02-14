@@ -481,10 +481,10 @@ const createPayment = async (req, res) => {
 
     if (paymentMethod !== "COD") {
       const tokenRes = await axios.post(
-        "https://demoapi.paypro.com.pk/v2/ppro/auth",
+        "https://api.paypro.com.pk/v2/ppro/auth",
         {
-          clientid: "xiCMUQdXavqT9XM",
-          clientsecret: "NnXzMQVGWJdOIQX",
+          clientid: process.env.CLIENT_ID,
+          clientsecret: process.env.CLIENT_SECRET,
         }
       );
       const token = tokenRes.headers.token;
@@ -513,7 +513,7 @@ const createPayment = async (req, res) => {
       ];
 
       const payment = await axios.post(
-        "https://demoapi.paypro.com.pk/v2/ppro/co",
+        "https://api.paypro.com.pk/v2/ppro/co",
         raw,
         {
           headers: {

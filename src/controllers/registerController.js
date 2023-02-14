@@ -51,10 +51,10 @@ const handleNewUser = async (req, res) => {
       let user = await User.create(newUser);
 
       const tokenRes = await axios.post(
-        "https://demoapi.paypro.com.pk/v2/ppro/auth",
+        "https://api.paypro.com.pk/v2/ppro/auth",
         {
-          clientid: "xiCMUQdXavqT9XM",
-          clientsecret: "NnXzMQVGWJdOIQX",
+          clientid: process.env.CLIENT_ID,
+          clientsecret: process.env.CLIENT_SECRET,
         }
       );
       const token = tokenRes.headers.token;
@@ -95,7 +95,7 @@ const handleNewUser = async (req, res) => {
       ];
 
       const payment = await axios.post(
-        "https://demoapi.paypro.com.pk/v2/ppro/co",
+        "https://api.paypro.com.pk/v2/ppro/co",
         json,
         {
           headers: {
