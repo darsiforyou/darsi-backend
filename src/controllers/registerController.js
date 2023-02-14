@@ -107,7 +107,7 @@ const handleNewUser = async (req, res) => {
       );
       let pktRes = await payment.data;
       if (pktRes) {
-        const encodeURl = encodeURI("http://localhost:3000/payment/product");
+        const encodeURl = encodeURI("https://backend.darsi.pk/payment/product");
 
         return res.status(200).json({
           message: "Your order has been placed Successfully.",
