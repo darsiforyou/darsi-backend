@@ -4,6 +4,7 @@ const bcrypt = require("bcrypt");
 const axios = require("axios");
 const { faker } = require("@faker-js/faker");
 const Financial = require("../models/financial");
+const referral_packages = require("../models/referral_packages");
 
 const handleNewUser = async (req, res) => {
   try {
@@ -22,6 +23,7 @@ const handleNewUser = async (req, res) => {
         .json({ message: "email and password are required." });
     // check for duplicate emails in the db
     const isUser = await User.findOne({ email });
+    const package = referral_packages.findById(referral_package);
 
     if (isUser?.email === email)
       return res.status(409).json({ message: "email already exists" }); //Conflict
@@ -76,13 +78,14 @@ const handleNewUser = async (req, res) => {
           CustomerAddress: "",
         },
       ]);
+      const percent = (package.price * 3) / 100;
       let json = [
         {
           MerchantId: "Darsi_Pk",
         },
         {
           OrderNumber: user.id,
-          OrderAmount: 100,
+          OrderAmount: package.price + percent,
           OrderDueDate: new Date(),
           OrderType: "Service",
           IssueDate: new Date(),
@@ -91,6 +94,14 @@ const handleNewUser = async (req, res) => {
           CustomerMobile: "",
           CustomerEmail: newUser.email,
           CustomerAddress: "",
+          BillDetail01: [
+            {
+              LineItem: package.title,
+              Quantity: 1,
+              UnitPrice: package.price,
+              SubTotal: package.price * 1,
+            },
+          ],
         },
       ];
 

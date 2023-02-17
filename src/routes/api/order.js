@@ -10,6 +10,8 @@ router
   .get(orderController.getAllOrders)
   .post(orderController.createPayment);
 
+router.route("/popular-products").get(orderController.popularProducts);
+
 router
   .route("/:id")
   .get(orderController.getOrder)

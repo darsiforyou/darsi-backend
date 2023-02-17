@@ -500,7 +500,7 @@ const createPayment = async (req, res) => {
         {
           OrderNumber: data.id,
           OrderAmount: order.cart.netCost + percent,
-          OrderDueDate: "25/12/2023",
+          OrderDueDate: new Date(),
           OrderType: "Service",
           IssueDate: new Date(),
           OrderExpireAfterSeconds: "0",
@@ -649,12 +649,73 @@ const deleteOrder = async (req, res) => {
   }
 };
 
+const popularProducts = async (req, res) => {
+  try {
+    const products = await Order.aggregate([
+      {
+        $unwind: "$cart.items",
+      },
+      // {
+      //   $lookup: {
+      //     from: "products",
+      //     localField: "$cart.items.productId",
+      //     foreignField: "_id",
+      //     as: "product",
+      //   },
+      // },
+      {
+        $group: {
+          _id: "$cart.items.productId",
+          sum: {
+            $sum: "$cart.items.qty",
+          },
+        },
+      },
+      {
+        $sort: {
+          sum: -1,
+        },
+      },
+      { $limit: 12 },
+
+      {
+        $lookup: {
+          from: "products",
+          localField: "_id",
+          foreignField: "_id",
+          as: "product",
+        },
+      },
+      {
+        $unwind: "$product",
+      },
+
+      {
+        $project: {
+          _id: "$product._Id",
+          title: "$product.title",
+          price: "$product.price",
+          media: "$product.media",
+          category_name: "$product.category_name",
+        },
+      },
+    ]);
+    res.status(200).json({
+      message: "Order status has been updated",
+      data: products,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   getAllOrders,
   getOrder,
   updateOrderStatus,
   deleteOrder,
   createOrder,
+  popularProducts,
   createPayment,
 };
 
