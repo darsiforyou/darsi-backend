@@ -52,13 +52,10 @@ const handleNewUser = async (req, res) => {
         : package.price;
       let user = await User.create(newUser);
 
-      const tokenRes = await axios.post(
-        "https://api.paypro.com.pk/v2/ppro/auth",
-        {
-          clientid: process.env.CLIENT_ID,
-          clientsecret: process.env.CLIENT_SECRET,
-        }
-      );
+      const tokenRes = await axios.post(`${process.env.PAYPRO_URL}/auth`, {
+        clientid: process.env.CLIENT_ID,
+        clientsecret: process.env.CLIENT_SECRET,
+      });
       const token = tokenRes.headers.token;
 
       let raw = JSON.stringify([
@@ -105,17 +102,13 @@ const handleNewUser = async (req, res) => {
         },
       ];
 
-      const payment = await axios.post(
-        "https://api.paypro.com.pk/v2/ppro/co",
-        json,
-        {
-          headers: {
-            token,
-            "Content-Type": "application/json",
-          },
-          redirect: "follow",
-        }
-      );
+      const payment = await axios.post(`${process.env.PAYPRO_URL}/co`, json, {
+        headers: {
+          token,
+          "Content-Type": "application/json",
+        },
+        redirect: "follow",
+      });
       let pktRes = await payment.data;
       if (pktRes) {
         const encodeURl = encodeURI("https://backend.darsi.pk/payment/product");

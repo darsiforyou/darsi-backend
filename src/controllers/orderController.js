@@ -480,13 +480,10 @@ const createPayment = async (req, res) => {
     const pMethods = { CARD: 47022, BANK: 47022, EP: 47022 };
 
     if (paymentMethod !== "COD") {
-      const tokenRes = await axios.post(
-        "https://api.paypro.com.pk/v2/ppro/auth",
-        {
-          clientid: process.env.CLIENT_ID,
-          clientsecret: process.env.CLIENT_SECRET,
-        }
-      );
+      const tokenRes = await axios.post(`${process.env.PAYPRO_URL}/auth`, {
+        clientid: process.env.CLIENT_ID,
+        clientsecret: process.env.CLIENT_SECRET,
+      });
       const token = tokenRes.headers.token;
 
       // let myHeaders = new Headers();
@@ -512,17 +509,13 @@ const createPayment = async (req, res) => {
         },
       ];
 
-      const payment = await axios.post(
-        "https://api.paypro.com.pk/v2/ppro/co",
-        raw,
-        {
-          headers: {
-            token,
-            "Content-Type": "application/json",
-          },
-          redirect: "follow",
-        }
-      );
+      const payment = await axios.post(`${process.env.PAYPRO_URL}/co`, raw, {
+        headers: {
+          token,
+          "Content-Type": "application/json",
+        },
+        redirect: "follow",
+      });
       pktRes = await payment.data;
     }
 
@@ -581,8 +574,7 @@ const updateOrderStatus = async (req, res) => {
         allVendors[product.vendor] = {
           id: product.vendor,
           commission:
-            (allVendors[product.vendor]?.commission || 0) +
-            product.qty * product.vendorPrice,
+            (allVendors[product.vendor]?.commission || 0) + product.vendorPrice,
         };
       }
       if (order.applied_Referral_Code !== "None") {
@@ -692,7 +684,7 @@ const popularProducts = async (req, res) => {
 
       {
         $project: {
-          _id: "$product._Id",
+          _id: "$product._id",
           title: "$product.title",
           price: "$product.price",
           media: "$product.media",
