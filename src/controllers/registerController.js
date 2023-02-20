@@ -58,32 +58,15 @@ const handleNewUser = async (req, res) => {
       });
       const token = tokenRes.headers.token;
 
-      let raw = JSON.stringify([
-        {
-          MerchantId: "Darsi_Pk",
-        },
-        {
-          OrderNumber: Math.random().toString(),
-          // OrderAmount: package.price,
-          OrderAmount: 90,
-          OrderDueDate: "25/12/2024",
-          OrderType: "Service",
-          IssueDate: new Date(),
-          OrderExpireAfterSeconds: "0",
-          CustomerName: newUser.firstname,
-          CustomerMobile: "",
-          CustomerEmail: newUser.email,
-          CustomerAddress: "",
-        },
-      ]);
-      const percent = (package.price * 3) / 100;
+      const percent = (package.price * 2.7) / 100;
       let json = [
         {
           MerchantId: "Darsi_Pk",
         },
         {
           OrderNumber: user.id,
-          OrderAmount: package.price + percent,
+          OrderAmount: 90 + percent,
+          // OrderAmount: package.price + percent,
           OrderDueDate: new Date(),
           OrderType: "Service",
           IssueDate: new Date(),
