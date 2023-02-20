@@ -45,9 +45,9 @@ router.get("/payment/product", async (req, res) => {
         paymentMethod: "PAYPRO",
       });
       if (status) {
-        res.redirect(301, "https://darsi.pk/success");
+        return res.redirect(301, "https://darsi.pk/success");
       }
-      res.redirect("http://darsi.pk/failed");
+      return res.redirect("http://darsi.pk/failed");
     } else {
       const referrer = await User.findByIdAndUpdate(
         orderStatus[1]?.OrderNumber,
@@ -57,10 +57,12 @@ router.get("/payment/product", async (req, res) => {
         }
       );
 
+      // res.redirect(301, "https://dashboard.darsi.pk/login");
       if (status === "Success") {
-        res.redirect(301, "https://dashboard.darsi.pk/login");
+        return res.redirect(301, "https://dashboard.darsi.pk/login");
+        // return res.redirect(301, "http://localhost:3002/login");
       }
-      res.redirect("http://darsi.pk/failed");
+      return res.redirect("http://darsi.pk/failed");
     }
   } catch (err) {
     res.status(500).json({

@@ -65,7 +65,7 @@ const handleNewUser = async (req, res) => {
         },
         {
           OrderNumber: user.id,
-          OrderAmount: 98,
+          OrderAmount: package.price + percent,
           // OrderAmount: package.price + percent,
           OrderDueDate: new Date(),
           OrderType: "Service",
@@ -79,8 +79,8 @@ const handleNewUser = async (req, res) => {
             {
               LineItem: package.title,
               Quantity: 1,
-              UnitPrice: package.price,
-              SubTotal: package.price * 1,
+              UnitPrice: package.price + percent,
+              SubTotal: package.price + percent,
             },
           ],
         },
@@ -95,6 +95,7 @@ const handleNewUser = async (req, res) => {
       });
       let pktRes = await payment.data;
       if (pktRes) {
+        // const encodeURl = encodeURI("http://localhost:3000/payment/product");
         const encodeURl = encodeURI("https://backend.darsi.pk/payment/product");
 
         return res.status(200).json({
