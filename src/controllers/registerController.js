@@ -65,7 +65,7 @@ const handleNewUser = async (req, res) => {
         },
         {
           OrderNumber: user.id,
-          OrderAmount: 90 + percent,
+          OrderAmount: 98,
           // OrderAmount: package.price + percent,
           OrderDueDate: new Date(),
           OrderType: "Service",
