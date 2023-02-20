@@ -64,7 +64,8 @@ const handleNewUser = async (req, res) => {
         },
         {
           OrderNumber: Math.random().toString(),
-          OrderAmount: package.price,
+          // OrderAmount: package.price,
+          OrderAmount: 90,
           OrderDueDate: "25/12/2024",
           OrderType: "Service",
           IssueDate: new Date(),

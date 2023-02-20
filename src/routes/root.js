@@ -45,7 +45,7 @@ router.get("/payment/product", async (req, res) => {
         paymentMethod: "PAYPRO",
       });
       if (status) {
-        res.redirect(301, "http://localhost:3001/success");
+        res.redirect(301, "https://darsi.pk/success");
       }
       res.redirect("http://darsi.pk/failed");
     } else {
@@ -58,7 +58,7 @@ router.get("/payment/product", async (req, res) => {
       );
 
       if (status === "Success") {
-        res.redirect(301, "https://dashboard.darsi.pk/success");
+        res.redirect(301, "https://dashboard.darsi.pk/login");
       }
       res.redirect("http://darsi.pk/failed");
     }
