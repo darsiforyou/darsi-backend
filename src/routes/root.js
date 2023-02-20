@@ -4,7 +4,10 @@ const router = express.Router();
 const path = require("path");
 const Order = require("../models/order");
 const User = require("../models/user");
+<<<<<<< HEAD
 
+=======
+>>>>>>> 872067d5714cdf8ab57c6f0be92d2b3fb3324bd4
 
 router.get("^/$|/index(.html)?", (req, res) => {
   res.sendFile(path.join(__dirname, "..", "views", "index.html"));
@@ -13,13 +16,10 @@ router.get("^/$|/index(.html)?", (req, res) => {
 router.get("/payment/product", async (req, res) => {
   try {
     const { status, ordId, msg } = req.query;
-    const tokenRes = await axios.post(
-      "https://api.paypro.com.pk/v2/ppro/auth",
-      {
-        clientid: process.env.CLIENT_ID,
-        clientsecret: process.env.CLIENT_SECRET,
-      }
-    );
+    const tokenRes = await axios.post(`${process.env.PAYPRO_URL}/auth`, {
+      clientid: process.env.CLIENT_ID,
+      clientsecret: process.env.CLIENT_SECRET,
+    });
     const data = JSON.stringify({
       userName: "Darsi_Pk",
       cpayId: ordId,
@@ -29,7 +29,7 @@ router.get("/payment/product", async (req, res) => {
     const config = {
       method: "get",
       maxBodyLength: Infinity,
-      url: "https://api.paypro.com.pk/v2/ppro/ggos",
+      url: `${process.env.PAYPRO_URL}/ggos`,
       headers: {
         token: token,
         "Content-Type": "application/json",
