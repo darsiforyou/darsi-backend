@@ -4,10 +4,6 @@ const router = express.Router();
 const path = require("path");
 const Order = require("../models/order");
 const User = require("../models/user");
-<<<<<<< HEAD
-
-=======
->>>>>>> 872067d5714cdf8ab57c6f0be92d2b3fb3324bd4
 
 router.get("^/$|/index(.html)?", (req, res) => {
   res.sendFile(path.join(__dirname, "..", "views", "index.html"));
