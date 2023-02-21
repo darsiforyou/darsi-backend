@@ -489,7 +489,7 @@ const createPayment = async (req, res) => {
       // let myHeaders = new Headers();
       // myHeaders.append("token", token);
       // myHeaders.append("Content-Type", "application/json");
-      const percent = (order.cart.netCost * 3) / 100;
+      const percent = (order.cart.netCost * 2.7) / 100;
       let raw = [
         {
           MerchantId: "Darsi_Pk",
@@ -520,27 +520,27 @@ const createPayment = async (req, res) => {
     }
 
     // Create financial entires for referrer
-    if (refData) {
-      await Financial.create({
-        user: refData._id,
-        order: data._id,
-        amount: referrer.commission,
-      });
-    }
+    // if (refData) {
+    //   await Financial.create({
+    //     user: refData._id,
+    //     order: data._id,
+    //     amount: referrer.commission,
+    //   });
+    // }
     // Create financial entires for vendor
-    for (const vendor of Object.values(allVendors)) {
-      await Financial.create({
-        user: vendor.id,
-        order: data._id,
-        amount: vendor.commission,
-      });
-    }
+    // for (const vendor of Object.values(allVendors)) {
+    //   await Financial.create({
+    //     user: vendor.id,
+    //     order: data._id,
+    //     amount: vendor.commission,
+    //   });
+    // }
     // Create financial entires for admin
-    await Financial.create({
-      darsi: true,
-      order: data._id,
-      amount: totalProfitMargin - referrer.commission + shippingCharges,
-    });
+    // await Financial.create({
+    //   darsi: true,
+    //   order: data._id,
+    //   amount: totalProfitMargin - referrer.commission + shippingCharges,
+    // });
     const encodeURl = encodeURI("https://backend.darsi.pk/payment/product");
     res.status(200).json({
       message: "Your order has been placed Successfully.",

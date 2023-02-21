@@ -58,24 +58,7 @@ const handleNewUser = async (req, res) => {
       });
       const token = tokenRes.headers.token;
 
-      let raw = JSON.stringify([
-        {
-          MerchantId: "Darsi_Pk",
-        },
-        {
-          OrderNumber: Math.random().toString(),
-          OrderAmount: package.price,
-          OrderDueDate: "25/12/2024",
-          OrderType: "Service",
-          IssueDate: new Date(),
-          OrderExpireAfterSeconds: "0",
-          CustomerName: newUser.firstname,
-          CustomerMobile: "",
-          CustomerEmail: newUser.email,
-          CustomerAddress: "",
-        },
-      ]);
-      const percent = (package.price * 3) / 100;
+      const percent = (package.price * 2.7) / 100;
       let json = [
         {
           MerchantId: "Darsi_Pk",
@@ -83,6 +66,7 @@ const handleNewUser = async (req, res) => {
         {
           OrderNumber: user.id,
           OrderAmount: package.price + percent,
+          // OrderAmount: package.price + percent,
           OrderDueDate: new Date(),
           OrderType: "Service",
           IssueDate: new Date(),
@@ -95,8 +79,8 @@ const handleNewUser = async (req, res) => {
             {
               LineItem: package.title,
               Quantity: 1,
-              UnitPrice: package.price,
-              SubTotal: package.price * 1,
+              UnitPrice: package.price + percent,
+              SubTotal: package.price + percent,
             },
           ],
         },
@@ -111,6 +95,7 @@ const handleNewUser = async (req, res) => {
       });
       let pktRes = await payment.data;
       if (pktRes) {
+        // const encodeURl = encodeURI("http://localhost:3000/payment/product");
         const encodeURl = encodeURI("https://backend.darsi.pk/payment/product");
 
         return res.status(200).json({
