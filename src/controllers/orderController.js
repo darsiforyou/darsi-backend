@@ -372,6 +372,7 @@ const createPayment = async (req, res) => {
     let netCost = 0;
     let totalProfitMargin = 0;
     let allVendors = {};
+
     let referrer = { id: undefined, commission: 0 };
     const paymentproducts = [];
     for (const x of products) {
@@ -415,6 +416,18 @@ const createPayment = async (req, res) => {
         }
       );
     }
+    if (paymentMethod === "PAYPRO") {
+      const bankSurCharges =
+        ((totalCost + shippingCharges - discount) * 2.75) / 100;
+      const taxPaypro = Number((bankSurCharges * 13) / 100);
+      const totalTax = Number(bankSurCharges + taxPaypro);
+      const paybale = Number(totalCost + shippingCharges - discount + totalTax);
+
+      netCost = paybale;
+    } else {
+      const paybale = Number(totalCost + shippingCharges - discount);
+      netCost = paybale;
+    }
 
     if (applied_Referral_Code) {
       refData = await User.findOne({
@@ -428,7 +441,8 @@ const createPayment = async (req, res) => {
         totalVendorCost,
         _package.discount_percentage
       );
-      netCost = totalCost - discount;
+      netCost = netCost - discount;
+
       // calculate commission for user
       let commission = (totalProfitMargin * Number(_package.commission)) / 100;
 
@@ -448,7 +462,7 @@ const createPayment = async (req, res) => {
         totalQty: totalQty,
         totalCost: totalCost + shippingCharges,
         discount: discount,
-        netCost: netCost + shippingCharges,
+        netCost: Math.ceil(netCost),
         shippingCharges: shippingCharges,
         totalProfitMargin: totalProfitMargin,
         items: products,
@@ -489,14 +503,13 @@ const createPayment = async (req, res) => {
       // let myHeaders = new Headers();
       // myHeaders.append("token", token);
       // myHeaders.append("Content-Type", "application/json");
-      const percent = (order.cart.netCost * 2.7) / 100;
       let raw = [
         {
           MerchantId: "Darsi_Pk",
         },
         {
           OrderNumber: data.id,
-          OrderAmount: order.cart.netCost + percent,
+          OrderAmount: Math.ceil(order.cart.netCost),
           OrderDueDate: new Date(),
           OrderType: "Service",
           IssueDate: new Date(),
@@ -541,7 +554,8 @@ const createPayment = async (req, res) => {
     //   order: data._id,
     //   amount: totalProfitMargin - referrer.commission + shippingCharges,
     // });
-    const encodeURl = encodeURI("https://backend.darsi.pk/payment/product");
+    // const encodeURl = encodeURI("https://backend.darsi.pk/payment/product");
+    const encodeURl = encodeURI("http://localhost:3000/payment/product");
     res.status(200).json({
       message: "Your order has been placed Successfully.",
       paymentToken:
