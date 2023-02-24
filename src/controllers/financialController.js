@@ -248,22 +248,52 @@ const getPayable = async (req, res) => {
 
     const orders = await Order.aggregate([
       {
-        $unwind: {
-          path: "$cart.items",
+        $match: {
+          $and: [
+            { "cart.items.vendor": ObjectId(userId) },
+            // { "cart.orderStatus": "Delivered" },
+          ],
         },
       },
       {
-        $match: { "cart.items.vendor": ObjectId(userId) },
+        $project: {
+          items: {
+            $filter: {
+              input: "$cart.items",
+              as: "items",
+              cond: {
+                $and: [
+                  {
+                    $eq: ["$$items.vendor", ObjectId(userId)],
+                  },
+                  // {
+                  //   $eq: ["$cart.orderStatus", "Delivered"],
+                  // },
+                ],
+              },
+            },
+          },
+        },
+      },
+      {
+        $unwind: {
+          path: "$items",
+        },
       },
       {
         $project: {
-          total: { $multiply: ["$vendorPrice", "$qty"] },
+          total: { $multiply: ["$items.vendorPrice", "$items.qty"] },
         },
       },
       {
         $group: {
           _id: null,
           totalSum: { $sum: "$total" },
+        },
+      },
+      {
+        $unwind: {
+          path: "$totalSum",
         },
       },
     ]);
