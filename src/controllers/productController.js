@@ -392,19 +392,19 @@ const updateProduct = async (req, res) => {
     const user = await User.findById(req.userId);
     const _vendorData = await User.findById(vendor);
 
-    if (user?.role === "Admin") {
-      let emailInput = {
-        subject: "Product updates",
-        html: `<strong>Your product ${title} has been updated</strong>`,
-      };
-      await send_email(_vendorData.email, emailInput)
-        .then((res) => {
-          console.log(res);
-        })
-        .catch((err) => {
-          return res.status(500).json({ error: err });
-        });
-    }
+    // if (user?.role === "Admin") {
+    //   let emailInput = {
+    //     subject: "Product updates",
+    //     html: `<strong>Your product ${title} has been updated</strong>`,
+    //   };
+    //   await send_email(_vendorData.email, emailInput)
+    //     .then((res) => {
+    //       console.log(res);
+    //     })
+    //     .catch((err) => {
+    //       return res.status(500).json({ error: err });
+    //     });
+    // }
 
     res.status(200).json({
       message: "Product has been updated",
