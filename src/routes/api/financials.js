@@ -39,4 +39,6 @@ router
     verifyRoles(ROLES_LIST.Admin),
     financialController.deleteFinancial
   );
+
+router.get("/payable/:userId", financialController.getPayable);
 module.exports = router;

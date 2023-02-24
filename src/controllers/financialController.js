@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 const Financial = require("../models/financial");
+const Products = require("../models/product");
+const Order = require("../models/order");
 const PaymentRequest = require("../models/payment_requests");
 const { getQuery } = require("../utils");
 const ObjectId = mongoose.Types.ObjectId;
@@ -224,6 +226,57 @@ const deleteFinancial = async (req, res) => {
   }
 };
 
+const getPayable = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const productsTotal = await Products.aggregate([
+      {
+        $match: { vendor: ObjectId(userId) },
+      },
+      {
+        $project: {
+          total: { $multiply: ["$vendorPrice", "$stockCountPending"] },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalSum: { $sum: "$total" },
+        },
+      },
+    ]);
+
+    const orders = await Order.aggregate([
+      {
+        $unwind: {
+          path: "$cart.items",
+        },
+      },
+      {
+        $match: { "cart.items.vendor": ObjectId(userId) },
+      },
+      {
+        $project: {
+          total: { $multiply: ["$vendorPrice", "$qty"] },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalSum: { $sum: "$total" },
+        },
+      },
+    ]);
+
+    res.status(200).json({
+      message: "Financial has been deleted...",
+      data: { productsTotal, orders },
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   getAllFinancials,
   getFinancial,
@@ -233,4 +286,5 @@ module.exports = {
   getAllRequests,
   acceptPaymentRequest,
   rejectPaymentRequest,
+  getPayable,
 };
