@@ -82,7 +82,7 @@ const productSchema = Schema(
       type: String,
     },
     isbn: {
-      type: String,
+      type: Number,
     },
     subject: {
       type: mongoose.Schema.Types.ObjectId,
