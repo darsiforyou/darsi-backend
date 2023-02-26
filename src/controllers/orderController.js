@@ -636,6 +636,22 @@ const updateOrderStatus = async (req, res) => {
     res.status(500).json({ error: err });
   }
 };
+const updatePaymentStatus = async (req, res) => {
+  try {
+    const { paymentStatus } = req.body;
+    let order = await Order.findByIdAndUpdate(req.params.id, {
+      paymentStatus,
+    });
+
+    res.status(200).json({
+      message: "Order payment status has been updated",
+      data: order,
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: err });
+  }
+};
 const getOrder = async (req, res) => {
   try {
     const data = await Order.findById(req.params.id);
@@ -723,6 +739,7 @@ module.exports = {
   createOrder,
   popularProducts,
   createPayment,
+  updatePaymentStatus,
 };
 
 const calculateDiscount = (total, vendorTotal, discount_percentage) => {

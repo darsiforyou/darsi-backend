@@ -27,4 +27,12 @@ router
     verifyRoles(ROLES_LIST.Admin),
     orderController.updateOrderStatus
   );
+
+router
+  .route("/payment-status-change/:id")
+  .put(
+    verifyJWT,
+    verifyRoles(ROLES_LIST.Admin),
+    orderController.updatePaymentStatus
+  );
 module.exports = router;
