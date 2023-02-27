@@ -251,7 +251,64 @@ const getPayable = async (req, res) => {
         $match: {
           $and: [
             { "cart.items.vendor": ObjectId(userId) },
-            // { "cart.orderStatus": "Delivered" },
+            { orderStatus: "Delivered" },
+          ],
+        },
+      },
+      {
+        $project: {
+          items: {
+            $filter: {
+              input: "$cart.items",
+              as: "items",
+              cond: {
+                $and: [
+                  {
+                    $eq: ["$$items.vendor", ObjectId(userId)],
+                  },
+                  // {
+                  //   $eq: ["$cart.orderStatus", "Delivered"],
+                  // },
+                ],
+              },
+            },
+          },
+        },
+      },
+      {
+        $unwind: {
+          path: "$items",
+        },
+      },
+      {
+        $project: {
+          total: { $multiply: ["$items.vendorPrice", "$items.qty"] },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalSum: { $sum: "$total" },
+        },
+      },
+      {
+        $unwind: {
+          path: "$totalSum",
+        },
+      },
+    ]);
+    console.log(orders, productsTotal);
+
+    const ordersPending = await Order.aggregate([
+      {
+        $match: {
+          $and: [
+            { "cart.items.vendor": ObjectId(userId) },
+            {
+              orderStatus: {
+                $ne: "Delivered",
+              },
+            },
           ],
         },
       },
@@ -298,9 +355,12 @@ const getPayable = async (req, res) => {
       },
     ]);
 
+    const payable =
+      productsTotal[0].totalSum + (orders.length > 0 ? orders[0].totalSum : 0);
+
     res.status(200).json({
       message: "Financial has been deleted...",
-      data: { productsTotal, orders },
+      data: { payable },
     });
   } catch (error) {
     res.status(500).json({ error: error.message });

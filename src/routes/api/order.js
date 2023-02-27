@@ -9,6 +9,7 @@ router
   .route("/")
   .get(orderController.getAllOrders)
   .post(orderController.createPayment);
+router.route("/orders-by-item").get(orderController.getAllOrdersByItem);
 
 router.route("/popular-products").get(orderController.popularProducts);
 

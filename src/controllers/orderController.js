@@ -7,6 +7,7 @@ const Financial = require("../models/financial");
 const mongoose = require("mongoose");
 const axios = require("axios");
 const ObjectId = mongoose.Types.ObjectId;
+
 const getAllOrders = async (req, res) => {
   try {
     let { page, limit, search, vendorId, ...queries } = req.query;
@@ -175,6 +176,63 @@ const getAllOrders = async (req, res) => {
       }
     }
 
+    const options = {
+      page: page || 1,
+      limit: limit || 10,
+      sort: { createdAt: -1 },
+    };
+
+    const data = await Order.aggregatePaginate(myAggregate, options);
+
+    return res.status(200).send({
+      message: "Successfully fetch Orders",
+      data: data,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err });
+  }
+};
+
+const getAllOrdersByItem = async (req, res) => {
+  try {
+    let { page, limit, search, vendorId, ...queries } = req.query;
+    search = searchInColumns(search, ["user", "order_number"]);
+    queries = getQuery(queries);
+    let items = "";
+    if (vendorId) {
+      id = ObjectId(vendorId);
+      queries = { ...queries, "cart.items.vendor": id };
+      items = {};
+    }
+    let myAggregate;
+    if (!search) {
+      myAggregate = Order.aggregate([
+        {
+          $match: { $and: [queries] },
+        },
+        {
+          $unwind: {
+            path: "$cart.items",
+          },
+        },
+        {
+          $lookup: {
+            from: "products",
+            localField: "items.productId",
+            foreignField: "_id",
+            as: "prd",
+          },
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "items.vendor",
+            foreignField: "_id",
+            as: "vendorDetail",
+          },
+        },
+      ]);
+    }
     const options = {
       page: page || 1,
       limit: limit || 10,
@@ -572,24 +630,40 @@ const createPayment = async (req, res) => {
   }
 };
 
+function isEmpty(obj) {
+  return Object.keys(obj).length === 0;
+}
 const updateOrderStatus = async (req, res) => {
   try {
     const { orderStatus } = req.body;
     let order = await Order.findByIdAndUpdate(req.params.id, {
       orderStatus,
+      paymentStatus: false,
     });
     if (orderStatus === "Delivered") {
+      let order = await Order.findByIdAndUpdate(req.params.id, {
+        orderStatus,
+        paymentStatus: true,
+      });
       let totalProfitMargin = 0;
       let allVendors = {};
       let referrer = { id: undefined, commission: 0 };
 
       for (const product of order.cart.items) {
         totalProfitMargin = totalProfitMargin + product.profitMargin;
-        allVendors[product.vendor] = {
-          id: product.vendor,
-          commission:
-            (allVendors[product.vendor]?.commission || 0) + product.vendorPrice,
-        };
+        if (!isEmpty(allVendors)) {
+          allVendors[product.vendor] = {
+            id: product.vendor,
+            commission:
+              (allVendors[product.vendor]?.commission || 0) +
+              product.vendorPrice * product.qty,
+          };
+        } else {
+          allVendors[product.vendor] = {
+            id: product.vendor,
+            commission: product.vendorPrice * product.qty,
+          };
+        }
       }
       if (order.applied_Referral_Code !== "None") {
         let refData = await User.findOne({
@@ -626,7 +700,43 @@ const updateOrderStatus = async (req, res) => {
           totalProfitMargin - referrer.commission + order.cart.shippingCharges,
       });
     }
+    if (orderStatus === "Sale Return") {
+      let totalProfitMargin = 0;
+      let allVendors = {};
 
+      for (const product of order.cart.items) {
+        totalProfitMargin = totalProfitMargin - product.profitMargin;
+        if (!isEmpty(allVendors)) {
+          allVendors[product.vendor] = {
+            id: product.vendor,
+            commission: -(
+              (allVendors[product.vendor]?.commission || 0) +
+              product.vendorPrice * product.qty
+            ),
+          };
+        } else {
+          allVendors[product.vendor] = {
+            id: product.vendor,
+            commission: -product.vendorPrice * product.qty,
+          };
+        }
+      }
+
+      // Create financial entires for vendor
+      for (const vendor of Object.values(allVendors)) {
+        await Financial.create({
+          user: vendor.id,
+          order: order._id,
+          amount: vendor.commission,
+        });
+      }
+      // Create financial entires for admin
+      await Financial.create({
+        darsi: true,
+        order: order._id,
+        amount: totalProfitMargin,
+      });
+    }
     res.status(200).json({
       message: "Order status has been updated",
       data: order,
@@ -740,6 +850,7 @@ module.exports = {
   popularProducts,
   createPayment,
   updatePaymentStatus,
+  getAllOrdersByItem,
 };
 
 const calculateDiscount = (total, vendorTotal, discount_percentage) => {

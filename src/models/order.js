@@ -125,6 +125,7 @@ const orderSchema = Schema(
         "Delivered",
         "Out For Delivery",
         "Cancelled",
+        "Sale Return",
       ],
     },
     applied_Referral_Code: {
