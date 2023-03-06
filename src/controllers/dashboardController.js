@@ -510,7 +510,7 @@ const getTopVendors = async (req, res) => {
     tomorrow.setDate(tomorrow.getDate() + 1);
     let match = {
       createdAt: { $gte: new Date(priorDate), $lte: tomorrow },
-      "cart.items.vendor": ObjectId(vendor),
+      // "cart.items.vendor": ObjectId(vendor),
     };
 
     const topVendors = await Order.aggregate([
