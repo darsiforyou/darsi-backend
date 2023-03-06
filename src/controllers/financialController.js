@@ -355,8 +355,10 @@ const getPayable = async (req, res) => {
       },
     ]);
 
-    const payable =
-      productsTotal[0].totalSum + (orders.length > 0 ? orders[0].totalSum : 0);
+    // const payable =
+    //   productsTotal[0].totalSum - (orders.length > 0 ? orders[0].totalSum : 0);
+
+    const payable = productsTotal[0].totalSum;
 
     res.status(200).json({
       message: "Financial has been deleted...",

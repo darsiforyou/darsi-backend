@@ -651,6 +651,14 @@ const updateOrderStatus = async (req, res) => {
 
       for (const product of order.cart.items) {
         totalProfitMargin = totalProfitMargin + product.profitMargin;
+        // await Product.updateOne(
+        //   { _id: x.productId },
+        //   {
+        //     // stockCountConsumed: stockCountConsumed,
+        //     // stockCountPending: stockCountPending,
+        //     totalSale: totalSale,
+        //   }
+        // );
         if (!isEmpty(allVendors)) {
           allVendors[product.vendor] = {
             id: product.vendor,
