@@ -474,6 +474,9 @@ const getTopCustomers = async (req, res) => {
           totalPurchase: {
             $sum: "$cart.items.price",
           },
+          name: {
+            $first: '$name'
+          },
         },
       },
       {
