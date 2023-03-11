@@ -504,29 +504,30 @@ const getTopVendors = async (req, res) => {
     let { startDate, endDate, role, code, productId } = req.query;
     let dateObj = new Date();
     let priorDate =
-      startDate ??
-      new Date(new Date().setDate(dateObj.getDate() - 30))
-        .toISOString()
-        .slice(0, 10);
-    const today = new Date();
-    const tomorrow = endDate ?? new Date(today);
+    startDate ??
+    new Date(new Date().setDate(dateObj.getDate() - 30));
+      const today = new Date();
+    const tomorrow = endDate ?? today;
     tomorrow.setDate(tomorrow.getDate() + 1);
     let match = {
-      createdAt: { $gte: new Date(priorDate), $lte: tomorrow },
-      "cart.items.vendor": ObjectId(vendor),
+      createdAt: { $gte: priorDate },
+      // "cart.items.vendor": ObjectId(vendor),
     };
-
     const topVendors = await Order.aggregate([
       {
-        $match: {
-          $and: [match],
-        },
+        $match: match
       },
       {
         $unwind: {
           path: "$cart.items",
         },
       },
+      {
+        '$addFields': {
+          'vendor': '$cart.items.vendor'
+        }
+      },
+      
       {
         $group: {
           _id: "$vendor",
@@ -566,11 +567,12 @@ const getTopVendors = async (req, res) => {
         },
       },
       {
-        $limit: limit || 10,
+        $limit: parseInt(limit) || 10,
       },
     ]);
     res.json({ data: topVendors });
   } catch (error) {
+    // console.log(JSON.stringify(error))
     res.status(500).json({ error: error });
   }
 };
