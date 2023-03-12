@@ -11,7 +11,9 @@ const ObjectId = mongoose.Types.ObjectId;
 const getAllOrders = async (req, res) => {
   try {
     let { page, limit, search, vendorId, ...queries } = req.query;
-    search = searchInColumns(search, ["user"]);
+    let orderSearch = { order_number: new RegExp(parseInt(search), "i") };
+
+    search = searchInColumns(search, ["name", "email", "phone"]);
     queries = getQuery(queries);
     let items = "";
     if (vendorId) {
@@ -169,7 +171,14 @@ const getAllOrders = async (req, res) => {
       } else {
         myAggregate = Order.aggregate([
           {
-            $match: { $and: [{ $or: search }, queries] },
+            $match: {
+              $and: [
+                {
+                  $or: [...search, orderSearch],
+                },
+                queries,
+              ],
+            },
           },
           ...arr,
         ]);

@@ -3,6 +3,7 @@ const OTP = require("../models/otp");
 const { searchInColumns, getQuery } = require("../utils");
 const bcrypt = require("bcrypt");
 const send_email = require("../middleware/email");
+const imagekit = require("../config/imagekit");
 
 const getAllUsers = async (req, res) => {
   try {
@@ -111,9 +112,7 @@ const updateUser = async (req, res) => {
       const hashedPwd = await bcrypt.hash(password, 10);
       updateUser.password = hashedPwd;
     }
-    let data = await User.findByIdAndUpdate(req.params.id, updateUser, {
-      new: true,
-    });
+    let data = await User.findByIdAndUpdate(req.params.id, updateUser);
 
     if (file !== undefined) {
       const { imageId } = data;
@@ -122,7 +121,7 @@ const updateUser = async (req, res) => {
         file: file.buffer, //required
         fileName: file.originalname, //required
       });
-      data = await Category.findByIdAndUpdate(data.id, {
+      data = await User.findByIdAndUpdate(data.id, {
         imageURL: img.url,
         imageId: img.fileId,
       });
