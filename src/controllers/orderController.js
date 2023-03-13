@@ -508,7 +508,7 @@ const createPayment = async (req, res) => {
         totalVendorCost,
         _package.discount_percentage
       );
-      netCost = netCost - discount;
+      totalProfitMargin = netCost - discount;
 
       // calculate commission for user
       let commission = (totalProfitMargin * Number(_package.commission)) / 100;
