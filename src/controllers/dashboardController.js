@@ -492,6 +492,9 @@ const getTopCustomers = async (req, res) => {
           as: "customerdetails",
         },
       },
+      {
+        $limit: +limit || 10
+      }
     ]);
     res.json({ data: topCustomers });
   } catch (error) {
