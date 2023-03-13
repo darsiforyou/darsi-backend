@@ -36,7 +36,6 @@ router.get("/payment/product", async (req, res) => {
     const payres = await axios(config);
     const orderStatus = payres.data;
 
-    console.log(orderStatus);
     const orderobj = await Order.findById(orderStatus[1]?.OrderNumber);
     // const userobj = await User.findById(orderStatus[1]?.OrderNumber);
     if (orderobj) {
@@ -78,12 +77,9 @@ router.get("/paypro/uis", async (req, res) => {
     let statusCode = 00;
     if (username === "DarsiPk") {
     }
-    // console.log();
     // const order = Order.findByIdAndUpdate(csvinvoiceids, {
     //   paymentStatus: true,
     // });
-
-    // console.log({ username, password, csvinvoiceids });
 
     // res.redirect("https://darsi.pk/success");
     return [
@@ -104,12 +100,9 @@ router.get("/paypro/uis", async (req, res) => {
 router.get("/paypro/referral", async (req, res) => {
   try {
     const { username, password, csvinvoiceids } = req.query;
-    console.log();
     const user = User.findByIdAndUpdate(csvinvoiceids, {
       referral_payment_status: true,
     });
-
-    console.log({ username, password, csvinvoiceids });
 
     res.redirect("https://dashboard.darsi.pk/login");
     return { username, password, csvinvoiceids };

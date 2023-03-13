@@ -185,7 +185,6 @@ const changeUserPassword = async (req, res) => {
   try {
     const { user_email, otp_code, new_password } = req.body;
     const otp = await OTP.findOne({ opt: otp_code });
-    console.log(otp);
     const user = await User.findOne({ email: user_email });
 
     if (!otp?._id) return res.status(203).json({ message: "OPT is invalid" });
