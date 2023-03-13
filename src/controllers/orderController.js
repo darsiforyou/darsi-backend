@@ -509,9 +509,12 @@ const createPayment = async (req, res) => {
         _package.discount_percentage
       );
       netCost = netCost - discount;
+      console.log("🚀 ~ file: orderController.js:512 ~ createPayment ~ discount:", discount)
 
       // calculate commission for user
-      let commission = (totalProfitMargin * Number(_package.commission)) / 100;
+      let commission = ((totalProfitMargin - discount) * Number(_package.commission)) / 100;
+      console.log("🚀 ~ file: orderController.js:515 ~ createPayment ~ totalProfitMargin:", totalProfitMargin)
+      console.log("🚀 ~ file: orderController.js:515 ~ createPayment ~ commission:", commission)
 
       referrer = { id: refData._id, commission };
 
