@@ -217,6 +217,47 @@ const getCountsVen = async (req, res) => {
         },
       },
     ]);
+    // Total Amount of Pending Orders
+    const TOPA = await Order.aggregate([
+      {
+        '$unwind': {
+          'path': '$cart.items'
+        }
+      }, {
+        '$match': {
+          '$and': [
+            {
+              'cart.items.vendor': id
+            }, {
+              'orderStatus': 'Pending'
+            }
+          ]
+        }
+      }, {
+        '$addFields': {
+          'vendorPrice': '$cart.items.vendorPrice', 
+          'qty': '$cart.items.qty'
+        }
+      }, {
+        '$group': {
+          '_id': '$_id', 
+          'totalPendingOrderAmount': {
+            '$sum': {
+              '$multiply': [
+                '$vendorPrice', '$qty'
+              ]
+            }
+          }
+        }
+      }, {
+        '$group': {
+          '_id': null, 
+          'total': {
+            '$sum': '$totalPendingOrderAmount'
+          }
+        }
+      }
+    ]);
 
     let financial = { total: 0 };
     let paymentRequest = { amountAccepted: 0 };
@@ -234,6 +275,7 @@ const getCountsVen = async (req, res) => {
     const revenue = {
       walletAmount: financial.total - paymentRequest.amountAccepted,
       withdraw: paymentRequest.amountAccepted,
+      pendingAmount: TOPA[0].total
     };
     res.json({
       data: {
