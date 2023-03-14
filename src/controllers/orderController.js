@@ -510,7 +510,7 @@ const createPayment = async (req, res) => {
       );
       netCost = netCost - discount;
       console.log("🚀 ~ file: orderController.js:512 ~ createPayment ~ discount:", discount)
-      totalProfitMargin = netCost - discount;
+      // totalProfitMargin = netCost - discount;
 
       // calculate commission for user
       let commission = ((totalProfitMargin - discount) * Number(_package.commission)) / 100;
