@@ -329,68 +329,62 @@ const getChartData = async (req, res) => {
 
     const chartData = await Order.aggregate([
       {
-        $match: {
+        '$unwind': {
+          'path': '$cart.items'
+        }
+      }, {
+        '$match': {
           $and: [match],
         },
-      },
-      {
-        $addFields: {
-          totalAvgQty: {
-            $reduce: {
-              input: "$cart.items",
-              initialValue: 0,
-              in: {
-                $sum: ["$$value", "$$this.qty"],
-              },
-            },
-          },
-        },
-      },
-      {
-        $addFields: {
-          cartItemPriceWithQTy: {
-            $reduce: {
-              input: "$cart.items",
-              initialValue: 0,
-              in: {
-                $sum: [
-                  "$$value",
-                  {
-                    $multiply: ["$$this.qty", "$$this.price"],
-                  },
-                ],
-              },
-            },
-          },
-        },
-      },
-      {
-        $group: {
-          _id: {
-            $dateToString: {
-              format: "%Y-%m-%d",
-              date: "$createdAt",
-            },
-          },
-          totalOrderValue: {
-            $sum: "$cart.netCost",
-          },
-          averageOrderQuantity: {
-            $avg: "$cart.totalQty",
-          },
-          averageOrderQty: {
-            $avg: "$totalAvgQty",
-          },
-          totalPrice: {
-            $sum: "$cartItemPriceWithQTy",
-          },
-        },
-      },
-      {
-        $sort: {
-          _id: 1,
-        },
-      },
+      }, {
+        '$addFields': {
+          'totalAvgQty': '$cart.items.qty'
+        }
+      }, {
+        '$addFields': {
+          'cartItemVendorPriceWithQTy': {
+            '$multiply': [
+              '$cart.items.qty', '$cart.items.vendorPrice'
+            ]
+          }
+        }
+      }, {
+        '$addFields': {
+          'cartItemPriceWithQTy': {
+            '$multiply': [
+              '$cart.items.qty', '$cart.items.price'
+            ]
+          }
+        }
+      }, {
+        '$group': {
+          '_id': {
+            '$dateToString': {
+              'format': '%Y-%m-%d', 
+              'date': '$createdAt'
+            }
+          }, 
+          'totalOrderValue': {
+            '$sum': '$cart.netCost'
+          }, 
+          'totalOrderValueVendor': {
+            '$sum': '$cartItemPriceWithQTy'
+          }, 
+          'averageOrderQuantity': {
+            '$avg': '$cart.totalQty'
+          }, 
+          'averageOrderQty': {
+            '$avg': '$totalAvgQty'
+          }, 
+          'totalPrice': {
+            '$sum': '$cartItemPriceWithQTy'
+          }
+        }
+      }, {
+        '$sort': {
+          '_id': 1
+        }
+      }
     ]);
     res.json({
       data: { chartData },
