@@ -338,38 +338,31 @@ const getChartData = async (req, res) => {
 
     const chartData = await Order.aggregate([
       {
+        $unwind: {
+          path: "$cart.items",
+        },
+      },
+      {
         $match: {
           $and: and,
         },
       },
       {
         $addFields: {
-          totalAvgQty: {
-            $reduce: {
-              input: "$cart.items",
-              initialValue: 0,
-              in: {
-                $sum: ["$$value", "$$this.qty"],
-              },
-            },
+          totalAvgQty: "$cart.items.qty",
+        },
+      },
+      {
+        $addFields: {
+          cartItemVendorPriceWithQTy: {
+            $multiply: ["$cart.items.qty", "$cart.items.vendorPrice"],
           },
         },
       },
       {
         $addFields: {
           cartItemPriceWithQTy: {
-            $reduce: {
-              input: "$cart.items",
-              initialValue: 0,
-              in: {
-                $sum: [
-                  "$$value",
-                  {
-                    $multiply: ["$$this.qty", "$$this.price"],
-                  },
-                ],
-              },
-            },
+            $multiply: ["$cart.items.qty", "$cart.items.price"],
           },
         },
       },
@@ -383,6 +376,9 @@ const getChartData = async (req, res) => {
           },
           totalOrderValue: {
             $sum: "$cart.netCost",
+          },
+          totalOrderValueVendor: {
+            $sum: "$cartItemPriceWithQTy",
           },
           averageOrderQuantity: {
             $avg: "$cart.totalQty",
