@@ -220,43 +220,46 @@ const getCountsVen = async (req, res) => {
     // Total Amount of Pending Orders
     const TOPA = await Order.aggregate([
       {
-        '$unwind': {
-          'path': '$cart.items'
-        }
-      }, {
-        '$match': {
-          '$and': [
+        $unwind: {
+          path: "$cart.items",
+        },
+      },
+      {
+        $match: {
+          $and: [
             {
-              'cart.items.vendor': id
-            }, {
-              'orderStatus': 'Pending'
-            }
-          ]
-        }
-      }, {
-        '$addFields': {
-          'vendorPrice': '$cart.items.vendorPrice', 
-          'qty': '$cart.items.qty'
-        }
-      }, {
-        '$group': {
-          '_id': '$_id', 
-          'totalPendingOrderAmount': {
-            '$sum': {
-              '$multiply': [
-                '$vendorPrice', '$qty'
-              ]
-            }
-          }
-        }
-      }, {
-        '$group': {
-          '_id': null, 
-          'total': {
-            '$sum': '$totalPendingOrderAmount'
-          }
-        }
-      }
+              "cart.items.vendor": id,
+            },
+            {
+              orderStatus: "Pending",
+            },
+          ],
+        },
+      },
+      {
+        $addFields: {
+          vendorPrice: "$cart.items.vendorPrice",
+          qty: "$cart.items.qty",
+        },
+      },
+      {
+        $group: {
+          _id: "$_id",
+          totalPendingOrderAmount: {
+            $sum: {
+              $multiply: ["$vendorPrice", "$qty"],
+            },
+          },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          total: {
+            $sum: "$totalPendingOrderAmount",
+          },
+        },
+      },
     ]);
 
     let financial = { total: 0 };
@@ -275,7 +278,7 @@ const getCountsVen = async (req, res) => {
     const revenue = {
       walletAmount: financial.total - paymentRequest.amountAccepted,
       withdraw: paymentRequest.amountAccepted,
-      pendingAmount: TOPA[0].total
+      pendingAmount: TOPA[0].total,
     };
     res.json({
       data: {
@@ -306,6 +309,9 @@ const getChartData = async (req, res) => {
         .toISOString()
         .slice(0, 10);
 
+    let and = [
+      { createdAt: { $gte: new Date(priorDate), $lt: new Date(todayDate) } },
+    ];
     let match = {
       createdAt: { $gte: new Date(priorDate), $lt: new Date(todayDate) },
     };
@@ -318,19 +324,22 @@ const getChartData = async (req, res) => {
           },
         ],
       };
+      and.push({ applied_Referral_Code: code });
     }
 
     if (productId) {
-      match = { "cart.items.productId": productId };
+      match = { "cart.items.productId": productId, ...matchMedia };
+      and.push({ "cart.items.productId": productId });
     }
     if (vendorId) {
       match = { "cart.items.vendor": ObjectId(vendorId), ...match };
+      and.push({ "cart.items.vendor": ObjectId(vendorId) });
     }
 
     const chartData = await Order.aggregate([
       {
         $match: {
-          $and: [match],
+          $and: and,
         },
       },
       {
@@ -517,7 +526,7 @@ const getTopCustomers = async (req, res) => {
             $sum: "$cart.items.price",
           },
           name: {
-            $first: '$name'
+            $first: "$name",
           },
         },
       },
@@ -535,8 +544,8 @@ const getTopCustomers = async (req, res) => {
         },
       },
       {
-        $limit: +limit || 10
-      }
+        $limit: +limit || 10,
+      },
     ]);
     res.json({ data: topCustomers });
   } catch (error) {
@@ -549,9 +558,8 @@ const getTopVendors = async (req, res) => {
     let { startDate, endDate, role, code, productId } = req.query;
     let dateObj = new Date();
     let priorDate =
-    startDate ??
-    new Date(new Date().setDate(dateObj.getDate() - 30));
-      const today = new Date();
+      startDate ?? new Date(new Date().setDate(dateObj.getDate() - 30));
+    const today = new Date();
     const tomorrow = endDate ?? today;
     tomorrow.setDate(tomorrow.getDate() + 1);
     let match = {
@@ -560,7 +568,7 @@ const getTopVendors = async (req, res) => {
     };
     const topVendors = await Order.aggregate([
       {
-        $match: match
+        $match: match,
       },
       {
         $unwind: {
@@ -568,11 +576,11 @@ const getTopVendors = async (req, res) => {
         },
       },
       {
-        '$addFields': {
-          'vendor': '$cart.items.vendor'
-        }
+        $addFields: {
+          vendor: "$cart.items.vendor",
+        },
       },
-      
+
       {
         $group: {
           _id: "$vendor",
