@@ -4,6 +4,10 @@ function searchInColumns(search, columns) {
   const arr = columns.map((column) => {
     return {
       [column]: searchExp,
+      // [column]: {
+      //   $regex: search.toLowerCase(),
+      //   // searchExp
+      // },
     };
   });
   return arr;

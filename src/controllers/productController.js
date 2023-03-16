@@ -8,6 +8,7 @@ const send_email = require("../middleware/email");
 const getAllProducts = async (req, res) => {
   try {
     let { page, limit, search, sort, ...queries } = req.query;
+    let searchText = search;
     search = searchInColumns(search, [
       "category_name",
       "brand_name",
@@ -15,6 +16,7 @@ const getAllProducts = async (req, res) => {
       "description",
       "subject_name",
       "isbn",
+      "productCode",
     ]);
     queries = getQuery(queries);
     let myAggregate;
@@ -49,7 +51,14 @@ const getAllProducts = async (req, res) => {
       ]);
     } else {
       myAggregate = Product.aggregate([
-        { $match: { $and: [{ $or: search }, queries] } },
+        {
+          $match: {
+            $and: [
+              { $or: [...search, { isbn: new RegExp(+searchText, "i") }] },
+              queries,
+            ],
+          },
+        },
         {
           $lookup: {
             from: "categories",
@@ -92,11 +101,17 @@ const getAllProducts = async (req, res) => {
     } else {
       sortOption = { createdAt: -1 };
     }
-    const options = {
-      page: page || 1,
-      limit: limit || 10,
-      sort: sortOption,
-    };
+    const options = search
+      ? {
+          page: 1,
+          limit: 10,
+          sort: sortOption,
+        }
+      : {
+          page: page || 1,
+          limit: limit || 10,
+          sort: sortOption,
+        };
 
     const data = await Product.aggregatePaginate(myAggregate, options);
 
