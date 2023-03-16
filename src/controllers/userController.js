@@ -113,7 +113,7 @@ const updateUser = async (req, res) => {
       updateUser.password = hashedPwd;
     }
     let data = await User.findByIdAndUpdate(req.params.id, updateUser);
-
+    let imgURl = "";
     if (file !== undefined) {
       const { imageId } = data;
       if (imageId) await imagekit.deleteFile(imageId);
@@ -121,11 +121,17 @@ const updateUser = async (req, res) => {
         file: file.buffer, //required
         fileName: file.originalname, //required
       });
-      data = await User.findByIdAndUpdate(data.id, {
-        imageURL: img.url,
-        imageId: img.fileId,
-      });
+      imgURl = img.url;
+      data = await User.findByIdAndUpdate(
+        data.id,
+        {
+          imageURL: img.url,
+          imageId: img.fileId,
+        },
+        { new: true }
+      );
     }
+    console.log(data.imageURL);
 
     res.status(200).json({
       message: "User has been updated",
