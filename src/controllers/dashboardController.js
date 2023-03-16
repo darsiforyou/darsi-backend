@@ -308,9 +308,13 @@ const getChartData = async (req, res) => {
       new Date(new Date().setDate(dateObj.getDate() - 30))
         .toISOString()
         .slice(0, 10);
+    const tomorrow = new Date(endDate) ?? new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
 
     let and = [
-      { createdAt: { $gte: new Date(priorDate), $lt: new Date(todayDate) } },
+      {
+        createdAt: { $gte: new Date(priorDate), $lte: tomorrow },
+      },
     ];
     let match = {
       createdAt: { $gte: new Date(priorDate), $lt: new Date(todayDate) },
@@ -320,7 +324,7 @@ const getChartData = async (req, res) => {
         $and: [
           {
             applied_Referral_Code: code,
-            createdAt: { $gte: new Date(priorDate), $lt: new Date(todayDate) },
+            createdAt: { $gte: new Date(priorDate), $lte: new Date(todayDate) },
           },
         ],
       };
@@ -401,7 +405,7 @@ const getChartData = async (req, res) => {
       data: { chartData },
     });
   } catch (err) {
-    res.status(500).json({ error: err });
+    res.status(500).json({ error: err.message });
   }
 };
 
