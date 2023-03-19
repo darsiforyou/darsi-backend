@@ -50,6 +50,7 @@ app.use("/products", require("./routes/api/products"));
 app.use("/orders", require("./routes/api/order"));
 app.use("/categories", require("./routes/api/categories"));
 app.use("/shippings", require("./routes/api/shipping"));
+app.use("/wallets", require("./routes/api/wallet"));
 app.use("/sub-categories", require("./routes/api/subCategories"));
 app.use("/brands", require("./routes/api/brands"));
 app.use("/subjects", require("./routes/api/subjects"));
