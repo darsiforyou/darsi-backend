@@ -95,7 +95,7 @@ const getAllRequests = async (req, res) => {
 const getRevenueTotal = async (req, res) => {
   try {
     let { darsi } = req.query;
-    console.log(darsi);
+    console.log('getRevenueTotal darsi', darsi);
 
     let filter = {};
     if (darsi) {
@@ -116,7 +116,7 @@ const getRevenueTotal = async (req, res) => {
         },
       },
     ]);
-    console.log("TF", TF);
+    // console.log("TF", TF);
 
     const TPR = await PaymentRequest.aggregate([
       {
@@ -134,7 +134,7 @@ const getRevenueTotal = async (req, res) => {
         },
       },
     ]);
-    console.log("TPR", TPR);
+    // console.log("TPR", TPR);
 
     let financial = { total: 0 };
     let paymentRequest = { amountAccepted: 0 };
@@ -148,8 +148,8 @@ const getRevenueTotal = async (req, res) => {
         amountRequested: x.amountRequested,
       };
     });
-    console.log("financial", financial);
-    console.log("paymentRequest", paymentRequest);
+    // console.log("financial", financial);
+    // console.log("paymentRequest", paymentRequest);
 
     const data = {
       walletAmount: financial.total - paymentRequest.amountAccepted,
@@ -297,7 +297,7 @@ const getPayable = async (req, res) => {
         },
       },
     ]);
-    console.log(orders, productsTotal);
+    // console.log(orders, productsTotal);
 
     const ordersPending = await Order.aggregate([
       {

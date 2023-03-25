@@ -201,9 +201,11 @@ const getCountsVen = async (req, res) => {
       },
     ]);
 
+    // this query is fetching payment requested and accepted
     const TPR = await PaymentRequest.aggregate([
       {
-        $match: { status: "Accepted", user: id },
+        // $match: { status: "Accepted", user: id },
+        $match: { user: id },
       },
       {
         $group: {
@@ -216,6 +218,15 @@ const getCountsVen = async (req, res) => {
           },
         },
       },
+      {
+        $addFields: {
+          amountRemaining: {
+            $subtract: [
+              '$amountRequested', '$amountAccepted'
+            ]
+          }
+        }
+      }
     ]);
     // Total Amount of Pending Orders
     const TOPA = await Order.aggregate([
@@ -261,6 +272,7 @@ const getCountsVen = async (req, res) => {
         },
       },
     ]);
+    console.log('vendor id=', id);
 
     let financial = { total: 0 };
     let paymentRequest = { amountAccepted: 0 };
@@ -274,11 +286,14 @@ const getCountsVen = async (req, res) => {
         amountRequested: x.amountRequested,
       };
     });
+    console.log(financial.total, 'tottt')
 
     const revenue = {
       walletAmount: financial.total - paymentRequest.amountAccepted,
       withdraw: paymentRequest.amountAccepted,
-      pendingAmount: TOPA[0].total,
+      // pendingAmount: TOPA[0].total,
+      pendingAmount: paymentRequest.amountRequested  - paymentRequest.amountAccepted,
+      total: financial.total
     };
     res.json({
       data: {
