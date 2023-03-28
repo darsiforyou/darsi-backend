@@ -45,11 +45,67 @@ const getCounts = async (req, res) => {
     const totalIncome = await Order.aggregate([
       { $match: { $and: [totalIncomeMatch] } },
       {
+        '$addFields': {
+          'profit': {
+            '$reduce': {
+              'input': '$cart.items', 
+              'initialValue': 0, 
+              'in': {
+                '$add': [
+                  '$$value', '$$this.profitMargin'
+                ]
+              }
+            }
+          }
+        }
+      },
+      {
+        '$lookup': {
+          'from': 'users', 
+          'localField': 'applied_Referral_Code', 
+          'foreignField': 'user_code', 
+          'as': 'referralInfo'
+        }
+      }, {
+        '$unwind': {
+          'path': '$referralInfo'
+        }
+      }, {
+        '$lookup': {
+          'from': 'referral_packages', 
+          'localField': 'referralInfo.referral_package', 
+          'foreignField': '_id', 
+          'as': 'referralPackage'
+        }
+      }, {
+        '$unwind': {
+          'path': '$referralPackage'
+        }
+      }, {
+        '$addFields': {
+          'referralCommission': {
+            '$multiply': [
+              '$profit', {
+                '$divide': [
+                  {
+                    '$toInt': '$referralPackage.commission'
+                  }, 100
+                ]
+              }
+            ]
+          }
+        }
+      },
+      {
         $group: {
           _id: null,
           total: {
             $sum: "$cart.netCost",
           },
+          totalProfitRefferal: {
+            $sum: '$referralCommission'
+          }
+
         },
       },
     ]);
