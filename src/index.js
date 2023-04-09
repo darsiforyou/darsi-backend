@@ -60,6 +60,8 @@ app.use("/dashboard", require("./routes/api/dashboard"));
 app.use("/financials", require("./routes/api/financials"));
 app.use("/user-bank-account", require("./routes/api/userBankAccount"));
 app.use("/image", require("./routes/api/imageUpload"));
+app.use("/mlm", require("./routes/api/mlmBilling"));
+app.use("/milestone", require("./routes/api/milestone"));
 app.all("*", (req, res) => {
   res.status(404);
   if (req.accepts("html")) {

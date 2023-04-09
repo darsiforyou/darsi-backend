@@ -1861,15 +1861,9 @@ mongoose-slug-updater@^3.3.0:
     speakingurl "^14.0.1"
 
 mongoose@^6.4.0:
-<<<<<<< HEAD
-  version "6.10.2"
-  resolved "https://registry.yarnpkg.com/mongoose/-/mongoose-6.10.2.tgz#c18487e8b61ff7b35a1e2360be24bbd17316f3ed"
-  integrity sha512-9/AbheG2PiVVBWLx3S6LgCIEQNdMppjdnp/WH9nLGjFzjJeb9LiHNPEtsOGOm8qXmuICHMdbn5iUFAsLWWvpEw==
-=======
   version "6.10.1"
   resolved "https://registry.yarnpkg.com/mongoose/-/mongoose-6.10.1.tgz#4a0eeb707ddb61968af4be4a18e273f719c21d6d"
   integrity sha512-QBXX27XXCEIi1zqimTBjlZsFFg2YzK9uQfuAIqG1AyIEeyKiiCaobD0Tst2ULwiX4PRB53VLRQvAqyu5TwvOZg==
->>>>>>> 47ee96e04663e2269530a9c71c7e7e54943069f6
   dependencies:
     bson "^4.7.0"
     kareem "2.5.1"
@@ -2376,15 +2370,9 @@ supports-color@^5.5.0:
     has-flag "^3.0.0"
 
 swagger-ui-dist@>=4.11.0:
-<<<<<<< HEAD
-  version "4.18.0"
-  resolved "https://registry.yarnpkg.com/swagger-ui-dist/-/swagger-ui-dist-4.18.0.tgz#e5435ad0bfb983629476d2959604cafa633673d5"
-  integrity sha512-PZeF7r+JsAXC8tEGatOARSEeC0n3ChGqTDcbZUzrV+mGnlW2ZEystlpiEyMWfAY4FAT+uxibfMuRahEvnoG3CQ==
-=======
   version "4.17.1"
   resolved "https://registry.yarnpkg.com/swagger-ui-dist/-/swagger-ui-dist-4.17.1.tgz#ce47872e1eb7bd49528f50d5bdf9012e2f0b1fa7"
   integrity sha512-Q3iFZgpraiHWphd6eX7IfI+aAITLWoP1TSIRo+0vuixRxQNqwdknab/Ktu9rs8oY3XY08FtrXkK0qt54eSuUXg==
->>>>>>> 47ee96e04663e2269530a9c71c7e7e54943069f6
 
 swagger-ui-express@^4.4.0:
   version "4.6.2"

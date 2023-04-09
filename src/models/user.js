@@ -77,6 +77,15 @@ const userSchema = Schema(
     refreshToken: {
       type: String,
     },
+    upline: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+    level: {
+      type: Number,
+      default: 0,
+    },
+
   },
   { timestamps: true }
 );
