@@ -19,9 +19,9 @@ const getAllUsers = async (req, res) => {
             from: "referral_packages",
             localField: "referral_package",
             foreignField: "_id",
-            as: "packageName",
-          },
-        },
+            as: "packageName"
+          }
+        }
       ]);
     } else {
       myAggregate = User.aggregate([
@@ -31,23 +31,23 @@ const getAllUsers = async (req, res) => {
             from: "referral_packages",
             localField: "referral_package",
             foreignField: "_id",
-            as: "packageName",
-          },
-        },
+            as: "packageName"
+          }
+        }
       ]);
     }
 
     const options = {
       page: page || 1,
       limit: limit || 10,
-      sort: { createdAt: -1 },
+      sort: { createdAt: -1 }
     };
 
     const data = await User.aggregatePaginate(myAggregate, options);
 
     return res.status(200).send({
       message: "Successfully fetch Users",
-      data: data,
+      data: data
     });
   } catch (err) {
     res.status(500).json({ error: err });
@@ -94,8 +94,16 @@ const deleteUser = async (req, res) => {
   }
 };
 const updateUser = async (req, res) => {
+  console.log(req.body, "Chal Gaya");
   try {
-    const { firstname, lastname, password, email, role } = req.body;
+    const {
+      firstname,
+      lastname,
+      password,
+      email,
+      role,
+      referral_payment_status
+    } = req.body;
     const user = await User.findById(req.params.id);
     const file = req.file;
 
@@ -107,6 +115,7 @@ const updateUser = async (req, res) => {
       lastname,
       role: role ? role : "Customer",
       email,
+      referral_payment_status
     };
     if (password) {
       const hashedPwd = await bcrypt.hash(password, 10);
@@ -119,7 +128,7 @@ const updateUser = async (req, res) => {
       if (imageId) await imagekit.deleteFile(imageId);
       let img = await imagekit.upload({
         file: file.buffer, //required
-        fileName: file.originalname, //required
+        fileName: file.originalname //required
       });
       imgURl = img.url;
       data = await User.findByIdAndUpdate(
@@ -135,7 +144,7 @@ const updateUser = async (req, res) => {
 
     res.status(200).json({
       message: "User has been updated",
-      data: data,
+      data: data
     });
   } catch (err) {
     res.status(500).json({ error: err });
@@ -162,12 +171,12 @@ const forgotPasswordOtp = async (req, res) => {
     let otp_data = await OTP.create({
       otp,
       isActive: true,
-      email: req.params.email,
+      email: req.params.email
     });
     if (otp_data.id) {
       let emailInput = {
         subject: "Forgot your password",
-        html: `<strong>Please enter the following OTP to Change your password ${otp} </strong>`,
+        html: `<strong>Please enter the following OTP to Change your password ${otp} </strong>`
       };
       await send_email(req.params.email, emailInput)
         .then((res) => {
@@ -178,7 +187,7 @@ const forgotPasswordOtp = async (req, res) => {
         });
 
       res.status(200).json({
-        message: "OPT has been sent to your email address",
+        message: "OPT has been sent to your email address"
       });
     } else {
       return res.status(500).json({ error: "Something went wrong" });
@@ -210,7 +219,7 @@ const changeUserPassword = async (req, res) => {
     await User.findByIdAndUpdate(user?._id, { password: hashedNewPwd });
 
     res.status(200).json({
-      message: "password have been updated",
+      message: "password have been updated"
     });
   } catch (err) {
     res.status(500).json({ error: err });
@@ -225,5 +234,5 @@ module.exports = {
   deleteUser,
   updateUser,
   forgotPasswordOtp,
-  changeUserPassword,
+  changeUserPassword
 };
