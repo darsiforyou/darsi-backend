@@ -95,7 +95,7 @@ const getAllRequests = async (req, res) => {
 const getRevenueTotal = async (req, res) => {
   try {
     let { darsi } = req.query;
-    console.log('getRevenueTotal darsi', darsi);
+    // console.log('getRevenueTotal darsi', darsi);
 
     let filter = {};
     if (darsi) {
@@ -103,7 +103,7 @@ const getRevenueTotal = async (req, res) => {
     } else {
       filter["user"] = new ObjectId(req.params.id);
     }
-    console.log("filter", filter);
+    // console.log("filter", filter);
 
     const TF = await Financial.aggregate([
       {
