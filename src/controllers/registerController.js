@@ -56,71 +56,73 @@ const handleNewUser = async (req, res) => {
       }
 
       let commission = (package.price * package.commission) / 100;
+      let packagePrice = package.price - (package.price * package.discount_percentage) / 100;
       console.log("🚀 ~ file: registerController.js:59 ~ handleNewUser ~ commission:", commission)
       let adminAmount = referred_by
-      ? +package.price - commission
-      : +package.price;
+      ? +packagePrice - commission
+      : +packagePrice;
       console.log("🚀 ~ file: registerController.js:63 ~ handleNewUserrrr ~ adminAmount:", adminAmount);
-      // let user = await User.create(newUser);
+      let user = await User.create(newUser);
 
-      // const tokenRes = await axios.post(`${process.env.PAYPRO_URL}/auth`, {
-      //   clientid: process.env.CLIENT_ID,
-      //   clientsecret: process.env.CLIENT_SECRET,
-      // });
-      // const token = tokenRes.headers.token;
+      const tokenRes = await axios.post(`${process.env.PAYPRO_URL}/auth`, {
+        clientid: process.env.CLIENT_ID,
+        clientsecret: process.env.CLIENT_SECRET,
+      });
+      const token = tokenRes.headers.token;
 
-      const percent = (+package.price * 2.7) / 100;
-      // let json1 = [
-      //   {
-      //     MerchantId: "Darsi_Pk",
-      //   },
-      //   {
-      //     OrderNumber: user.id,
-      //     OrderAmount: package.price + percent,
-      //     OrderDueDate: new Date(),
-      //     OrderType: "Service",
-      //     IssueDate: new Date(),
-      //     OrderExpireAfterSeconds: "0",
-      //     CustomerName: newUser.firstname,
-      //     CustomerMobile: "",
-      //     CustomerEmail: newUser.email,
-      //     CustomerAddress: "",
-      //     BillDetail01: [
-      //       {
-      //         LineItem: package.title,
-      //         Quantity: 1,
-      //         UnitPrice: package.price + percent,
-      //         SubTotal: package.price + percent,
-      //       },
-      //     ],
-      //   },
-      // ];
+      const percent = (+packagePrice * 2.7) / 100;
+      console.log('before payment')
+      let json1 = [
+        {
+          MerchantId: "Darsi_Pk",
+        },
+        {
+          OrderNumber: user.id,
+          OrderAmount: packagePrice + percent,
+          OrderDueDate: new Date(),
+          OrderType: "Service",
+          IssueDate: new Date(),
+          OrderExpireAfterSeconds: "0",
+          CustomerName: newUser.firstname,
+          CustomerMobile: "",
+          CustomerEmail: newUser.email,
+          CustomerAddress: "",
+          BillDetail01: [
+            {
+              LineItem: package.title,
+              Quantity: 1,
+              UnitPrice: packagePrice + percent,
+              SubTotal: packagePrice + percent,
+            },
+          ],
+        },
+      ];
       console.log('first1');
 
-      // const payment = await axios.post(`${process.env.PAYPRO_URL}/co`, json1, {
-      //   headers: {
-      //     token,
-      //     "Content-Type": "application/json",
-      //   },
-      //   redirect: "follow",
-      // });
-      // let pktRes = await payment.data;
-      // if (pktRes) {
-      //   // const encodeURl = encodeURI("http://localhost:3000/payment/product");
-      //   const encodeURl = encodeURI("https://backend.darsi.pk/payment/product");
+      const payment = await axios.post(`${process.env.PAYPRO_URL}/co`, json1, {
+        headers: {
+          token,
+          "Content-Type": "application/json",
+        },
+        redirect: "follow",
+      });
+      let pktRes = await payment.data;
+      if (pktRes) {
+        // const encodeURl = encodeURI("http://localhost:3000/payment/product");
+        const encodeURl = encodeURI("https://backend.darsi.pk/payment/product");
 
-      //   return res.status(200).json({
-      //     message: "Your order has been placed Successfully.",
-      //     paymentToken: pktRes[1].Click2Pay + "&callback_url=" + encodeURl,
-      //   });
-      // }
-      // await Financial.create({
-      //   darsi: true,
-      //   package: package._id,
-      //   amount: adminAmount,
-      //   type: "PACKAGE",
-      // });
-      console.log('first')
+        return res.status(200).json({
+          message: "Your order has been placed Successfully.",
+          paymentToken: pktRes[1].Click2Pay + "&callback_url=" + encodeURl,
+        });
+      }
+      await Financial.create({
+        darsi: true,
+        package: package._id,
+        amount: adminAmount,
+        type: "PACKAGE",
+      });
+      console.log('after payment')
 
       console.log("🚀 ~ file: registerController.js:125 ~ handleNewUser ~ referred_by:", referred_by)
       if (referred_by) {
@@ -143,13 +145,13 @@ const handleNewUser = async (req, res) => {
             }
           }
 
-          // Create financial entires for referrer
-          // await Financial.create({
-          //   user: referral._id,
-          //   package: package._id,
-          //   amount: commission,
-          //   type: "PACKAGE",
-          // });
+          //Create financial entires for referrer
+          await Financial.create({
+            user: referral._id,
+            package: package._id,
+            amount: commission,
+            type: "PACKAGE",
+          });
 
 
           newUser.referred_by = referred_by;
