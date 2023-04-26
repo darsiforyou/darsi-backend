@@ -342,7 +342,7 @@ const getCountsVen = async (req, res) => {
         amountRequested: x.amountRequested,
       };
     });
-    console.log(financial.total, 'tottt')
+    // console.log(financial.total, 'tottt')
 
     const revenue = {
       walletAmount: financial.total - paymentRequest.amountAccepted,
