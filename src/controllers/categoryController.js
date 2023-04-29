@@ -102,6 +102,7 @@ const getAllCategoriesWithoutFilter = async (req, res) => {
           isActive: 1,
         },
       },
+      { $sort: { rank: 1 } }
     ]);
     return res.json(categories);
   } catch (err) {
