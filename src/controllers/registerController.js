@@ -58,10 +58,13 @@ const handleNewUser = async (req, res) => {
       let commission = (package.price * package.commission) / 100;
       let packagePrice = package.price - (package.price * package.discount_percentage) / 100;
       console.log("🚀 ~ file: registerController.js:59 ~ handleNewUser ~ commission:", commission)
-      let adminAmount = referred_by
-      ? +packagePrice - commission
-      : +packagePrice;
-      console.log("🚀 ~ file: registerController.js:63 ~ handleNewUserrrr ~ adminAmount:", adminAmount);
+      // let adminAmount = referred_by
+      // ? +packagePrice - commission
+      // : +packagePrice;
+      let ref1Commission = 0;
+      let ref2Commission = 0;
+      let ref3Commission = 0;
+
       let user = await User.create(newUser);
 
       const tokenRes = await axios.post(`${process.env.PAYPRO_URL}/auth`, {
@@ -116,12 +119,6 @@ const handleNewUser = async (req, res) => {
           paymentToken: pktRes[1].Click2Pay + "&callback_url=" + encodeURl,
         });
       }
-      await Financial.create({
-        darsi: true,
-        package: package._id,
-        amount: adminAmount,
-        type: "PACKAGE",
-      });
       console.log('after payment')
 
       console.log("🚀 ~ file: registerController.js:125 ~ handleNewUser ~ referred_by:", referred_by)
@@ -130,12 +127,40 @@ const handleNewUser = async (req, res) => {
         // console.log("🚀 ~ file: registerController.js:130 ~ handleNewUser ~ referral:", referral)
         if (referral) {
           console.log('inside referral')
-          console.log('inside referral', referral)
+
+          ref1Commission = +packagePrice * (milestone.levelOne / 100);
+          /// finacial module for main ref 1
+          await Financial.create({
+            user: referral._id,
+            package: package._id,
+            amount: ref1Commission,
+            type: "PACKAGE",
+          });
+
           const referral2 = await User.findOne({ user_code: referral.referred_by });
           let level = referral.upline === '' || referral.referred_by === '' ? 1 : 2;
           if (referral2) {
+
+            ref2Commission = +packagePrice * (milestone.levelTwo / 100)
+            /// finacial module for main ref 2
+            await Financial.create({
+              user: referral2._id,
+              package: package._id,
+              amount: ref2Commission,
+              type: "PACKAGE",
+            });
+
             const referral3 = await User.findOne({ user_code: referral2.referred_by });
             if (referral3){
+              ref3Commission = +packagePrice * (milestone.levelThree / 100)
+              /// finacial module for main ref 3
+              await Financial.create({
+                user: referral3._id,
+                package: package._id,
+                amount: ref3Commission,
+                type: "PACKAGE",
+              });
+
               level = 3;
               const referral4 = await User.findOne({ user_code: referral3.referred_by });
               if (referral4){
@@ -145,24 +170,37 @@ const handleNewUser = async (req, res) => {
             }
           }
 
-          //Create financial entires for referrer
-          await Financial.create({
-            user: referral._id,
-            package: package._id,
-            amount: commission,
-            type: "PACKAGE",
-          });
-
+          // //Create financial entires for referrer
+          // await Financial.create({
+          //   user: referral._id,
+          //   package: package._id,
+          //   amount: commission,
+          //   type: "PACKAGE",
+          // });
+          console.log("🚀 refCommission:", ref1Commission, ref2Commission, ref3Commission)
 
           newUser.referred_by = referred_by;
           newUser.upline = referral._id;
           newUser.level = level;
-          console.log("🚀 ~ file: registerController.js:147 ~ handleNewUser ~ newUser:", newUser)
+          // console.log("🚀 ~ file: registerController.js:147 ~ handleNewUser ~ newUser:", newUser)
 
         } else {
           return res.json({ message: "Referrar Does Not Exists. Please Enter Correct Referral Code" }); //Conflict
         }
       }
+      // if refferal were there cut there commison amt  then give to admin else 0 will be minus
+      let adminAmount = referred_by
+      ? +packagePrice - ref1Commission - ref2Commission - ref3Commission
+      : +packagePrice;
+      console.log("🚀 ~ file: registerController.js:63 ~ handleNewUserrrr ~ adminAmount:", adminAmount);
+
+      // financial admin entry
+      await Financial.create({
+        darsi: true,
+        package: package._id,
+        amount: adminAmount,
+        type: "PACKAGE",
+      });
 
     }
 
@@ -170,8 +208,8 @@ const handleNewUser = async (req, res) => {
 
     res.status(201).json({
       success: `Your Account is successfully created`,
-      // data: user,
-      data: {name:'fff'}
+      data: user,
+      // data: {name:'fff'}
     });
   } catch (err) {
     res.status(500).json({ message: err.message });

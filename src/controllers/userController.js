@@ -94,7 +94,6 @@ const deleteUser = async (req, res) => {
   }
 };
 const updateUser = async (req, res) => {
-  console.log(req.body, "Chal Gaya");
   try {
     const {
       firstname,
@@ -106,6 +105,7 @@ const updateUser = async (req, res) => {
     } = req.body;
     const user = await User.findById(req.params.id);
     const file = req.file;
+    const payment_status = referral_payment_status === "Paid" ? true : false;
 
     if (user.email === email && user._id != req.params.id)
       return res.json({ message: "Email already exists" });
@@ -115,7 +115,7 @@ const updateUser = async (req, res) => {
       lastname,
       role: role ? role : "Customer",
       email,
-      referral_payment_status
+      referral_payment_status: payment_status
     };
     if (password) {
       const hashedPwd = await bcrypt.hash(password, 10);
