@@ -18,6 +18,7 @@ const handleNewUser = async (req, res) => {
       referral_package,
       referred_by,
     } = req.body;
+    console.log('referred_by', referred_by);
     if (!email || !password)
       return res
         .status(400)
@@ -56,7 +57,7 @@ const handleNewUser = async (req, res) => {
       }
 
       let commission = (package.price * package.commission) / 100;
-      let packagePrice = package.price - (package.price * package.discount_percentage) / 100;
+      let packagePrice =  referred_by ? package.price - (package.price * package.discount_percentage) / 100 : package.price;
       console.log("🚀 ~ file: registerController.js:59 ~ handleNewUser ~ commission:", commission)
       // let adminAmount = referred_by
       // ? +packagePrice - commission
@@ -120,11 +121,13 @@ const handleNewUser = async (req, res) => {
         });
       }
       console.log('after payment')
+      console.log('referred_by', referred_by);
 
       console.log("🚀 ~ file: registerController.js:125 ~ handleNewUser ~ referred_by:", referred_by)
       if (referred_by) {
         const referral = await User.findOne({ user_code: `${referred_by}` });
-        // console.log("🚀 ~ file: registerController.js:130 ~ handleNewUser ~ referral:", referral)
+        console.log('refferby inside')
+        console.log("🚀 ~ file: registerController.js:130 ~ handleNewUser ~ referral:", referral)
         if (referral) {
           console.log('inside referral')
 
