@@ -36,6 +36,10 @@ const referral_packages_schema = Schema(
       type: String,
       required: false,
     },
+    referral_benefits: {
+      type: String,
+      required: false,
+    },
   },
   { timestamps: true }
 );
