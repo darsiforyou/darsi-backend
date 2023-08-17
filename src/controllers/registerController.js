@@ -18,7 +18,6 @@ const handleNewUser = async (req, res) => {
       referral_package,
       referred_by,
     } = req.body;
-    console.log('referred_by', referred_by);
     if (!email || !password)
       return res
         .status(400)
@@ -57,7 +56,8 @@ const handleNewUser = async (req, res) => {
       }
 
       let commission = (package.price * package.commission) / 100;
-      let packagePrice =  referred_by ? package.price - (package.price * package.discount_percentage) / 100 : package.price;
+      // let packagePrice =  referred_by ? package.price - (package.price * package.discount_percentage) / 100 : package.price;
+      let packagePrice = package.price
       console.log("🚀 ~ file: registerController.js:59 ~ handleNewUser ~ commission:", commission)
       // let adminAmount = referred_by
       // ? +packagePrice - commission
