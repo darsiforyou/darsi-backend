@@ -65,62 +65,62 @@ const handleNewUser = async (req, res) => {
       let ref1Commission = 0;
       let ref2Commission = 0;
       let ref3Commission = 0;
+// 
+      // let user = await User.create(newUser);
 
-      let user = await User.create(newUser);
-
-      const tokenRes = await axios.post(`${process.env.PAYPRO_URL}/auth`, {
-        clientid: process.env.CLIENT_ID,
-        clientsecret: process.env.CLIENT_SECRET,
-      });
-      const token = tokenRes.headers.token;
+      // const tokenRes = await axios.post(`${process.env.PAYPRO_URL}/auth`, {
+      //   clientid: process.env.CLIENT_ID,
+      //   clientsecret: process.env.CLIENT_SECRET,
+      // });
+      // const token = tokenRes.headers.token;
 
       const percent = (+packagePrice * 2.7) / 100;
-      console.log('before payment')
-      let json1 = [
-        {
-          MerchantId: "Darsi_Pk",
-        },
-        {
-          OrderNumber: user.id,
-          OrderAmount: packagePrice + percent,
-          OrderDueDate: new Date(),
-          OrderType: "Service",
-          IssueDate: new Date(),
-          OrderExpireAfterSeconds: "0",
-          CustomerName: newUser.firstname,
-          CustomerMobile: "",
-          CustomerEmail: newUser.email,
-          CustomerAddress: "",
-          BillDetail01: [
-            {
-              LineItem: package.title,
-              Quantity: 1,
-              UnitPrice: packagePrice + percent,
-              SubTotal: packagePrice + percent,
-            },
-          ],
-        },
-      ];
-      console.log('first1');
+      // console.log('before payment')
+      // let json1 = [
+      //   {
+      //     MerchantId: "Darsi_Pk",
+      //   },
+      //   {
+      //     OrderNumber: user.id,
+      //     OrderAmount: packagePrice + percent,
+      //     OrderDueDate: new Date(),
+      //     OrderType: "Service",
+      //     IssueDate: new Date(),
+      //     OrderExpireAfterSeconds: "0",
+      //     CustomerName: newUser.firstname,
+      //     CustomerMobile: "",
+      //     CustomerEmail: newUser.email,
+      //     CustomerAddress: "",
+      //     BillDetail01: [
+      //       {
+      //         LineItem: package.title,
+      //         Quantity: 1,
+      //         UnitPrice: packagePrice + percent,
+      //         SubTotal: packagePrice + percent,
+      //       },
+      //     ],
+      //   },
+      // ];
+      // console.log('first1');
 
-      const payment = await axios.post(`${process.env.PAYPRO_URL}/co`, json1, {
-        headers: {
-          token,
-          "Content-Type": "application/json",
-        },
-        redirect: "follow",
-      });
-      let pktRes = await payment.data;
-      if (pktRes) {
-        // const encodeURl = encodeURI("http://localhost:3000/payment/product");
-        const encodeURl = encodeURI("https://backend.darsi.pk/payment/product");
+      // const payment = await axios.post(`${process.env.PAYPRO_URL}/co`, json1, {
+      //   headers: {
+      //     token,
+      //     "Content-Type": "application/json",
+      //   },
+      //   redirect: "follow",
+      // });
+      // let pktRes = await payment.data;
+      // if (pktRes) {
+      //   // const encodeURl = encodeURI("http://localhost:3000/payment/product");
+      //   const encodeURl = encodeURI("https://backend.darsi.pk/payment/product");
 
-        return res.status(200).json({
-          message: "Your order has been placed Successfully.",
-          paymentToken: pktRes[1].Click2Pay + "&callback_url=" + encodeURl,
-        });
-      }
-      console.log('after payment')
+      //   return res.status(200).json({
+      //     message: "Your order has been placed Successfully.",
+      //     paymentToken: pktRes[1].Click2Pay + "&callback_url=" + encodeURl,
+      //   });
+      // }
+      // console.log('after payment')
       console.log('referred_by', referred_by);
 
       console.log("🚀 ~ file: registerController.js:125 ~ handleNewUser ~ referred_by:", referred_by)
