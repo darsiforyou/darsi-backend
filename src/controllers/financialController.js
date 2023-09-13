@@ -358,6 +358,7 @@ const getPayable = async (req, res) => {
     // const payable =
     //   productsTotal[0].totalSum - (orders.length > 0 ? orders[0].totalSum : 0);
 
+    console.log("🚀 ~ file: financialController.js:363 ~ getPayable ~ productsTotal:", productsTotal[0])
     const payable = productsTotal[0].totalSum;
 
     res.status(200).json({
