@@ -103,13 +103,13 @@ const getAllProducts = async (req, res) => {
     }
     const options = search
       ? {
-          page: 1,
-          limit: 12,
+          page: page || 1 ,
+          limit: 24,
           sort: sortOption,
         }
       : {
           page: page || 1,
-          limit: limit || 12,
+          limit: limit || 24,
           sort: sortOption,
         };
 
@@ -216,7 +216,7 @@ const suggestProducts = async (req, res) => {
     }
     const options = {
       page: page || 1,
-      limit: limit || 12,
+      limit: limit || 24,
       sort: sortOption,
     };
 
