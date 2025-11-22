@@ -1,4 +1,5 @@
 const Brand = require("../models/brand");
+const Product = require("../models/product"); // <-- ADDED: Product model
 const { searchInColumns, getQuery } = require("../utils");
 const imagekit = require("../config/imagekit");
 
@@ -120,6 +121,7 @@ const updateBrand = async (req, res) => {
       isFeatured,
       userId,
     });
+
     if (file !== undefined) {
       const { imageId } = data;
       if (imageId) await imagekit.deleteFile(imageId);
@@ -132,6 +134,34 @@ const updateBrand = async (req, res) => {
         imageId: img.fileId,
       });
     }
+
+    // ----- NEW: applyToProducts handling -----
+    // frontend sends applyToProducts appended to FormData as "true"/"false"
+    try {
+      const applyToProductsFlag = req.body.applyToProducts;
+      const applyToProducts =
+        applyToProductsFlag === "true" || applyToProductsFlag === true;
+
+      // normalize incoming isActive value
+      const newIsActive =
+        isActive === "true" || isActive === true || !!isActive;
+
+      if (applyToProducts) {
+        await Product.updateMany(
+          { brand: req.params.id, isActive: { $ne: !!newIsActive } },
+          { $set: { isActive: !!newIsActive } }
+        );
+      }
+    } catch (err) {
+      // log but don't fail the whole brand update if product update fails
+      console.error(
+        "Failed to update related products for brand",
+        req.params.id,
+        err
+      );
+    }
+    // ----- END NEW CODE -----
+
     res.status(200).json({
       message: "Brand has been updated",
       data: data,
