@@ -33,6 +33,7 @@ const getAllBrands = async (req, res) => {
     res.status(500).json({ error: err });
   }
 };
+
 const getAllBrandsWithoutFilter = async (req, res) => {
   try {
     const brands = await Brand.aggregate([
@@ -64,27 +65,40 @@ const getAllBrandsWithoutFilter = async (req, res) => {
     res.status(500).json({ error: err });
   }
 };
+
 const addBrand = async (req, res) => {
   try {
     const { title, isActive, isFeatured, userId } = req.body;
     const file = req.file;
+
+    // normalize boolean fields (frontend may send "true"/"false" strings)
+    const normalizedIsActive = isActive === "true" || isActive === true;
+    const normalizedIsFeatured =
+      isFeatured === "true" || isFeatured === true;
+
     let data = await Brand.create({
       title,
-      isActive,
-      isFeatured,
+      isActive: normalizedIsActive,
+      isFeatured: normalizedIsFeatured,
       userId,
     });
-    if (file && data._id) {
-      let img = await imagekit.upload({
-        file: file.buffer, //required
-        fileName: file.originalname, //required
+
+    if (file && data?._id) {
+      const img = await imagekit.upload({
+        file: file.buffer, // required
+        fileName: file.originalname, // required
         folder: "/Brand",
       });
-      data = await Brand.findByIdAndUpdate(data.id, {
-        imageURL: img.url,
-        imageId: img.fileId,
-      });
+      data = await Brand.findByIdAndUpdate(
+        data.id,
+        {
+          imageURL: img.url,
+          imageId: img.fileId,
+        },
+        { new: true }
+      );
     }
+
     res.status(200).json({
       message: "Your brand has been Added Successfully.",
       data: data,
@@ -93,6 +107,7 @@ const addBrand = async (req, res) => {
     res.status(500).json(err);
   }
 };
+
 const getBrand = async (req, res) => {
   try {
     const brand = await Brand.findById(req.params.id);
@@ -105,34 +120,88 @@ const getBrand = async (req, res) => {
 
 const deleteBrand = async (req, res) => {
   try {
+    const brand = await Brand.findById(req.params.id);
+    if (!brand) return res.status(404).json({ message: "Brand not found" });
+
+    // delete image from imagekit if exists
+    try {
+      if (brand.imageId) {
+        await imagekit.deleteFile(brand.imageId);
+      }
+    } catch (e) {
+      // log but continue
+      console.error("ImageKit delete failed for brand", req.params.id, e);
+    }
+
     await Brand.findByIdAndDelete(req.params.id);
+
+    // Optionally: unset brand on products or handle as business logic
+    // await Product.updateMany({ brand: req.params.id }, { $unset: { brand: "" } });
+
     res.status(200).json({ message: "Brand has been deleted..." });
   } catch (err) {
     res.status(500).json({ error: err });
   }
 };
+
 const updateBrand = async (req, res) => {
   try {
+    // parse incoming values
     const { title, isActive, isFeatured, userId } = req.body;
     const file = req.file;
-    let data = await Brand.findByIdAndUpdate(req.params.id, {
-      title,
-      isActive,
-      isFeatured,
-      userId,
-    });
 
-    if (file !== undefined) {
-      const { imageId } = data;
-      if (imageId) await imagekit.deleteFile(imageId);
-      let img = await imagekit.upload({
-        file: file.buffer, //required
-        fileName: file.originalname, //required
-      });
-      data = await Brand.findByIdAndUpdate(data.id, {
-        imageURL: img.url,
-        imageId: img.fileId,
-      });
+    // normalize boolean fields
+    const normalizedIsActive = isActive === "true" || isActive === true;
+    const normalizedIsFeatured =
+      isFeatured === "true" || isFeatured === true;
+
+    // update brand basic fields and return the old doc by default; request new doc below after image handling
+    let data = await Brand.findByIdAndUpdate(
+      req.params.id,
+      {
+        title,
+        isActive: normalizedIsActive,
+        isFeatured: normalizedIsFeatured,
+        userId,
+      },
+      { new: false } // we will fetch fresh doc after possible image upload
+    );
+
+    if (!data) return res.status(404).json({ message: "Brand not found" });
+
+    // handle file upload (replace image)
+    if (file !== undefined && file !== null) {
+      try {
+        const { imageId } = data;
+        if (imageId) {
+          // delete old image (ignore errors)
+          await imagekit.deleteFile(imageId).catch((e) =>
+            console.error("ImageKit delete error:", e)
+          );
+        }
+
+        const img = await imagekit.upload({
+          file: file.buffer, // required
+          fileName: file.originalname, // required
+          folder: "/Brand",
+        });
+
+        data = await Brand.findByIdAndUpdate(
+          data.id,
+          {
+            imageURL: img.url,
+            imageId: img.fileId,
+          },
+          { new: true }
+        );
+      } catch (e) {
+        console.error("Failed to upload brand image", e);
+        // continue without failing the whole request
+        data = await Brand.findById(data.id);
+      }
+    } else {
+      // fetch fresh doc to return current state
+      data = await Brand.findById(data.id);
     }
 
     // ----- NEW: applyToProducts handling -----
@@ -142,14 +211,11 @@ const updateBrand = async (req, res) => {
       const applyToProducts =
         applyToProductsFlag === "true" || applyToProductsFlag === true;
 
-      // normalize incoming isActive value
-      const newIsActive =
-        isActive === "true" || isActive === true || !!isActive;
-
+      // If applyToProducts is true, set isActive on all related products to brand's isActive
       if (applyToProducts) {
         await Product.updateMany(
-          { brand: req.params.id, isActive: { $ne: !!newIsActive } },
-          { $set: { isActive: !!newIsActive } }
+          { brand: req.params.id },
+          { $set: { isActive: !!normalizedIsActive } }
         );
       }
     } catch (err) {
@@ -179,3 +245,4 @@ module.exports = {
   deleteBrand,
   updateBrand,
 };
+
