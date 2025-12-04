@@ -34,11 +34,45 @@ const getAllBrands = async (req, res) => {
   }
 };
 
+// const getAllBrandsWithoutFilter = async (req, res) => {
+//   try {
+//     const brands = await Brand.aggregate([
+//       {
+//         $match: req.query,
+//       },
+//       {
+//         $lookup: {
+//           from: "products",
+//           localField: "_id",
+//           foreignField: "brand",
+//           as: "products",
+//         },
+//       },
+//       {
+//         $project: {
+//           _id: 1,
+//           title: 1,
+//           products: { $size: "$products" },
+//           imageId: 1,
+//           imageURL: 1,
+//           isFeatured: 1,
+//           isActive: 1,
+//         },
+//       },
+//     ]);
+//     return res.json(brands);
+//   } catch (err) {
+//     res.status(500).json({ error: err });
+//   }
+// };
+
+
+
 const getAllBrandsWithoutFilter = async (req, res) => {
   try {
     const brands = await Brand.aggregate([
       {
-        $match: req.query,
+        $match: req.query, // your incoming filters
       },
       {
         $lookup: {
@@ -48,23 +82,35 @@ const getAllBrandsWithoutFilter = async (req, res) => {
           as: "products",
         },
       },
+
+      // ⭐ If brand isActive=false → product count becomes 0
       {
         $project: {
           _id: 1,
           title: 1,
-          products: { $size: "$products" },
           imageId: 1,
           imageURL: 1,
           isFeatured: 1,
           isActive: 1,
+
+          products: {
+            $cond: {
+              if: { $eq: ["$isActive", true] },
+              then: { $size: "$products" },
+              else: 0,
+            },
+          },
         },
       },
     ]);
+
     return res.json(brands);
   } catch (err) {
     res.status(500).json({ error: err });
   }
 };
+
+
 
 const addBrand = async (req, res) => {
   try {
