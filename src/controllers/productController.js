@@ -5,10 +5,133 @@ const imagekit = require("../config/imagekit");
 const { searchInColumns, getQuery } = require("../utils");
 const send_email = require("../middleware/email");
 
+// const getAllProducts = async (req, res) => {
+//   try {
+//     let { page, limit, search, sort, ...queries } = req.query;
+//     let searchText = search;
+//     search = searchInColumns(search, [
+//       "category_name",
+//       "brand_name",
+//       "title",
+//       "description",
+//       "subject_name",
+//       "isbn",
+//       "productCode",
+//     ]);
+//     queries = getQuery(queries);
+//     let myAggregate;
+//     if (!search) {
+//       myAggregate = Product.aggregate([
+//         { $match: { $and: [queries] } },
+
+//         {
+//           $lookup: {
+//             from: "categories",
+//             localField: "category",
+//             foreignField: "_id",
+//             as: "categories",
+//           },
+//         },
+//         {
+//           $lookup: {
+//             from: "users",
+//             localField: "vendor",
+//             foreignField: "_id",
+//             as: "vendors",
+//           },
+//         },
+//         {
+//           $lookup: {
+//             from: "brands",
+//             localField: "brand",
+//             foreignField: "_id",
+//             as: "brands",
+//           },
+//         },
+//       ]);
+//     } else {
+//       myAggregate = Product.aggregate([
+//         {
+//           $match: {
+//             $and: [
+//               { $or: [...search, { isbn: new RegExp(+searchText, "i") }] },
+//               queries,
+//             ],
+//           },
+//         },
+//         {
+//           $lookup: {
+//             from: "categories",
+//             localField: "category",
+//             foreignField: "_id",
+//             as: "categories",
+//           },
+//         },
+//         {
+//           $lookup: {
+//             from: "users",
+//             localField: "vendor",
+//             foreignField: "_id",
+//             as: "vendors",
+//           },
+//         },
+//         {
+//           $lookup: {
+//             from: "brands",
+//             localField: "brand",
+//             foreignField: "_id",
+//             as: "brands",
+//           },
+//         },
+//       ]);
+//     }
+//     let sortOption = {};
+//     if (sort) {
+//       switch (sort) {
+//         case "PRICE_HIGH_TO_LOW":
+//           sortOption = { price: -1 };
+//           break;
+//         case "PRICE_LOW_TO_HIGH":
+//           sortOption = { price: 1 };
+//           break;
+//         case "RECENT":
+//           sortOption = { createdAt: -1 };
+//           break;
+//       }
+//     } else {
+//       sortOption = { createdAt: -1 };
+//     }
+//     const options = search
+//       ? {
+//           page: page || 1 ,
+//           limit: 24,
+//           sort: sortOption,
+//         }
+//       : {
+//           page: page || 1,
+//           limit: limit || 24,
+//           sort: sortOption,
+//         };
+
+//     const data = await Product.aggregatePaginate(myAggregate, options);
+
+//     return res.status(200).send({
+//       message: "Successfully fetch products",
+//       change: "Changes applied for test",
+//       data: data,
+//     });
+//   } catch (err) {
+//     console.log(err);
+//     res.status(500).json({ error: err });
+//   }
+// };
+
+
+
 const getAllProducts = async (req, res) => {
   try {
     let { page, limit, search, sort, ...queries } = req.query;
-    let searchText = search;
+
     search = searchInColumns(search, [
       "category_name",
       "brand_name",
@@ -16,75 +139,66 @@ const getAllProducts = async (req, res) => {
       "description",
       "subject_name",
       "isbn",
-      "productCode",
     ]);
     queries = getQuery(queries);
-    let myAggregate;
-    if (!search) {
-      myAggregate = Product.aggregate([
-        { $match: { $and: [queries] } },
 
-        {
-          $lookup: {
-            from: "categories",
-            localField: "category",
-            foreignField: "_id",
-            as: "categories",
-          },
+    let matchStage = search
+      ? { $match: { $and: [{ $or: search }, queries] } }
+      : { $match: { $and: [queries] } };
+
+    // BASE AGGREGATE PIPELINE
+    let myAggregate = Product.aggregate([
+      matchStage,
+
+      // Lookup category
+      {
+        $lookup: {
+          from: "categories",
+          localField: "category",
+          foreignField: "_id",
+          as: "categories",
         },
-        {
-          $lookup: {
-            from: "users",
-            localField: "vendor",
-            foreignField: "_id",
-            as: "vendors",
-          },
+      },
+
+      // Lookup vendor
+      {
+        $lookup: {
+          from: "users",
+          localField: "vendor",
+          foreignField: "_id",
+          as: "vendors",
         },
-        {
-          $lookup: {
-            from: "brands",
-            localField: "brand",
-            foreignField: "_id",
-            as: "brands",
-          },
+      },
+
+      // Lookup brand
+      {
+        $lookup: {
+          from: "brands",
+          localField: "brand",
+          foreignField: "_id",
+          as: "brands",
         },
-      ]);
-    } else {
-      myAggregate = Product.aggregate([
-        {
-          $match: {
-            $and: [
-              { $or: [...search, { isbn: new RegExp(+searchText, "i") }] },
-              queries,
-            ],
-          },
+      },
+
+      { $unwind: { path: "$brands", preserveNullAndEmptyArrays: true } },
+
+      // ⭐ FILTER PRODUCTS WITH CONDITIONS
+      {
+        $match: {
+          isActive: true,
+          isFeatured: true,
+          available: true,
+          $or: [
+            { "brands.isActive": true },
+            
+            // brand must be active
+            { brands: { $eq: null } },   // OR product with no brand is allowed
+          ],
         },
-        {
-          $lookup: {
-            from: "categories",
-            localField: "category",
-            foreignField: "_id",
-            as: "categories",
-          },
-        },
-        {
-          $lookup: {
-            from: "users",
-            localField: "vendor",
-            foreignField: "_id",
-            as: "vendors",
-          },
-        },
-        {
-          $lookup: {
-            from: "brands",
-            localField: "brand",
-            foreignField: "_id",
-            as: "brands",
-          },
-        },
-      ]);
-    }
+      },
+    ]);
+
+    // Sorting
     let sortOption = {};
     if (sort) {
       switch (sort) {
@@ -101,30 +215,30 @@ const getAllProducts = async (req, res) => {
     } else {
       sortOption = { createdAt: -1 };
     }
-    const options = search
-      ? {
-          page: page || 1 ,
-          limit: 24,
-          sort: sortOption,
-        }
-      : {
-          page: page || 1,
-          limit: limit || 24,
-          sort: sortOption,
-        };
+
+    const options = {
+      page: page || 1,
+      limit: limit || 10,
+      sort: sortOption,
+    };
 
     const data = await Product.aggregatePaginate(myAggregate, options);
 
     return res.status(200).send({
       message: "Successfully fetch products",
-      change: "Changes applied for test",
       data: data,
     });
   } catch (err) {
     console.log(err);
-    res.status(500).json({ error: err });
+    return res.status(500).json({ error: err });
   }
 };
+
+
+
+
+
+
 
 const suggestProducts = async (req, res) => {
   try {
