@@ -808,14 +808,7 @@ const popularProducts = async (req, res) => {
       {
         $unwind: "$cart.items",
       },
-      // {
-      //   $lookup: {
-      //     from: "products",
-      //     localField: "$cart.items.productId",
-      //     foreignField: "_id",
-      //     as: "product",
-      //   },
-      // },
+
       {
         $group: {
           _id: "$cart.items.productId",
@@ -824,13 +817,16 @@ const popularProducts = async (req, res) => {
           },
         },
       },
+
       {
         $sort: {
           sum: -1,
         },
       },
+
       { $limit: 12 },
 
+      // Lookup product
       {
         $lookup: {
           from: "products",
@@ -839,10 +835,19 @@ const popularProducts = async (req, res) => {
           as: "product",
         },
       },
+
+      { $unwind: "$product" },
+
+      // ⭐ FILTER HERE
       {
-        $unwind: "$product",
+        $match: {
+          "product.isActive": true,
+          "product.isFeatured": true,
+          "product.available": true, // if "visible" = available
+        },
       },
 
+      // Final fields
       {
         $project: {
           _id: "$product._id",
@@ -853,8 +858,9 @@ const popularProducts = async (req, res) => {
         },
       },
     ]);
+
     res.status(200).json({
-      message: "Order status has been updated",
+      message: "Popular products loaded successfully",
       data: products,
     });
   } catch (error) {
