@@ -694,7 +694,7 @@ const updateOrderStatus = async (req, res) => {
           refData.referral_package
         );
         let commission =
-          (totalProfitMargin * Number(_package.commission)) / 100;
+          (totalProfitMargin * qty) * (Number(_package.commission)) / 100;
         referrer = { id: refData._id, commission };
 
         // Create financial entires for referrer
