@@ -50,8 +50,7 @@ const getAllUsers = async (req, res) => {
 
     const data = await User.aggregatePaginate(myAggregate, options);
 
-     data = data.toObject();
-      data.password = decrypt(data.password); 
+    
 
     return res.status(200).json({
       message: "Successfully fetched users",
