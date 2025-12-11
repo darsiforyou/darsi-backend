@@ -290,12 +290,7 @@ const createOrder = async (req, res) => {
       totalVendorCost = (totalVendorCost + x.vendorPrice) * x.qty;
       netCost = netCost + x.price * x.qty;
       totalQty = totalQty + x.qty;
-      // /old code
-      // totalProfitMargin = totalProfitMargin + x.profitMargin;
-
-     //new code
-      totalProfitMargin = totalProfitMargin + (x.profitMargin * x.qty);
-
+      totalProfitMargin = totalProfitMargin + x.profitMargin;
       let stockCountPending = x.stockCountPending - x.qty;
       let stockCountConsumed = x.stockCountConsumed + x.qty;
       let totalPrice = x.qty * x.price;
@@ -452,9 +447,7 @@ const createPayment = async (req, res) => {
       totalVendorCost = (totalVendorCost + x.vendorPrice) * x.qty;
       netCost = netCost + x.price * x.qty;
       totalQty = totalQty + x.qty;
-      // totalProfitMargin = totalProfitMargin + x.profitMargin;
-        totalProfitMargin += x.profitMargin * x.qty;
-
+      totalProfitMargin = totalProfitMargin + x.profitMargin;
       let stockCountPending = x.stockCountPending - x.qty;
       let stockCountConsumed = x.stockCountConsumed + x.qty;
       let totalPrice = x.qty * x.price;
