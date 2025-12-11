@@ -97,8 +97,7 @@ const getUserWithRefCode = async (req, res) => {
       "_id firstname lastname email role user_code referral_package"
     );
     if (!user) return res.status(404).json({ error: "User not found" });
-     user = user.toObject();
-      user.password = decrypt(user.password); 
+    
     return res.json(user);
   } catch (err) {
     res.status(500).json({ error: err.message });
