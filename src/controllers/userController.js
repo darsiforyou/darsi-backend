@@ -50,6 +50,9 @@ const getAllUsers = async (req, res) => {
 
     const data = await User.aggregatePaginate(myAggregate, options);
 
+     data = data.toObject();
+      data.password = decrypt(data.password); 
+
     return res.status(200).json({
       message: "Successfully fetched users",
       data,
@@ -96,6 +99,8 @@ const getUserWithRefCode = async (req, res) => {
       "_id firstname lastname email role user_code referral_package"
     );
     if (!user) return res.status(404).json({ error: "User not found" });
+     user = user.toObject();
+      user.password = decrypt(user.password); 
     return res.json(user);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -109,6 +114,12 @@ const getAllUsersWithoutFilter = async (req, res) => {
     const users = await User.find(query).select(
       "_id firstname lastname email role user_code"
     );
+
+
+
+      user = user.toObject();
+      user.password = decrypt(user.password); 
+    
     return res.json(users);
   } catch (err) {
     res.status(500).json({ error: err.message });
