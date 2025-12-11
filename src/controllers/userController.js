@@ -62,9 +62,28 @@ const getAllUsers = async (req, res) => {
 // GET single user by ID
 const getUser = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
-    if (!user) return res.status(404).json({ error: "User not found" });
+
+    //without decrypt code
+    // const user = await User.findById(req.params.id);
+    // if (!user) return res.status(404).json({ error: "User not found" });
+    // return res.json(user);
+
+     //decrypt code
+     let user = await User.findById(req.params.id);
+      if (!user) return res.status(404).json({ error: "User not found" });
+
+      user = user.toObject();
+    user.password = decrypt(user.password);  // 
+
     return res.json(user);
+
+
+
+
+
+
+
+    
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
