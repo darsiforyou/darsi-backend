@@ -235,10 +235,10 @@ const updateUser = async (req, res) => {
       referred_by,
     };
 
-    if (password) {
-      const hashedPwd = await bcrypt.hash(password, 10);
-      updateData.password = hashedPwd;
-    }
+    // if (password) {
+    //   const hashedPwd = await bcrypt.hash(password, 10);
+    //   updateData.password = hashedPwd;
+    // }
 
     let data = await User.findByIdAndUpdate(req.params.id, updateData, { new: true });
 
