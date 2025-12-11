@@ -75,8 +75,7 @@ const getUser = async (req, res) => {
      let user = await User.findById(req.params.id);
       if (!user) return res.status(404).json({ error: "User not found" });
 
-      user = user.toObject();
-    user.password = decrypt(user.password);  // 
+    
 
     return res.json(user);
 
@@ -117,8 +116,7 @@ const getAllUsersWithoutFilter = async (req, res) => {
 
 
 
-      user = user.toObject();
-      user.password = decrypt(user.password); 
+  
     
     return res.json(users);
   } catch (err) {
