@@ -283,6 +283,7 @@ const createOrder = async (req, res) => {
     let netCost = 0;
     let totalProfitMargin = 0;
     let allVendors = {};
+    let commission=0;
     let referrer = { id: undefined, commission: 0 };
 
     for (const x of products) {
@@ -334,7 +335,7 @@ const createOrder = async (req, res) => {
       netCost = totalCost - discount;
       // calculate commission for user
   
-      let commission =
+      commission =
      (totalProfitMargin * Number(_package.commission)) / 100;
 
 
@@ -447,6 +448,7 @@ const createPayment = async (req, res) => {
     let netCost = 0;
     let totalProfitMargin = 0;
     let allVendors = {};
+    let commission =0;
 
     let referrer = { id: undefined, commission: 0 };
     const paymentproducts = [];
@@ -526,7 +528,7 @@ const createPayment = async (req, res) => {
       // calculate commission for user
       // let commission = ((totalProfitMargin - discount) * Number(_package.commission)) / 100;
 
-      let commission =
+      commission =
   (totalProfitMargin * Number(_package.commission)) / 100;
 
 
@@ -535,7 +537,7 @@ const createPayment = async (req, res) => {
 
       referrer = { id: refData._id, commission };
 
-      commission = commission + refData.commission;
+      // commission = commission + refData.commission;
       await User.findByIdAndUpdate(refData._id, {
         commission,
       });
@@ -675,33 +677,27 @@ const updateOrderStatus = async (req, res) => {
         paymentStatus: true,
       });
       let totalProfitMargin = 0;
+      let commission =0;
       let allVendors = {};
       let referrer = { id: undefined, commission: 0 };
 
       for (const product of order.cart.items) {
-        totalProfitMargin = totalProfitMargin + product.profitMargin;
-        // await Product.updateOne(
-        //   { _id: x.productId },
-        //   {
-        //     // stockCountConsumed: stockCountConsumed,
-        //     // stockCountPending: stockCountPending,
-        //     totalSale: totalSale,
-        //   }
-        // );
-        if (!isEmpty(allVendors)) {
-          allVendors[product.vendor] = {
-            id: product.vendor,
-            commission:
-              (allVendors[product.vendor]?.commission || 0) +
-              product.vendorPrice * product.qty,
-          };
-        } else {
-          allVendors[product.vendor] = {
-            id: product.vendor,
-            commission: product.vendorPrice * product.qty,
-          };
-        }
-      }
+  totalProfitMargin += product.profitMargin * product.qty; 
+  // Vendor commission calculation
+  if (!isEmpty(allVendors)) {
+    allVendors[product.vendor] = {
+      id: product.vendor,
+      commission:
+        (allVendors[product.vendor]?.commission || 0) +
+        product.vendorPrice * product.qty,
+    };
+  } else {
+    allVendors[product.vendor] = {
+      id: product.vendor,
+      commission: product.vendorPrice * product.qty,
+    };
+  }
+}
       if (order.applied_Referral_Code !== "None") {
         let refData = await User.findOne({
           user_code: order.applied_Referral_Code,
@@ -709,7 +705,7 @@ const updateOrderStatus = async (req, res) => {
         let _package = await Referral_Package.findById(
           refData.referral_package
         );
-        let commission =
+         commission =
           (totalProfitMargin * Number(_package.commission)) / 100;
 
         
