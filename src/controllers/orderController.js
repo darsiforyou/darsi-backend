@@ -333,7 +333,12 @@ const createOrder = async (req, res) => {
       );
       netCost = totalCost - discount;
       // calculate commission for user
-      let commission = (totalProfitMargin * Number(_package.commission)) / 100;
+  
+      let commission =
+     (totalProfitMargin * Number(_package.commission)) / 100;
+
+
+      
 
       referrer = { id: refData._id, commission };
 
@@ -402,6 +407,9 @@ const createOrder = async (req, res) => {
     //   amount: totalProfitMargin - referrer.commission + shippingCharges,
     // });
 
+
+    console.log(data)
+
     res.status(200).json({
       message: "Your order has been placed Successfully.",
       data: data,
@@ -447,7 +455,10 @@ const createPayment = async (req, res) => {
       totalVendorCost = (totalVendorCost + x.vendorPrice) * x.qty;
       netCost = netCost + x.price * x.qty;
       totalQty = totalQty + x.qty;
-      totalProfitMargin = totalProfitMargin + x.profitMargin;
+      // totalProfitMargin = totalProfitMargin + x.profitMargin;
+    
+     totalProfitMargin += x.profitMargin * x.qty; // FIX ✅
+
       let stockCountPending = x.stockCountPending - x.qty;
       let stockCountConsumed = x.stockCountConsumed + x.qty;
       let totalPrice = x.qty * x.price;
@@ -513,7 +524,12 @@ const createPayment = async (req, res) => {
       // totalProfitMargin = netCost - discount;
 
       // calculate commission for user
-      let commission = ((totalProfitMargin - discount) * Number(_package.commission)) / 100;
+      // let commission = ((totalProfitMargin - discount) * Number(_package.commission)) / 100;
+
+      let commission =
+  (totalProfitMargin * Number(_package.commission)) / 100;
+
+
       console.log("🚀 ~ file: orderController.js:515 ~ createPayment ~ totalProfitMargin:", totalProfitMargin)
       console.log("🚀 ~ file: orderController.js:515 ~ createPayment ~ commission:", commission)
 
@@ -695,6 +711,10 @@ const updateOrderStatus = async (req, res) => {
         );
         let commission =
           (totalProfitMargin * Number(_package.commission)) / 100;
+
+        
+
+
         referrer = { id: refData._id, commission };
 
         // Create financial entires for referrer
