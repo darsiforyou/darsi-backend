@@ -7,6 +7,9 @@ const { searchInColumns, getQuery } = require("../utils");
 const bcrypt = require("bcrypt");
 const send_email = require("../middleware/email");
 const imagekit = require("../config/imagekit");
+const multer = require("multer");
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 
 // GET all users with optional search and pagination
 const getAllUsers = async (req, res) => {
@@ -198,7 +201,135 @@ const changeUserPassword = async (req, res) => {
   }
 };
 
+//12152025 
+//atharhussin
+//proper 
 // UPDATE USER (with image & referral handling)
+// const updateUser = async (req, res) => {
+//   try {
+//     const {
+//       firstname,
+//       lastname,
+//       password,
+//       email,
+//       role,
+//       referral_payment_status,
+//       referral_package,
+//       referred_by,
+//     } = req.body;
+
+//     const user = await User.findById(req.params.id);
+//     if (!user) return res.status(404).json({ message: "User not found" });
+
+//     const file = req.file;
+//     const payment_status = referral_payment_status === "Paid";
+
+//     // Check for email conflict
+//     const emailExists = await User.findOne({ email });
+//     if (emailExists && emailExists._id.toString() !== req.params.id) {
+//       return res.status(409).json({ message: "Email already exists" });
+//     }
+
+//     const updateData = {
+//       firstname,
+//       lastname,
+//       role: role || "Customer",
+//       email,
+//       referral_payment_status: payment_status,
+//       referral_package,
+//       referred_by,
+//       transaction_id:'1234567'
+//     };
+
+//     // if (password) {
+//     //   const hashedPwd = await bcrypt.hash(password, 10);
+//     //   updateData.password = hashedPwd;
+//     // }
+
+//     let data = await User.findByIdAndUpdate(req.params.id, updateData, { new: true });
+
+//     // Profile image
+//     if (file) {
+//       if (data.imageId) await imagekit.deleteFile(data.imageId);
+
+//       const img = await imagekit.upload({
+//         file: file.buffer,
+//         fileName: file.originalname,
+//       });
+
+//       data = await User.findByIdAndUpdate(
+//         data._id,
+//         { imageURL: img.url, imageId: img.fileId },
+//         { new: true }
+//       );
+//     }
+
+//     // Referral commission & financial records
+//     if (payment_status && role === "Referrer" && referral_package) {
+//       const packageData = await Package.findById(referral_package);
+//       const milestones = await Milestone.findOne();
+
+//       let ref1Commission = 0,
+//         ref2Commission = 0,
+//         ref3Commission = 0;
+
+//       if (referred_by) {
+//         const ref1 = await User.findOne({ user_code: referred_by });
+//         if (ref1) {
+//           ref1Commission = packageData.price * (milestones.levelOne / 100);
+//           await Financial.create({
+//             user: ref1._id,
+//             package: packageData._id,
+//             amount: ref1Commission,
+//             type: "PACKAGE",
+//           });
+
+//           const ref2 = await User.findOne({ user_code: ref1.referred_by });
+//           if (ref2) {
+//             ref2Commission = packageData.price * (milestones.levelTwo / 100);
+//             await Financial.create({
+//               user: ref2._id,
+//               package: packageData._id,
+//               amount: ref2Commission,
+//               type: "PACKAGE",
+//             });
+
+//             const ref3 = await User.findOne({ user_code: ref2.referred_by });
+//             if (ref3) {
+//               ref3Commission = packageData.price * (milestones.levelThree / 100);
+//               await Financial.create({
+//                 user: ref3._id,
+//                 package: packageData._id,
+//                 amount: ref3Commission,
+//                 type: "PACKAGE",
+//               });
+//             }
+//           }
+
+//           // Update upline & level
+//           data.referred_by = referred_by;
+//           data.upline = ref1._id;
+//           data.level = ref1.level + 1;
+//           await data.save();
+//         }
+//       }
+
+//       const adminAmount = packageData.price - ref1Commission - ref2Commission - ref3Commission;
+//       await Financial.create({
+//         darsi: true,
+//         package: packageData._id,
+//         amount: adminAmount,
+//         type: "PACKAGE",
+//       });
+//     }
+
+//     res.status(200).json({ message: "User has been updated", data });
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ error: err.message });
+//   }
+// };
+
 const updateUser = async (req, res) => {
   try {
     const {
@@ -210,55 +341,85 @@ const updateUser = async (req, res) => {
       referral_payment_status,
       referral_package,
       referred_by,
+      transaction_id,
     } = req.body;
 
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    const file = req.file;
-    const payment_status = referral_payment_status === "Paid";
-
-    // Check for email conflict
-    const emailExists = await User.findOne({ email });
-    if (emailExists && emailExists._id.toString() !== req.params.id) {
-      return res.status(409).json({ message: "Email already exists" });
+    // Email conflict check
+    if (email) {
+      const emailExists = await User.findOne({ email });
+      if (emailExists && emailExists._id.toString() !== req.params.id) {
+        return res.status(409).json({ message: "Email already exists" });
+      }
     }
 
+    // Files
+    const profileImage = req.files?.profileImage?.[0];
+    const paymentScreenshot = req.files?.paymentScreenshot?.[0];
+
+    // Prepare update object
     const updateData = {
       firstname,
       lastname,
-      role: role || "Customer",
       email,
-      referral_payment_status: payment_status,
+      role,
       referral_package,
       referred_by,
+      transaction_id,
+      referral_payment_status: referral_payment_status === "Paid",
     };
 
-    // if (password) {
-    //   const hashedPwd = await bcrypt.hash(password, 10);
-    //   updateData.password = hashedPwd;
-    // }
-
-    let data = await User.findByIdAndUpdate(req.params.id, updateData, { new: true });
-
-    // Profile image
-    if (file) {
-      if (data.imageId) await imagekit.deleteFile(data.imageId);
-
-      const img = await imagekit.upload({
-        file: file.buffer,
-        fileName: file.originalname,
-      });
-
-      data = await User.findByIdAndUpdate(
-        data._id,
-        { imageURL: img.url, imageId: img.fileId },
-        { new: true }
-      );
+    if (password) {
+      updateData.password = await bcrypt.hash(password, 10);
     }
 
-    // Referral commission & financial records
-    if (payment_status && role === "Referrer" && referral_package) {
+    let data = await User.findByIdAndUpdate(
+      req.params.id,
+      updateData,
+      { new: true }
+    );
+
+    // ================= PROFILE IMAGE =================
+    if (profileImage) {
+      if (data.imageId) {
+        await imagekit.deleteFile(data.imageId);
+      }
+
+      const uploadedImage = await imagekit.upload({
+        file: profileImage.buffer,
+        fileName: profileImage.originalname,
+      });
+
+      data.imageURL = uploadedImage.url;
+      data.imageId = uploadedImage.fileId;
+    }
+
+    // ================= PAYMENT SCREENSHOT =================
+    if (paymentScreenshot) {
+      if (data.paymentScreenshotId) {
+        await imagekit.deleteFile(data.paymentScreenshotId);
+      }
+
+      const uploadedScreenshot = await imagekit.upload({
+        file: paymentScreenshot.buffer,
+        fileName: paymentScreenshot.originalname,
+      });
+
+      data.paymentScreenshotURL = uploadedScreenshot.url;
+      data.paymentScreenshotId = uploadedScreenshot.fileId;
+    }
+
+    // ================= SAVE ONCE =================
+    await data.save();
+
+    // ================= REFERRAL LOGIC =================
+    if (
+      updateData.referral_payment_status &&
+      role === "Referrer" &&
+      referral_package
+    ) {
       const packageData = await Package.findById(referral_package);
       const milestones = await Milestone.findOne();
 
@@ -289,7 +450,8 @@ const updateUser = async (req, res) => {
 
             const ref3 = await User.findOne({ user_code: ref2.referred_by });
             if (ref3) {
-              ref3Commission = packageData.price * (milestones.levelThree / 100);
+              ref3Commission =
+                packageData.price * (milestones.levelThree / 100);
               await Financial.create({
                 user: ref3._id,
                 package: packageData._id,
@@ -299,15 +461,18 @@ const updateUser = async (req, res) => {
             }
           }
 
-          // Update upline & level
-          data.referred_by = referred_by;
           data.upline = ref1._id;
           data.level = ref1.level + 1;
           await data.save();
         }
       }
 
-      const adminAmount = packageData.price - ref1Commission - ref2Commission - ref3Commission;
+      const adminAmount =
+        packageData.price -
+        ref1Commission -
+        ref2Commission -
+        ref3Commission;
+
       await Financial.create({
         darsi: true,
         package: packageData._id,
@@ -316,12 +481,25 @@ const updateUser = async (req, res) => {
       });
     }
 
-    res.status(200).json({ message: "User has been updated", data });
+    res.status(200).json({
+      message: "User has been updated successfully",
+      data,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });
   }
 };
+
+
+
+
+
+
+
+
+
+
 
 module.exports = {
   getAllUsers,
