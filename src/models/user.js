@@ -3,39 +3,64 @@ const bcrypt = require("bcrypt");
 const Schema = mongoose.Schema;
 const aggregatePaginate = require("mongoose-aggregate-paginate-v2");
 
-const userSchema = Schema(
+
+
+const userSchema = new Schema(
   {
     firstname: {
       type: String,
-      require: true,
+      required: true,
     },
     lastname: {
       type: String,
-      require: true,
+      required: true,
     },
     email: {
       type: String,
-      require: true,
+      required: true,
     },
     password: {
       type: String,
-      require: true,
+      required: true,
     },
+    // Main profile image
     imageURL: {
       type: String,
+      default: null,
     },
     imageId: {
       type: String,
+      default: null,
+    },
+    // Additional images (like media in products)
+   
+    // Payment screenshot fields
+    paymentScreenshotURL: {
+      type: String,
+      default: null,
+    },
+    paymentScreenshotId: {
+      type: String,
+      default: null,
     },
     role: {
       type: String,
       default: "Customer",
       enum: ["Customer", "Admin", "Referrer", "Vendor", "FeedAdmin"],
-    }, //FeedAdmin kept for now can be removed later
+    },
     status: {
       type: Boolean,
       default: false,
       required: true,
+    },
+    verified: {
+      type: Boolean,
+      default: false,
+      required: true,
+    },
+    transaction_id: {
+      type: String,
+      default: null,
     },
     referral_package: {
       type: mongoose.Schema.Types.ObjectId,
@@ -43,16 +68,15 @@ const userSchema = Schema(
     },
     referral_payment: {
       type: Number,
-      required: false,
+      default: 0,
     },
     referral_payment_status: {
       type: Boolean,
       default: false,
-      required: false,
     },
     user_code: {
       type: String,
-      // unique: true,
+      default: null,
     },
     referred_by: {
       type: String,
@@ -76,19 +100,22 @@ const userSchema = Schema(
     },
     refreshToken: {
       type: String,
+      default: null,
     },
     upline: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
+      default: null,
     },
     level: {
       type: Number,
       default: 0,
     },
-
   },
   { timestamps: true }
 );
+
+
 
 // encrypt the password before storing
 userSchema.methods.encryptPassword = (password) => {
