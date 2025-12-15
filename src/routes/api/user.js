@@ -22,11 +22,31 @@ router
     verifyRoles(ROLES_LIST.Admin),
     userController.getAllUsersWithoutFilter
   );
+// router
+//   .route("/:id")
+//   .get(userController.getUser)
+//   .delete(verifyJWT, verifyRoles(ROLES_LIST.Admin), userController.deleteUser)
+//   .put(verifyJWT, upload.single("file"), userController.updateUser);
+
+
+
 router
   .route("/:id")
   .get(userController.getUser)
-  .delete(verifyJWT, verifyRoles(ROLES_LIST.Admin), userController.deleteUser)
-  .put(verifyJWT, upload.single("file"), userController.updateUser);
+  .delete(
+    verifyJWT,
+    verifyRoles(ROLES_LIST.Admin),
+    userController.deleteUser
+  )
+  .put(
+    verifyJWT,
+    upload.fields([
+      { name: "profileImage", maxCount: 1 },
+      { name: "paymentScreenshot", maxCount: 1 },
+    ]),
+    userController.updateUser
+  );
+
 
 router.route("/code/:code").get(userController.getUserWithRefCode);
 router.route("/forgotPasswordOtp/:email").get(userController.forgotPasswordOtp);
