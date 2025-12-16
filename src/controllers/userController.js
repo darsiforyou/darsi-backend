@@ -15,7 +15,8 @@ const upload = multer({ storage });
 const getAllUsers = async (req, res) => {
   try {
     let { page, limit, search, mode, ...queries } = req.query;
-    search = searchInColumns(search, ["firstname", "lastname"]);
+    //add search keys name
+    search = searchInColumns(search, ["firstname", "lastname","transaction_id"]);
     queries = getQuery(queries);
 
     let myAggregate;
