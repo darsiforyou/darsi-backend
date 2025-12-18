@@ -280,7 +280,69 @@ const changeUserPassword = async (req, res) => {
 };
 
 
+/***************************verify otp**************************************************** */
 
+const verifyOtp = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    // Find active OTP
+    const otpRecord = await OTP.findOne({ email, otp, isActive: true });
+    if (!otpRecord) {
+      return res.status(400).json({ message: "Invalid or expired OTP" });
+    }
+
+    // Mark OTP as used
+    otpRecord.isActive = false;
+    await otpRecord.save();
+
+    res.status(200).json({ message: "OTP verified successfully" });
+  } catch (err) {
+    console.error("OTP verification error:", err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+
+/************************************************************************************* */
+
+
+
+// ✅ Reset password after OTP verification
+
+/**********************Reset password********************************************* */
+const resetPassword = async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+
+    // Verify OTP
+    const otpRecord = await OTP.findOne({ email, otp, isActive: true });
+    if (!otpRecord) {
+      return res.status(400).json({ message: "Invalid or expired OTP" });
+    }
+
+    // Mark OTP as used
+    otpRecord.isActive = false;
+    await otpRecord.save();
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update user password
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    user.password = hashedPassword;
+    await user.save();
+
+    res.status(200).json({ message: "Password reset successfully" });
+  } catch (err) {
+    console.error("Reset password error:", err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+/****************************************************************************** */
 
 
 //12152025 
@@ -592,4 +654,6 @@ module.exports = {
   updateUser,
   forgotPasswordOtp,
   changeUserPassword,
+  verifyOtp,
+  resetPassword
 };

@@ -51,4 +51,6 @@ router
 router.route("/code/:code").get(userController.getUserWithRefCode);
 router.route("/forgotPasswordOtp/:email").get(userController.forgotPasswordOtp);
 router.route("/changeUserPassword/:id").put(verifyJWT,userController.changeUserPassword);
+router.route("/verifyOtp").post(userController.verifyOtp);
+router.route("/resetPassword").post(userController.resetPassword);
 module.exports = router;

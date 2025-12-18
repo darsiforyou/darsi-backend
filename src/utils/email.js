@@ -7,15 +7,15 @@ const transporter = nodemailer.createTransport({
   port: 587,
   secure: false,
   auth: {
-    user: 'Landdostmedia@gmail.com',
-    pass: 'uyxbhkpnpewvvwrk'
+    user: 'darsiforyou@gmail.com',
+    pass: 'tehhncbwmzapywvp'
   },
 });
 
 // ✅ CommonJS export ONLY
 const sendEmail = async ({ to, subject, html, replyTo }) => {
   return transporter.sendMail({
-   from: `"Darsi Ecommerce" <Landdostmedia@gmail.com>"`,
+   from: `"Darsi Ecommerce" <darsiforyou@gmail.com>"`,
     to,
     replyTo,
     subject,
