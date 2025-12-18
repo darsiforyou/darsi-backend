@@ -14,6 +14,8 @@ const dotenv = require("dotenv").config();
 const swaggerUi = require("swagger-ui-express");
 const boolParser = require("express-query-boolean");
 
+const nodemailer=require("nodemailer");
+
 // custom middleware logger
 app.use(logger);
 

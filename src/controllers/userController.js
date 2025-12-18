@@ -9,6 +9,7 @@ const send_email = require("../middleware/email");
 const imagekit = require("../config/imagekit");
 const multer = require("multer");
 const storage = multer.memoryStorage();
+const { sendEmail } = require("../utils/email"); 
 const upload = multer({ storage });
 
 // GET all users with optional search and pagination
@@ -147,60 +148,140 @@ function generateOTP() {
 }
 
 // SEND forgot password OTP
+// const forgotPasswordOtp = async (req, res) => {
+//   try {
+//     const user = await User.findOne({ email: req.params.email });
+//     if (!user) return res.status(404).json({ message: "User doesn't exist" });
+
+//     const otp = generateOTP();
+//     const otp_data = await OTP.create({
+//       otp,
+//       isActive: true,
+//       email: req.params.email,
+//     });
+
+//     let emailInput = {
+//       subject: "Forgot your password",
+//       html: `<strong>Please enter the following OTP to change your password: ${otp}</strong>`,
+//     };
+
+//     await send_email(req.params.email, emailInput);
+
+//     res.status(200).json({
+//       message: "OTP has been sent to your email address",
+//     });
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// };
+
+
+
+
 const forgotPasswordOtp = async (req, res) => {
   try {
+    // ✅ Find user by email in Darsi system
     const user = await User.findOne({ email: req.params.email });
     if (!user) return res.status(404).json({ message: "User doesn't exist" });
 
+    // ✅ Generate OTP
     const otp = generateOTP();
-    const otp_data = await OTP.create({
+
+    // ✅ Save OTP in DB
+    await OTP.create({
       otp,
       isActive: true,
       email: req.params.email,
     });
 
-    let emailInput = {
-      subject: "Forgot your password",
-      html: `<strong>Please enter the following OTP to change your password: ${otp}</strong>`,
+    // ✅ Prepare email content
+    const emailInput = {
+      subject: "Darsi - Forgot Your Password",
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h3 style="color: #33A137;">Darsi Password Reset OTP</h3>
+          <p>Please use the following OTP to reset your password:</p>
+          <h2 style="background: #f1f1f1; padding: 10px; text-align: center; border-radius: 5px;">${otp}</h2>
+          <p style="color: #666; font-size: 14px;">If you didn't request this, please ignore this email.</p>
+          <p>Best regards,<br>Darsi Team</p>
+        </div>
+      `,
     };
 
-    await send_email(req.params.email, emailInput);
+    // ✅ Send OTP to user's email
+   await sendEmail({
+  to: req.params.email,
+  subject: emailInput.subject,
+  html: emailInput.html,
+});
 
+    // ✅ Response
     res.status(200).json({
       message: "OTP has been sent to your email address",
     });
   } catch (err) {
+    console.error("Forgot password OTP error:", err);
     res.status(500).json({ error: err.message });
   }
 };
+
+
 
 // CHANGE USER PASSWORD
+// const changeUserPassword = async (req, res) => {
+//   try {
+//     const { user_email, otp_code, new_password } = req.body;
+
+//     const otp = await OTP.findOne({ otp: otp_code, email: user_email, isActive: true });
+//     const user = await User.findOne({ email: user_email });
+
+
+//     if (!otp) return res.status(400).json({ message: "OTP is invalid or expired" });
+//     if (!user) return res.status(404).json({ message: "User doesn't exist" });
+
+//     // Check if OTP is expired (5 minutes)
+//     const otpAge = (new Date() - otp.createdAt) / 1000 / 60;
+//     if (otpAge > 5) return res.status(400).json({ message: "OTP expired" });
+
+//     const hashedPwd = await bcrypt.hash(new_password, 10);
+//     await User.findByIdAndUpdate(user._id, { password: hashedPwd });
+
+//     // Deactivate OTP
+//     otp.isActive = false;
+//     await otp.save();
+
+//     res.status(200).json({ message: "Password has been updated" });
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// };
+
 const changeUserPassword = async (req, res) => {
   try {
-    const { user_email, otp_code, new_password } = req.body;
+    const { oldPassword, newPassword } = req.body;
+    const userId = req.params.id; // agar :id use kiya
 
-    const otp = await OTP.findOne({ otp: otp_code, email: user_email, isActive: true });
-    const user = await User.findOne({ email: user_email });
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
 
-    if (!otp) return res.status(400).json({ message: "OTP is invalid or expired" });
-    if (!user) return res.status(404).json({ message: "User doesn't exist" });
+    const validOldPwd = await bcrypt.compare(oldPassword, user.password);
+    if (!validOldPwd)
+      return res.status(400).json({ message: "Old password is incorrect" });
 
-    // Check if OTP is expired (5 minutes)
-    const otpAge = (new Date() - otp.createdAt) / 1000 / 60;
-    if (otpAge > 5) return res.status(400).json({ message: "OTP expired" });
+    const hashedPwd = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPwd;
+    await user.save();
 
-    const hashedPwd = await bcrypt.hash(new_password, 10);
-    await User.findByIdAndUpdate(user._id, { password: hashedPwd });
-
-    // Deactivate OTP
-    otp.isActive = false;
-    await otp.save();
-
-    res.status(200).json({ message: "Password has been updated" });
+    res.status(200).json({ message: "Password updated successfully!" });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
   }
 };
+
+
+
+
 
 //12152025 
 //atharhussin
