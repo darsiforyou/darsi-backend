@@ -6,6 +6,11 @@ const Product = require("../models/product");
 const Financial = require("../models/financial");
 const mongoose = require("mongoose");
 const axios = require("axios");
+const { sendEmail } = require("../utils/email"); 
+const {
+  customerInvoiceEmail,
+  adminOrderNotification,
+} = require("../utils/orderEmails");
 const ObjectId = mongoose.Types.ObjectId;
 
 const getAllOrders = async (req, res) => {
@@ -383,7 +388,101 @@ const createOrder = async (req, res) => {
       });
     }
 
-    let data = await Order.create(order);
+
+    const customerInvoiceEmail = (order) => {
+  return `
+  <div style="font-family: Arial; max-width: 700px; margin:auto; border:1px solid #eee; padding:20px">
+    <h2 style="color:#33A137">Darsi - Order Invoice</h2>
+    <p>Hi <b>${order.name}</b>,</p>
+    <p>Thank you for your order! Your order has been successfully placed.</p>
+
+    <hr />
+
+    <h3>Order Details</h3>
+    <p><b>Order No:</b> ${order.order_number}</p>
+    <p><b>Payment Method:</b> ${order.paymentMethod}</p>
+    <p><b>City:</b> ${order.city}</p>
+
+    <table width="100%" border="1" cellspacing="0" cellpadding="8" style="border-collapse:collapse">
+      <thead style="background:#f5f5f5">
+        <tr>
+          <th align="left">Product</th>
+          <th>Qty</th>
+          <th>Price</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${order.cart.items.map(item => `
+          <tr>
+            <td>${item.name}</td>
+            <td align="center">${item.qty}</td>
+            <td align="center">Rs ${item.price}</td>
+            <td align="center">Rs ${item.qty * item.price}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+
+    <br/>
+
+    <p><b>Subtotal:</b> Rs ${order.cart.totalCost}</p>
+    <p><b>Discount:</b> Rs ${order.cart.discount}</p>
+    <p><b>Shipping:</b> Rs ${order.cart.shippingCharges}</p>
+
+    <h3>Total Payable: Rs ${order.cart.netCost}</h3>
+
+    <p style="margin-top:20px">
+      📦 Your order will be delivered soon.<br/>
+      If you have any questions, feel free to contact us.
+    </p>
+
+    <p>Regards,<br/><b>Darsi Team</b></p>
+  </div>
+  `;
+};
+
+const adminOrderNotification = (order) => {
+  return `
+    <h2>🛒 New Order Received</h2>
+    <p><b>Order No:</b> ${order.order_number}</p>
+    <p><b>Customer:</b> ${order.name}</p>
+    <p><b>Email:</b> ${order.email}</p>
+    <p><b>Phone:</b> ${order.phone}</p>
+    <p><b>Total Amount:</b> Rs ${order.cart.netCost}</p>
+    <p><b>City:</b> ${order.city}</p>
+  `;
+ };
+
+
+
+  let data = await Order.create(order);
+
+
+try {
+  await sendEmail({
+    to: data.email,
+    subject: `Darsi Invoice - Order #${data.order_number}`,
+    html: customerInvoiceEmail(data),
+  });
+  console.log("✅ Customer email sent");
+} catch (err) {
+  console.error("❌ Customer email error:", err);
+}
+
+try {
+  await sendEmail({
+    to: process.env.ADMIN_EMAIL,
+    subject: `New Order Received - #${data.order_number}`,
+    html: adminOrderNotification(data),
+  });
+  console.log("✅ Admin email sent");
+} catch (err) {
+  console.error("❌ Admin email error:", err);
+}
+
+
+    
 
     // // Create financial entires for referrer
     // if (refData) {
@@ -577,6 +676,30 @@ const createPayment = async (req, res) => {
       });
     }
     let data = await Order.create(order);
+
+  try {
+  await sendEmail({
+    to: data.email,
+    subject: `Darsi Invoice - Order #${data.order_number}`,
+    html: customerInvoiceEmail(data),
+  });
+  console.log("✅ Customer invoice email sent");
+} catch (err) {
+  console.error("❌ Customer email error:", err.message);
+}
+
+try {
+  await sendEmail({
+    to: process.env.ADMIN_EMAIL,
+    subject: `New Order Received - #${data.order_number}`,
+    html: adminOrderNotification(data),
+  });
+  console.log("✅ Admin notification sent");
+} catch (err) {
+  console.error("❌ Admin email error:", err.message);
+}
+
+
     console.log(data.id);
     let pktRes;
 
