@@ -64,6 +64,10 @@ app.use("/user-bank-account", require("./routes/api/userBankAccount"));
 app.use("/image", require("./routes/api/imageUpload"));
 app.use("/mlm", require("./routes/api/mlmBilling"));
 app.use("/milestone", require("./routes/api/milestone"));
+app.use("/bank-details", require("./routes/api/bankDetails"));
+
+
+
 app.all("*", (req, res) => {
   res.status(404);
   if (req.accepts("html")) {

@@ -12,6 +12,16 @@ const {
   adminOrderNotification,
 } = require("../utils/orderEmails");
 const ObjectId = mongoose.Types.ObjectId;
+const bcrypt = require("bcrypt");
+
+
+
+
+const generatePassword = () => {
+  return Math.random().toString(36).slice(-8); // e.g a9k2p8xq
+};
+
+
 
 const getAllOrders = async (req, res) => {
   try {
@@ -388,6 +398,18 @@ const createOrder = async (req, res) => {
       });
     }
 
+///new code 12232025
+
+
+
+ 
+
+  
+   
+
+//newcodeend12232025
+
+
 
     const customerInvoiceEmail = (order) => {
   return `
@@ -510,10 +532,13 @@ try {
 
     console.log(data)
 
-    res.status(200).json({
-      message: "Your order has been placed Successfully.",
-      data: data,
-    });
+   res.status(200).json({
+  message: plainPassword
+    ? "Order placed & account details sent to your email"
+    : "Your order has been placed Successfully.",
+  data: data,
+});
+
   } catch (err) {
     res.status(500).json({
       message: err.message,
@@ -677,6 +702,58 @@ const createPayment = async (req, res) => {
     }
     let data = await Order.create(order);
 
+   // ✅ GUEST USER AUTO CREATE LOGIC
+    // ===============================
+    let orderUserId = user;
+    let plainPassword = null;
+
+    if (!user && email) {
+      let existingUser = await User.findOne({ email });
+
+      if (!existingUser) {
+        plainPassword = generatePassword();
+        const hashedPassword = await bcrypt.hash(plainPassword, 10);
+
+        existingUser = await User.create({
+          firstname: name?.split(" ")[0] || "Customer",
+          lastname: name?.split(" ")[1] || "",
+          email,
+          password: hashedPassword,
+          role: "Customer",
+        });
+
+        // 📧 SEND ACCOUNT EMAIL
+        await sendEmail({
+          to: email,
+          subject: "Your Darsi Account Details",
+          html: `
+            <div style="font-family:Arial">
+              <h2>Welcome to Darsi 🎉</h2>
+              <p>Your account has been created automatically.</p>
+              <p><b>Username:</b> ${email}</p>
+              <p><b>Password:</b> ${plainPassword}</p>
+              <p>
+                Login here:
+                <a href="https://www.darsi.pk/login">
+                  https://www.darsi.pk/login
+                </a>
+              </p>
+              <p>Please change your password after login.</p>
+            </div>
+          `,
+        });
+      }
+
+      orderUserId = existingUser._id;
+    }
+
+
+
+
+
+
+
+
   try {
   await sendEmail({
     to: data.email,
@@ -768,8 +845,13 @@ try {
     // });
     // const encodeURl = encodeURI("https://backend.darsi.pk/payment/product");
     const encodeURl = encodeURI("http://localhost:3000/payment/product");
-    res.status(200).json({
-      message: "Your order has been placed Successfully.",
+   
+         res.status(200).json({
+  message: plainPassword
+    ? "Order placed & account details sent to your email"
+    : "Your order has been placed Successfully.",
+  data: data,
+
       paymentToken:
         paymentMethod !== "COD"
           ? pktRes[1].Click2Pay + "&callback_url=" + encodeURl
