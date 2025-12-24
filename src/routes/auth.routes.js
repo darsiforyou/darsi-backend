@@ -6,17 +6,15 @@ const router = express.Router();
 
 // 🔹 GOOGLE LOGIN
 router.get(
-  "api/auth/google",
+  "/google",
   passport.authenticate("google", { scope: ["profile", "email"] })
 );
 
 router.get(
-  "api/auth/google/callback",
+  "/google/callback",
   passport.authenticate("google", { session: false }),
   (req, res) => {
     const user = req.user;
-
-    // Full payload for frontend
     const token = jwt.sign(
       {
         id: user._id,
@@ -25,8 +23,6 @@ router.get(
         firstname: user.firstname,
         lastname: user.lastname,
         user_code: user.user_code,
-        
-    
       },
       process.env.ACCESS_TOKEN_SECRET,
       { expiresIn: "7d" }
