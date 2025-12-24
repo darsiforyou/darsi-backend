@@ -14,7 +14,7 @@ const dotenv = require("dotenv").config();
 const swaggerUi = require("swagger-ui-express");
 const boolParser = require("express-query-boolean");
 const passport = require("./config/passport");
-const authRoutes = require("./routes/auth.routes");
+
 
 
 const nodemailer=require("nodemailer");
