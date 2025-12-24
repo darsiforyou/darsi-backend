@@ -1,49 +1,44 @@
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const User = require("../models/user");
-const jwt = require("jsonwebtoken");
 
+// Random string generator
 function generateRandomString(length = 6) {
   return Math.random().toString(36).substring(2, 2 + length);
 }
 
-
-
+// Dynamic firstname/lastname
 function generateDynamicName(email) {
-  // Example: "rahat528018@gmail.com" → firstName: Rahat, lastName: 528018
-  const localPart = email.split("@")[0]; // @ ke pehle ka part
-  const match = localPart.match(/([a-zA-Z]+)(\d*)/); // letters aur numbers alag kare
+  const localPart = email.split("@")[0];
+  const match = localPart.match(/([a-zA-Z]+)(\d*)/);
 
   const firstname = match?.[1]
     ? match[1].charAt(0).toUpperCase() + match[1].slice(1)
     : "User";
 
-  const lastname = match?.[2] || Math.floor(Math.random() * 9000 + 1000); // number ya random 4 digit
+  const lastname = match?.[2] || Math.floor(Math.random() * 9000 + 1000);
 
   return { firstname, lastname };
 }
 
-
 passport.use(
   new GoogleStrategy(
     {
-      clientID:'830093259348-cbrkof0msmlojh8264i8fs7f7evp1no8.apps.googleusercontent.com',
-      clientSecret:'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',
-      callbackURL:"api/auth/google/callback",
-      
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL: "/api/auth/google/callback",
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
         const email = profile.emails[0].value.toLowerCase();
-
-        // Dynamic firstname & lastname if missing
-        let firstname = profile.name?.givenName || generateDynamicName(email).firstname;
-        let lastname = profile.name?.familyName || generateDynamicName(email).lastname;
+        const { firstname, lastname } = profile.name?.givenName
+          ? { firstname: profile.name.givenName, lastname: profile.name.familyName || generateDynamicName(email).lastname }
+          : generateDynamicName(email);
 
         let user = await User.findOne({ email });
 
         if (user) {
-          // Update missing info if any
+          // Update missing info if needed
           let updated = false;
           if (!user.firstname) { user.firstname = firstname; updated = true; }
           if (!user.lastname) { user.lastname = lastname; updated = true; }
@@ -53,7 +48,6 @@ passport.use(
           return done(null, user);
         }
 
-        // New user
         const newUser = await User.create({
           firstname,
           lastname,
@@ -62,7 +56,6 @@ passport.use(
           authProvider: "google",
           verified: true,
           status: true,
-         
           role: "Customer",
           password: null,
           user_code: `${firstname}-${generateRandomString(4)}-${generateRandomString(4)}`,
