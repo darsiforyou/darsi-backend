@@ -46,7 +46,7 @@ app.use("/", express.static(path.join(__dirname, "/public")));
 
 
 const authRoutes = require("./routes/auth.routes");
-app.use("/api/auth", authRoutes);
+
 
 
 // routes
