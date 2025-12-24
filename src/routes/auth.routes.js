@@ -6,13 +6,13 @@ const router = express.Router();
 
 // 🔹 GOOGLE LOGIN
 router.get(
-  "/google",
+  "api/auth/google",
   passport.authenticate("google", { scope: ["profile", "email"] })
 );
-
+api/auth/google/callback
 // 🔹 CALLBACK
 router.get(
-  "/google/callback",
+  "api/auth/google/callback",
   passport.authenticate("google", { session: false }),
   (req, res) => {
     const user = req.user;
