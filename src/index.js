@@ -15,6 +15,8 @@ const swaggerUi = require("swagger-ui-express");
 const boolParser = require("express-query-boolean");
 
 const nodemailer=require("nodemailer");
+const passport = require("./config/passport");
+app.use(passport.initialize());
 
 // custom middleware logger
 app.use(logger);
@@ -40,6 +42,12 @@ app.use(cookieParser());
 //serve static files
 app.use("/api-docs", swaggerUi.serve);
 app.use("/", express.static(path.join(__dirname, "/public")));
+
+
+
+const authRoutes = require("./routes/auth.routes");
+app.use("/api/auth", authRoutes);
+
 
 // routes
 app.use("/", require("./routes/root"));
