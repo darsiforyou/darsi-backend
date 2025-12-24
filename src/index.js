@@ -51,8 +51,8 @@ app.use("/", express.static(path.join(__dirname, "/public")));
 const authRoutes = require("./routes/auth.routes");
 
 
-app.use(express.json());
-app.use(passport.initialize());
+
+
 
 // Routes
 app.use("/api/auth", authRoutes);
