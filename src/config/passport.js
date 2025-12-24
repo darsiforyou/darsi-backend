@@ -27,9 +27,9 @@ function generateDynamicName(email) {
 passport.use(
   new GoogleStrategy(
     {
-      clientID: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "/api/auth/google/callback",
+      clientID:'830093259348-cbrkof0msmlojh8264i8fs7f7evp1no8.apps.googleusercontent.com',
+      clientSecret:'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',
+      callbackURL:"https://darsi-backend.vercel.app/api/auth/google/callback",
       
     },
     async (accessToken, refreshToken, profile, done) => {
