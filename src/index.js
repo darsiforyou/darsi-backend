@@ -13,6 +13,9 @@ const PORT = process.env.PORT || 3000;
 const dotenv = require("dotenv").config();
 const swaggerUi = require("swagger-ui-express");
 const boolParser = require("express-query-boolean");
+const passport = require("./config/passport");
+const authRoutes = require("./routes/auth.routes");
+
 
 const nodemailer=require("nodemailer");
 const passport = require("./config/passport");
@@ -48,7 +51,11 @@ app.use("/", express.static(path.join(__dirname, "/public")));
 const authRoutes = require("./routes/auth.routes");
 
 
+app.use(express.json());
+app.use(passport.initialize());
 
+// Routes
+app.use("/api/auth", authRoutes);
 // routes
 app.use("/", require("./routes/root"));
 app.use("/register", require("./routes/register"));
