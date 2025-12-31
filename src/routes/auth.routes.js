@@ -1,7 +1,41 @@
-const express = require("express");
-const router = express.Router();
-const passport = require("passport");
+// const express = require("express");
+// const router = express.Router();
+// const passport = require("passport");
 
+// router.get(
+//   "/google",
+//   passport.authenticate("google", {
+//     scope: ["profile", "email"],
+//     prompt: "select_account",
+//     session: false,
+//   })
+// );
+
+// router.get(
+//   "/google/callback",
+//   passport.authenticate("google", {
+//     session: false,
+//     failureRedirect: "/login",
+//   }),
+//   (req, res) => {
+//     // TEMP response (for testing)
+//     res.json({
+//       success: true,
+//       user: req.user,
+//     });
+//   }
+// );
+
+// module.exports = router;
+
+
+const express = require("express");
+const passport = require("passport");
+const jwt = require("jsonwebtoken");
+
+const router = express.Router();
+
+// 🔹 GOOGLE LOGIN
 router.get(
   "/google",
   passport.authenticate("google", {
@@ -10,34 +44,36 @@ router.get(
     session: false,
   })
 );
-
+// 🔹 CALLBACK
 router.get(
   "/google/callback",
-  passport.authenticate("google", {
-    session: false,
-    failureRedirect: "https://www.darsi.pk/login",
-  }),
+  passport.authenticate("google", { session: false }),
   (req, res) => {
-    try {
-      // JWT generate (example)
-      const token = jwt.sign(
-        { id: req.user._id, email: req.user.email },
-        process.env.JWT_SECRET,
-        { expiresIn: "7d" }
-      );
+    const user = req.user;
 
-      // ✅ FRONTEND REDIRECT
-      res.redirect(
-        `https://www.darsi.pk/userInfo?token=${token}`
-      );
-    } catch (error) {
-      res.redirect("https://www.darsi.pk/login");
-    }
+    // Full payload for frontend
+    const token = jwt.sign(
+      {
+        id: user._id,
+        role: user.role,
+        email: user.email,
+        firstname: user.firstname,
+        lastname: user.lastname,
+        user_code: user.user_code,
+        
+    
+      },
+      process.env.ACCESS_TOKEN_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    res.redirect(`${process.env.FRONTEND_URL}/google-success?token=${token}`);
   }
 );
 
-
 module.exports = router;
+
+
 
 
 
