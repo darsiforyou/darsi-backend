@@ -28,7 +28,7 @@ const getAllOrders = async (req, res) => {
     let { page, limit, search, vendorId, ...queries } = req.query;
     let orderSearch = { order_number: new RegExp(parseInt(search), "i") };
 
-    search = searchInColumns(search, ["name", "email", "phone"]);
+    search = searchInColumns(search,["name", "email", "phone","order_number","applied_Referral_Code"]);
     queries = getQuery(queries);
     let items = "";
     if (vendorId) {

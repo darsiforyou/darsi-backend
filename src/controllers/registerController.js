@@ -116,7 +116,7 @@ const handleNewUser = async (req, res) => {
 
     // generate unique ref code
     newUser.user_code =
-      firstname + "-" + faker.helpers.replaceSymbolWithNumber("####-####");
+      "Darsi" + "-" + faker.helpers.replaceSymbolWithNumber("####-####");
 
     // verify referral
     if (referred_by) {
