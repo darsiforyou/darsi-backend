@@ -16,6 +16,7 @@ const boolParser = require("express-query-boolean");
 
 const nodemailer=require("nodemailer");
 const passport = require("./config/passport");
+const authRoutes = require("./routes/auth.routes");
 app.use(passport.initialize());
 
 // custom middleware logger
@@ -45,7 +46,8 @@ app.use("/", express.static(path.join(__dirname, "/public")));
 
 
 
-const authRoutes = require("./routes/auth.routes");
+
+
 app.use("/api/auth", authRoutes);
 
 
