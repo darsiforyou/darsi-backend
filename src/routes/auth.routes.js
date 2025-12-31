@@ -15,16 +15,27 @@ router.get(
   "/google/callback",
   passport.authenticate("google", {
     session: false,
-    failureRedirect: "/login",
+    failureRedirect: "https://www.darsi.pk/login",
   }),
   (req, res) => {
-    // TEMP response (for testing)
-    res.json({
-      success: true,
-      user: req.user,
-    });
+    try {
+      // JWT generate (example)
+      const token = jwt.sign(
+        { id: req.user._id, email: req.user.email },
+        process.env.JWT_SECRET,
+        { expiresIn: "7d" }
+      );
+
+      // ✅ FRONTEND REDIRECT
+      res.redirect(
+        `https://www.darsi.pk/userInfo?token=${token}`
+      );
+    } catch (error) {
+      res.redirect("https://www.darsi.pk/login");
+    }
   }
 );
+
 
 module.exports = router;
 
