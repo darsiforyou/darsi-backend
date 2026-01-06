@@ -32,27 +32,27 @@ const connectDB = async () => {
 // async function createAdmin() {
 //   try {
 //     // Check agar admin already exist karta hai
-//     const existingAdmin = await User.findOne({ email: "admin-darsi@darsi.com" });
-//     if (existingAdmin) {
-//       console.log("Admin already exists!");
-//       return process.exit();
-//     }
+//     // const existingAdmin = await User.findOne({ email: "admin-darsi@darsi.com" });
+//     // if (existingAdmin) {
+//     //   console.log("Admin already exists!");
+//     //   return process.exit();
+//     // }
 
 //     // Password hash
-//     const hashedPassword = bcrypt.hashSync("@Darsi123", bcrypt.genSaltSync(10));
+//     const hashedPassword = bcrypt.hashSync("athar123", bcrypt.genSaltSync(10));
 
 //     // Random refresh token generate
 //     const refreshToken = crypto.randomBytes(64).toString("hex"); // 128 chars random string
 
 //     const adminUser = new User({
-//       firstname: "Muhammad",
-//       lastname: "Ali",
-//       email: "admin-darsi@darsi.com",
+//       firstname: "athar",
+//       lastname: "hussain",
+//       email: "athar1234@gmail.com",
 //       password: hashedPassword,
 //       role: "Admin",
 //       status: true,
 //       verified: true,
-//       user_code: "admin@darsi.com-5568-9806",
+//       user_code: "athardarsi.com-5568-9806",
 //       refreshToken: null, // ✅ add refresh token here
 //     });
 
