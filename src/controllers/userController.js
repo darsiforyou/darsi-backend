@@ -474,6 +474,8 @@ const resetPassword = async (req, res) => {
 //   }
 // };
 
+
+
 const updateUser = async (req, res) => {
   try {
     const {
@@ -488,82 +490,64 @@ const updateUser = async (req, res) => {
       transaction_id,
     } = req.body;
 
+    // 1. Find user
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    // Email conflict check
-    if (email) {
+    // 2. Email conflict check
+    if (email && email !== user.email) {
       const emailExists = await User.findOne({ email });
-      if (emailExists && emailExists._id.toString() !== req.params.id) {
-        return res.status(409).json({ message: "Email already exists" });
-      }
+      if (emailExists) return res.status(409).json({ message: "Email already exists" });
     }
 
-    // Files
-    const profileImage = req.files?.profileImage?.[0];
-    const paymentScreenshot = req.files?.paymentScreenshot?.[0];
-
-    // Prepare update object
+    // 3. Prepare update object
     const updateData = {
-      firstname,
-      lastname,
-      email,
-      role,
-      referral_package,
-      referred_by,
-      transaction_id,
-      referral_payment_status: referral_payment_status === "Paid",
+      firstname: firstname || user.firstname,
+      lastname: lastname || user.lastname,
+      email: email || user.email,
+      role: role || user.role,
+      referral_package: referral_package || user.referral_package,
+      referred_by: referred_by || user.referred_by,
+      transaction_id: transaction_id || user.transaction_id,
+      referral_payment_status: referral_payment_status === "Paid" ? "Paid" : "Pending",
     };
 
+    // 4. Hash password if provided
     if (password) {
       updateData.password = await bcrypt.hash(password, 10);
     }
 
-    let data = await User.findByIdAndUpdate(
-      req.params.id,
-      updateData,
-      { new: true }
-    );
+    // 5. Update user
+    let data = await User.findByIdAndUpdate(req.params.id, updateData, { new: true });
 
-    // ================= PROFILE IMAGE =================
+    // 6. Handle profile image
+    const profileImage = req.files?.profileImage?.[0];
     if (profileImage) {
-      if (data.imageId) {
-        await imagekit.deleteFile(data.imageId);
-      }
-
+      if (data.imageId) await imagekit.deleteFile(data.imageId);
       const uploadedImage = await imagekit.upload({
         file: profileImage.buffer,
         fileName: profileImage.originalname,
       });
-
       data.imageURL = uploadedImage.url;
       data.imageId = uploadedImage.fileId;
     }
 
-    // ================= PAYMENT SCREENSHOT =================
+    // 7. Handle payment screenshot
+    const paymentScreenshot = req.files?.paymentScreenshot?.[0];
     if (paymentScreenshot) {
-      if (data.paymentScreenshotId) {
-        await imagekit.deleteFile(data.paymentScreenshotId);
-      }
-
+      if (data.paymentScreenshotId) await imagekit.deleteFile(data.paymentScreenshotId);
       const uploadedScreenshot = await imagekit.upload({
         file: paymentScreenshot.buffer,
         fileName: paymentScreenshot.originalname,
       });
-
       data.paymentScreenshotURL = uploadedScreenshot.url;
       data.paymentScreenshotId = uploadedScreenshot.fileId;
     }
 
-    // ================= SAVE ONCE =================
     await data.save();
 
-    // ================= REFERRAL LOGIC =================
-    if (
-      updateData.referral_payment_status &&
-      role === "Referrer" &&
-      referral_package
-    ) {
+    // 8. Referral package logic
+    if (updateData.referral_payment_status === "Paid" && role === "Referrer" && referral_package) {
       const packageData = await Package.findById(referral_package);
       const milestones = await Milestone.findOne();
 
@@ -594,8 +578,7 @@ const updateUser = async (req, res) => {
 
             const ref3 = await User.findOne({ user_code: ref2.referred_by });
             if (ref3) {
-              ref3Commission =
-                packageData.price * (milestones.levelThree / 100);
+              ref3Commission = packageData.price * (milestones.levelThree / 100);
               await Financial.create({
                 user: ref3._id,
                 package: packageData._id,
@@ -605,18 +588,15 @@ const updateUser = async (req, res) => {
             }
           }
 
+          // Set user's upline and level
           data.upline = ref1._id;
           data.level = ref1.level + 1;
           await data.save();
         }
       }
 
-      const adminAmount =
-        packageData.price -
-        ref1Commission -
-        ref2Commission -
-        ref3Commission;
-
+      // Admin commission
+      const adminAmount = packageData.price - ref1Commission - ref2Commission - ref3Commission;
       await Financial.create({
         darsi: true,
         package: packageData._id,
@@ -626,7 +606,7 @@ const updateUser = async (req, res) => {
     }
 
     res.status(200).json({
-      message: "User has been updated successfully",
+      message: "User updated successfully",
       data,
     });
   } catch (err) {
@@ -634,6 +614,7 @@ const updateUser = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
 
 
 
