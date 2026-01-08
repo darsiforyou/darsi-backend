@@ -17,6 +17,10 @@ const contactRoutes = require("./routes/api/contactRoutes");
 const nodemailer=require("nodemailer");
 const passport = require("./config/passport");
 const authRoutes = require("./routes/auth.routes");
+
+
+// Register routes
+
 app.use(passport.initialize());
 
 // custom middleware logger
@@ -49,7 +53,8 @@ app.use("/", express.static(path.join(__dirname, "/public")));
 
 
 app.use("/api/auth", authRoutes);
-
+// src/index.js में यह line add करें:
+app.use("/package-upgrades", require("./routes/api/packageUpgradeRoutes"));
 
 // routes
 app.use("/", require("./routes/root"));
