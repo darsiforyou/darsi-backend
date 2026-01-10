@@ -484,7 +484,7 @@ const updateUser = async (req, res) => {
       password,
       email,
       role,
-      referral_payment_status,
+      // referral_payment_status, // یہ "Paid" یا "Unpaid" ہو سکتا ہے
       referral_package,
       referred_by,
       transaction_id,
@@ -500,7 +500,32 @@ const updateUser = async (req, res) => {
       if (emailExists) return res.status(409).json({ message: "Email already exists" });
     }
 
-    // 3. Prepare update object
+    // 3. Check if we need to process referral commission
+    const isPaymentPaid = referral_payment_status === "Paid";
+    const isReferrerRole = role === "Referrer" || user.role === "Referrer";
+    const hasPackage = referral_package || user.referral_package;
+    // const shouldProcessCommission = isPaymentPaid && isReferrerRole && hasPackage;
+    
+    // 4. Flag to check if we should run commission logic
+    // let runCommissionLogic = false;
+    
+    // if (shouldProcessCommission) {
+      // Check if this is a new payment or status change
+      // const currentPaymentStatus = user.referral_payment_status;
+      // const newPaymentStatus = isPaymentPaid;
+      
+      // Only run commission logic if:
+      // 1. Previously unpaid and now paid
+      // 2. Package changed (upgrade)
+      // 3. First time payment
+    //   if (!currentPaymentStatus && newPaymentStatus) {
+    //     runCommissionLogic = true;
+    //   } else if (referral_package && referral_package !== user.referral_package?.toString()) {
+    //     runCommissionLogic = true;
+    //   }
+    // }
+
+    // 5. Prepare update object
     const updateData = {
       firstname: firstname || user.firstname,
       lastname: lastname || user.lastname,
@@ -509,18 +534,18 @@ const updateUser = async (req, res) => {
       referral_package: referral_package || user.referral_package,
       referred_by: referred_by || user.referred_by,
       transaction_id: transaction_id || user.transaction_id,
-      referral_payment_status: referral_payment_status === "Paid" ? "Paid" : "Pending",
+      // referral_payment_status: isPaymentPaid, // Boolean value
     };
 
-    // 4. Hash password if provided
+    // 6. Hash password if provided
     if (password) {
       updateData.password = await bcrypt.hash(password, 10);
     }
 
-    // 5. Update user
+    // 7. Update user
     let data = await User.findByIdAndUpdate(req.params.id, updateData, { new: true });
 
-    // 6. Handle profile image
+    // 8. Handle profile image
     const profileImage = req.files?.profileImage?.[0];
     if (profileImage) {
       if (data.imageId) await imagekit.deleteFile(data.imageId);
@@ -532,7 +557,7 @@ const updateUser = async (req, res) => {
       data.imageId = uploadedImage.fileId;
     }
 
-    // 7. Handle payment screenshot
+    // 9. Handle payment screenshot
     const paymentScreenshot = req.files?.paymentScreenshot?.[0];
     if (paymentScreenshot) {
       if (data.paymentScreenshotId) await imagekit.deleteFile(data.paymentScreenshotId);
@@ -546,75 +571,110 @@ const updateUser = async (req, res) => {
 
     await data.save();
 
-    // 8. Referral package logic
-    if (updateData.referral_payment_status === "Paid" && role === "Referrer" && referral_package) {
-      const packageData = await Package.findById(referral_package);
-      const milestones = await Milestone.findOne();
+    // 10. Referral commission logic - ONLY if conditions are met
+    // if (runCommissionLogic) {
+    //   const packageId = referral_package || user.referral_package;
+    //   const packageData = await Package.findById(packageId);
+      
+    //   if (packageData) {
+    //     const milestones = await Milestone.findOne();
 
-      let ref1Commission = 0,
-        ref2Commission = 0,
-        ref3Commission = 0;
+    //     let ref1Commission = 0,
+    //       ref2Commission = 0,
+    //       ref3Commission = 0;
 
-      if (referred_by) {
-        const ref1 = await User.findOne({ user_code: referred_by });
-        if (ref1) {
-          ref1Commission = packageData.price * (milestones.levelOne / 100);
-          await Financial.create({
-            user: ref1._id,
-            package: packageData._id,
-            amount: ref1Commission,
-            type: "PACKAGE",
-          });
+    //     // اگر referred_by ہے تو commission دیں
+    //     const referredByCode = referred_by || user.referred_by;
+        
+    //     if (referredByCode) {
+    //       const ref1 = await User.findOne({ user_code: referredByCode });
+    //       if (ref1) {
+    //         ref1Commission = packageData.price * (milestones.levelOne / 100);
+    //         await Financial.create({
+    //           user: ref1._id,
+    //           package: packageData._id,
+    //           amount: ref1Commission,
+    //           type: "REFERRAL",
+    //           description: `Referral commission for ${data.firstname} ${data.lastname}'s package`,
+    //           createdAt: new Date()
+    //         });
 
-          const ref2 = await User.findOne({ user_code: ref1.referred_by });
-          if (ref2) {
-            ref2Commission = packageData.price * (milestones.levelTwo / 100);
-            await Financial.create({
-              user: ref2._id,
-              package: packageData._id,
-              amount: ref2Commission,
-              type: "PACKAGE",
-            });
+    //         const ref2 = await User.findOne({ user_code: ref1.referred_by });
+    //         if (ref2) {
+    //           ref2Commission = packageData.price * (milestones.levelTwo / 100);
+    //           await Financial.create({
+    //             user: ref2._id,
+    //             package: packageData._id,
+    //             amount: ref2Commission,
+    //             type: "REFERRAL",
+    //             description: `Level 2 referral commission`,
+    //             createdAt: new Date()
+    //           });
 
-            const ref3 = await User.findOne({ user_code: ref2.referred_by });
-            if (ref3) {
-              ref3Commission = packageData.price * (milestones.levelThree / 100);
-              await Financial.create({
-                user: ref3._id,
-                package: packageData._id,
-                amount: ref3Commission,
-                type: "PACKAGE",
-              });
-            }
-          }
+    //           const ref3 = await User.findOne({ user_code: ref2.referred_by });
+    //           if (ref3) {
+    //             ref3Commission = packageData.price * (milestones.levelThree / 100);
+    //             await Financial.create({
+    //               user: ref3._id,
+    //               package: packageData._id,
+    //               amount: ref3Commission,
+    //               type: "REFERRAL",
+    //               description: `Level 3 referral commission`,
+    //               createdAt: new Date()
+    //             });
+    //           }
+    //         }
 
-          // Set user's upline and level
-          data.upline = ref1._id;
-          data.level = ref1.level + 1;
-          await data.save();
-        }
-      }
+    //         // Set user's upline and level
+    //         data.upline = ref1._id;
+    //         data.level = (ref1.level || 0) + 1;
+    //         await data.save();
+    //       }
+    //     }
 
-      // Admin commission
-      const adminAmount = packageData.price - ref1Commission - ref2Commission - ref3Commission;
-      await Financial.create({
-        darsi: true,
-        package: packageData._id,
-        amount: adminAmount,
-        type: "PACKAGE",
-      });
-    }
+    //     // Admin commission
+    //     const adminAmount = packageData.price - ref1Commission - ref2Commission - ref3Commission;
+    //     if (adminAmount > 0) {
+    //       await Financial.create({
+    //         darsi: true,
+    //         package: packageData._id,
+    //         amount: adminAmount,
+    //         type: "REFERRAL",
+    //         description: `Admin commission from ${data.firstname} ${data.lastname}'s package`,
+    //         createdAt: new Date()
+    //       });
+    //     }
+        
+    //     console.log('✅ Referral commission processed successfully');
+    //     console.log(`   - Package: ${packageData.title}`);
+    //     console.log(`   - Amount: PKR ${packageData.price}`);
+    //     console.log(`   - Ref1 Commission: PKR ${ref1Commission}`);
+    //     console.log(`   - Ref2 Commission: PKR ${ref2Commission}`);
+    //     console.log(`   - Ref3 Commission: PKR ${ref3Commission}`);
+    //     console.log(`   - Admin Commission: PKR ${adminAmount}`);
+    //   } else {
+    //     console.log('❌ Package not found for commission calculation');
+    //   }
+    // } else {
+    //   console.log('ℹ️ Commission logic not triggered. Reasons:');
+    //   console.log(`   - Payment paid: ${isPaymentPaid}`);
+    //   console.log(`   - Referrer role: ${isReferrerRole}`);
+    //   console.log(`   - Has package: ${hasPackage}`);
+    //   console.log(`   - Should process: ${shouldProcessCommission}`);
+    //   console.log(`   - Run commission: ${runCommissionLogic}`);
+    // }
 
     res.status(200).json({
       message: "User updated successfully",
       data,
+      commission_processed: runCommissionLogic
     });
   } catch (err) {
-    console.error(err);
+    console.error('❌ Error in updateUser:', err);
+    console.error('Error stack:', err.stack);
     res.status(500).json({ error: err.message });
   }
 };
-
 
 
 

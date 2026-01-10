@@ -17,6 +17,7 @@ const contactRoutes = require("./routes/api/contactRoutes");
 const nodemailer=require("nodemailer");
 const passport = require("./config/passport");
 const authRoutes = require("./routes/auth.routes");
+const packageActivationRoutes = require('./routes/api/packageActivationRoutes'); 
 
 
 // Register routes
@@ -60,7 +61,7 @@ app.use("/package-upgrades", require("./routes/api/packageUpgradeRoutes"));
 app.use("/", require("./routes/root"));
 
 app.use("/api", contactRoutes);
-
+app.use('/package-activations', require("./routes/api/packageActivationRoutes"));
 app.use("/register", require("./routes/register"));
 app.use("/auth", require("./routes/auth"));
 app.use("/refresh", require("./routes/refresh"));

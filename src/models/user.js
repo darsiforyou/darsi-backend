@@ -3,6 +3,8 @@ const bcrypt = require("bcrypt");
 const Schema = mongoose.Schema;
 const aggregatePaginate = require("mongoose-aggregate-paginate-v2");
 
+
+
 const userSchema = new Schema(
   {
     firstname: {
@@ -16,15 +18,11 @@ const userSchema = new Schema(
     email: {
       type: String,
       required: true,
-      unique: true,
     },
     password: {
       type: String,
-      required: function () {
-        return this.authProvider === "local";
-      },
+      required: true,
     },
-
     // Main profile image
     imageURL: {
       type: String,
@@ -34,7 +32,8 @@ const userSchema = new Schema(
       type: String,
       default: null,
     },
-
+    // Additional images (like media in products)
+   
     // Payment screenshot fields
     paymentScreenshotURL: {
       type: String,
@@ -44,13 +43,11 @@ const userSchema = new Schema(
       type: String,
       default: null,
     },
-
     role: {
       type: String,
       default: "Customer",
       enum: ["Customer", "Admin", "Referrer", "Vendor", "FeedAdmin"],
     },
-
     status: {
       type: Boolean,
       default: false,
@@ -61,47 +58,24 @@ const userSchema = new Schema(
       default: false,
       required: true,
     },
-
     transaction_id: {
       type: String,
       default: null,
     },
-
-    googleId: {
-      type: String,
-      default: null,
-      unique: true,
-    },
-    authProvider: {
-      type: String,
-      enum: ["local", "google"],
-      default: "local",
-    },
-
-    // Referral / Package related fields
     referral_package: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Referral_Package",
-    },
-    requested_package: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Referral_Package",
-      default: null,
     },
     referral_payment: {
       type: Number,
       default: 0,
     },
     referral_payment_status: {
-      type: String,
-      enum: ["Pending", "Paid","Unpaid","Rejected"],
-      default: "Pending",
-    },
-    request_date: {
-      type: Date,
-      default: null,
+      type: Boolean,
+      default: false,
     },
 
+   
     user_code: {
       type: String,
       default: null,
@@ -143,12 +117,13 @@ const userSchema = new Schema(
   { timestamps: true }
 );
 
+
+
 // encrypt the password before storing
 userSchema.methods.encryptPassword = (password) => {
   return bcrypt.hashSync(password, bcrypt.genSaltSync(5), null);
 };
 
-// check password
 userSchema.methods.validPassword = function (candidatePassword) {
   if (this.password != null) {
     return bcrypt.compareSync(candidatePassword, this.password);
