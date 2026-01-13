@@ -501,7 +501,7 @@ const updateUser = async (req, res) => {
     }
 
     // 3. Check if we need to process referral commission
-    const isPaymentPaid = referral_payment_status === "Paid";
+    // const isPaymentPaid = referral_payment_status === "Paid";
     const isReferrerRole = role === "Referrer" || user.role === "Referrer";
     const hasPackage = referral_package || user.referral_package;
     // const shouldProcessCommission = isPaymentPaid && isReferrerRole && hasPackage;
@@ -667,7 +667,7 @@ const updateUser = async (req, res) => {
     res.status(200).json({
       message: "User updated successfully",
       data,
-      commission_processed: runCommissionLogic
+      // commission_processed: runCommissionLogic
     });
   } catch (err) {
     console.error('❌ Error in updateUser:', err);
