@@ -13,10 +13,15 @@ const PORT = process.env.PORT || 3000;
 const dotenv = require("dotenv").config();
 const swaggerUi = require("swagger-ui-express");
 const boolParser = require("express-query-boolean");
-
+const contactRoutes = require("./routes/api/contactRoutes");
 const nodemailer=require("nodemailer");
 const passport = require("./config/passport");
 const authRoutes = require("./routes/auth.routes");
+const packageActivationRoutes = require('./routes/api/packageActivationRoutes'); 
+
+
+// Register routes
+
 app.use(passport.initialize());
 
 // custom middleware logger
@@ -49,10 +54,14 @@ app.use("/", express.static(path.join(__dirname, "/public")));
 
 
 app.use("/api/auth", authRoutes);
-
+// src/index.js में यह line add करें:
+app.use("/package-upgrades", require("./routes/api/packageUpgradeRoutes"));
 
 // routes
 app.use("/", require("./routes/root"));
+
+app.use("/api", contactRoutes);
+app.use('/package-activations', require("./routes/api/packageActivationRoutes"));
 app.use("/register", require("./routes/register"));
 app.use("/auth", require("./routes/auth"));
 app.use("/refresh", require("./routes/refresh"));

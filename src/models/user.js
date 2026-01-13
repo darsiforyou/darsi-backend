@@ -19,19 +19,10 @@ const userSchema = new Schema(
       type: String,
       required: true,
     },
-    // password: {
-    //   type: String,
-    //   required: true,
-    // },
-   password: {
-   type: String,
-   required: function () {
-    return this.authProvider === "local";
-  },
-},
-
-
-
+    password: {
+      type: String,
+      required: true,
+    },
     // Main profile image
     imageURL: {
       type: String,
@@ -71,18 +62,6 @@ const userSchema = new Schema(
       type: String,
       default: null,
     },
-
-   googleId: {
-    type: String,
-    default: null,
-    unique: true,
-   },
-   authProvider: {
-      type: String,
-      enum: ["local", "google"],
-      default: "local",
-   },
-
     referral_package: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Referral_Package",
@@ -95,6 +74,8 @@ const userSchema = new Schema(
       type: Boolean,
       default: false,
     },
+
+   
     user_code: {
       type: String,
       default: null,

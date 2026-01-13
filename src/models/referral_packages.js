@@ -45,4 +45,9 @@ const referral_packages_schema = Schema(
 );
 referral_packages_schema.plugin(aggregatePaginate);
 
-module.exports = mongoose.model("Referral_Package", referral_packages_schema);
+// 注册两个模型名，解决兼容性问题
+const ReferralPackage = mongoose.model("Referral_Package", referral_packages_schema);
+// 同时注册为 referral_packages 以兼容现有代码
+mongoose.model("referral_packages", referral_packages_schema);
+
+module.exports = ReferralPackage;
