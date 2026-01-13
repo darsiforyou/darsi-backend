@@ -136,6 +136,32 @@ const getRevenueTotal = async (req, res) => {
     ]);
     // console.log("TPR", TPR);
 
+const referralIncomeAgg = await Financial.aggregate([
+  {
+    $match: {
+      ...filter,
+      type: { $ne: "ORDER" }, // 👈 exclude ORDER
+    },
+  },
+  {
+    $group: {
+      _id: null,
+      total: { $sum: "$amount" },
+    },
+  },
+]);
+
+
+const referralIncome = referralIncomeAgg.length
+  ? referralIncomeAgg[0].total
+  : 0;
+
+
+
+
+
+
+
     let financial = { total: 0 };
     let paymentRequest = { amountAccepted: 0 };
 
@@ -154,16 +180,48 @@ const getRevenueTotal = async (req, res) => {
     const data = {
       walletAmount: financial.total - paymentRequest.amountAccepted,
       withdraw: paymentRequest.amountAccepted,
+      referralIncome
     };
 
     return res.status(200).send({
       message: "Successfully fetch Financial Total",
       data,
+
     });
   } catch (err) {
     res.status(500).json({ error: err });
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const getFinancial = async (req, res) => {
   try {
     const financial = await Financial.findById(req.params.id);

@@ -532,10 +532,9 @@ const processActivationRequest = async (req, res) => {
         updatedAt: new Date()
       });
 
-      // Handle commission for first time activation
-      if (request.is_first_time && request.user.referred_by) {
+     
         await handleActivationCommission(request.user, request.requested_package, request.amount);
-      }
+      
 
       // Update request status
       request.status = "approved";
