@@ -4,127 +4,95 @@ const { faker } = require("@faker-js/faker");
 const imagekit = require("../config/imagekit");
 const { searchInColumns, getQuery } = require("../utils");
 const send_email = require("../middleware/email");
+const mongoose = require("mongoose");
 
 const getAllProducts = async (req, res) => {
   try {
-    let { page, limit, search, sort, ...queries } = req.query;
+    let { page, limit, search, sort, subject, ...queries } = req.query;
     let searchText = search;
+
+    // Subject_name search included in search bar
     search = searchInColumns(search, [
       "category_name",
       "brand_name",
       "title",
       "description",
-      "subject_name",
+      "subject_name", // ✅ search by subject name
       "isbn",
       "productCode",
     ]);
+
+    // Convert other filters to mongoose query
     queries = getQuery(queries);
+
+    // ✅ Add subject filter like brand
+ if (subject && subject.trim() !== "") {
+  queries.subject = mongoose.Types.ObjectId(subject);
+}
+
+
+    // Build aggregation
     let myAggregate;
     if (!search) {
       myAggregate = Product.aggregate([
         { $match: { $and: [queries] } },
-
-        {
-          $lookup: {
-            from: "categories",
-            localField: "category",
-            foreignField: "_id",
-            as: "categories",
-          },
-        },
-        {
-          $lookup: {
-            from: "users",
-            localField: "vendor",
-            foreignField: "_id",
-            as: "vendors",
-          },
-        },
-        {
-          $lookup: {
-            from: "brands",
-            localField: "brand",
-            foreignField: "_id",
-            as: "brands",
-          },
-        },
+        { $lookup: { from: "categories", localField: "category", foreignField: "_id", as: "categories" } },
+        { $lookup: { from: "users", localField: "vendor", foreignField: "_id", as: "vendors" } },
+        { $lookup: { from: "brands", localField: "brand", foreignField: "_id", as: "brands" } },
+        { $lookup: { from: "subjects", localField: "subject", foreignField: "_id", as: "subjects" } },
       ]);
     } else {
       myAggregate = Product.aggregate([
         {
           $match: {
             $and: [
-              { $or: [...search, { isbn: new RegExp(+searchText, "i") }] },
+              { $or: [...search, { isbn: new RegExp(searchText, "i") }] },
               queries,
             ],
           },
         },
-        {
-          $lookup: {
-            from: "categories",
-            localField: "category",
-            foreignField: "_id",
-            as: "categories",
-          },
-        },
-        {
-          $lookup: {
-            from: "users",
-            localField: "vendor",
-            foreignField: "_id",
-            as: "vendors",
-          },
-        },
-        {
-          $lookup: {
-            from: "brands",
-            localField: "brand",
-            foreignField: "_id",
-            as: "brands",
-          },
-        },
+        { $lookup: { from: "categories", localField: "category", foreignField: "_id", as: "categories" } },
+        { $lookup: { from: "users", localField: "vendor", foreignField: "_id", as: "vendors" } },
+        { $lookup: { from: "brands", localField: "brand", foreignField: "_id", as: "brands" } },
+        { $lookup: { from: "subjects", localField: "subject", foreignField: "_id", as: "subjects" } },
       ]);
     }
+
+    // Sorting
     let sortOption = {};
-    if (sort) {
-      switch (sort) {
-        case "PRICE_HIGH_TO_LOW":
-          sortOption = { price: -1 };
-          break;
-        case "PRICE_LOW_TO_HIGH":
-          sortOption = { price: 1 };
-          break;
-        case "RECENT":
-          sortOption = { createdAt: -1 };
-          break;
-      }
-    } else {
-      sortOption = { createdAt: -1 };
+    switch (sort) {
+      case "PRICE_HIGH_TO_LOW":
+        sortOption = { price: -1 };
+        break;
+      case "PRICE_LOW_TO_HIGH":
+        sortOption = { price: 1 };
+        break;
+      case "RECENT":
+      default:
+        sortOption = { createdAt: -1 };
     }
-    const options = search
-      ? {
-          page: page || 1 ,
-          limit: 24,
-          sort: sortOption,
-        }
-      : {
-          page: page || 1,
-          limit: limit || 24,
-          sort: sortOption,
-        };
+
+    // Pagination options
+    const options = {
+      page: Number(page) || 1,
+      limit: Number(limit) || 24,
+      sort: sortOption,
+    };
 
     const data = await Product.aggregatePaginate(myAggregate, options);
 
-    return res.status(200).send({
-      message: "Successfully fetch products",
-      change: "Changes applied for test",
-      data: data,
+    return res.status(200).json({
+      message: "Successfully fetched products",
+      data,
     });
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ error: err });
+    console.error(err);
+    return res.status(500).json({ error: err.message || err });
   }
 };
+
+
+
 
 
 
