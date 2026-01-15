@@ -119,17 +119,22 @@ const handleNewUser = async (req, res) => {
       "Darsi" + "-" + faker.helpers.replaceSymbolWithNumber("####-####");
 
     // verify referral
-    if (referred_by) {
-      const referral = await User.findOne({ user_code: referred_by });
-      if (!referral)
-        return res.json({
-          message: "Referrar Does Not Exists. Please Enter Correct Referral Code",
-        });
+if (referred_by) {
+  const referral = await User.findOne({ user_code: referred_by });
 
-      newUser.referred_by = referred_by;
-      newUser.upline = referral._id;
-      newUser.level = 1;
-    }
+  if (!referral) {
+    // Agar referral code galat hai, turant response bhej do
+    return res.status(400).json({
+      success: false,
+      message: "Referrer does not exist. Please enter a correct referral code.",
+    });
+  }
+
+  newUser.referred_by = referred_by;
+  newUser.upline = referral._id;
+  newUser.level = 1;
+}
+
 
     const user = await User.create(newUser);
 
